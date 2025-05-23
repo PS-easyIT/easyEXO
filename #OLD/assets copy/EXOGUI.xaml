@@ -1,0 +1,1051 @@
+<Window
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Exchange Berechtigungen Verwaltung"
+    Width="1200"
+    Height="800"
+    WindowStartupLocation="CenterScreen">
+    <!--  Bind theme color resources  -->
+    <Window.Resources>
+        <SolidColorBrush x:Key="ThemeColor" Color="#0078D7" />
+        <SolidColorBrush x:Key="ThemeColorLight" Color="#E3F2FD" />
+        <SolidColorBrush x:Key="ThemeColorDark" Color="#005A9E" />
+
+        <!--  Button Standardstil  -->
+        <Style x:Key="ButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource ThemeColor}" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Height" Value="25" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="10,0" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource ThemeColorDark}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!--  Navigationbutton Stil  -->
+        <Style x:Key="NavButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Height" Value="40" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource ThemeColorLight}" />
+                    <Setter Property="Foreground" Value="{StaticResource ThemeColorDark}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!--  TextBox Stil mit Validierung  -->
+        <Style x:Key="TextBoxRequiredStyle" TargetType="TextBox">
+            <Setter Property="Height" Value="25" />
+            <Style.Triggers>
+                <Trigger Property="Text" Value="">
+                    <Setter Property="BorderBrush" Value="Red" />
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Setter Property="ToolTip" Value="Dieses Feld ist erforderlich." />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!--  GroupBox Stil  -->
+        <Style x:Key="GroupBoxStyle" TargetType="GroupBox">
+            <Setter Property="BorderBrush" Value="{StaticResource ThemeColor}" />
+            <Setter Property="Padding" Value="10" />
+            <Setter Property="Margin" Value="0,0,0,10" />
+            <Setter Property="HeaderTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <TextBlock
+                            FontWeight="SemiBold"
+                            Foreground="{StaticResource ThemeColorDark}"
+                            Text="{Binding}" />
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <!--  Install & Check Bereich  -->
+            <RowDefinition Height="80" />
+            <!--  Header: Fixed 80px  -->
+            <RowDefinition Height="*" />
+            <!--  Hauptbereich  -->
+            <RowDefinition Height="60" />
+            <!--  Footer: Fixed 60px  -->
+        </Grid.RowDefinitions>
+        <!--  Install & Check Bereich  -->
+        <Border
+            Grid.Row="0"
+            Padding="10"
+            Background="{StaticResource ThemeColorLight}">
+            <StackPanel
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Orientation="Horizontal">
+                <Button
+                    x:Name="btnCheckPrerequisites"
+                    Width="150"
+                    Height="25"
+                    Margin="5"
+                    Content="Prüfe Voraussetzungen"
+                    Style="{StaticResource ButtonStyle}" />
+                <Button
+                    x:Name="btnInstallPrerequisites"
+                    Width="150"
+                    Height="25"
+                    Margin="5"
+                    Content="Installiere Module"
+                    Style="{StaticResource ButtonStyle}" />
+                <TextBlock
+                    x:Name="txtInstallStatus"
+                    Margin="10,0,0,0"
+                    VerticalAlignment="Center"
+                    Text="Status: unbekannt" />
+                <Button
+                    x:Name="btnConnect"
+                    Width="200"
+                    Height="25"
+                    Margin="355,0,0,0"
+                    Content="Mit Exchange verbinden"
+                    Style="{StaticResource ButtonStyle}"
+                    Tag="connect" />
+            </StackPanel>
+        </Border>
+        <!--  Header mit AppName und klickbarem Logo  -->
+        <Grid Grid.Row="1" Background="{StaticResource ThemeColor}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!--  Klickbares Logo  -->
+            <StackPanel
+                Grid.Column="0"
+                Margin="20,0,0,0"
+                Orientation="Horizontal">
+                <Border
+                    x:Name="logoContainer"
+                    Width="50"
+                    Height="50"
+                    Cursor="Hand">
+                    <Viewbox Stretch="Uniform">
+                        <Canvas Width="50" Height="50">
+                            <Path
+                                Data="M10,10 H20 V30 H10 V50 H20 V60 H0 V0 H30 V10 H10 Z"
+                                Fill="#6ab7ff"
+                                Stretch="Fill"
+                                Width="50"
+                                Height="50"
+                                HorizontalAlignment="Left" />
+                        </Canvas>
+                    </Viewbox>
+                </Border>
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontFamily="Segoe UI"
+                    FontSize="28"
+                    FontWeight="Bold"
+                    Foreground="White"
+                    Text="easyEXO" />
+            </StackPanel>
+        </Grid>
+        <!--  Hauptbereich  -->
+        <Grid Grid.Row="2" Margin="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220" />
+                <!--  Navigationsbereich  -->
+                <ColumnDefinition Width="*" />
+                <!--  Formularbereich  -->
+            </Grid.ColumnDefinitions>
+            <!--  Navigationsbereich: TabControl  -->
+            <Grid Grid.Column="0" Background="#f0f0f0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!--  Navigationstitel  -->
+                <TextBlock
+                    Grid.Row="0"
+                    Margin="10,15,0,15"
+                    FontSize="16"
+                    FontWeight="SemiBold"
+                    Text="Navigation" />
+
+                <!--  Navigationstasten  -->
+                <StackPanel Grid.Row="1">
+                    <Button
+                        x:Name="btnNavCalendar"
+                        Height="40"
+                        Margin="10,5"
+                        Padding="10,0"
+                        HorizontalContentAlignment="Center"
+                        Background="#FFDEDEDE"
+                        Content="Kalenderberechtigungen"
+                        Style="{StaticResource NavButtonStyle}" />
+                    <Button
+                        x:Name="btnNavMailbox"
+                        Height="40"
+                        Margin="10,5"
+                        Padding="10,0"
+                        HorizontalContentAlignment="Center"
+                        Background="#FFDEDEDE"
+                        Content="Postfachberechtigungen"
+                        Style="{StaticResource NavButtonStyle}" />
+                    <Button
+                        x:Name="btnNavPublicFolder"
+                        Height="40"
+                        Margin="10,5"
+                        Padding="10,0"
+                        HorizontalContentAlignment="Center"
+                        Background="#FFDEDEDE"
+                        Content="Öffentliche Ordner"
+                        Style="{StaticResource NavButtonStyle}" />
+                </StackPanel>
+
+                <!--  Icon-Buttons (INFO, SETTINGS, CLOSE)  -->
+                <StackPanel Grid.Row="2" Margin="10,15,10,20">
+                    <Separator Margin="0,0,0,15" />
+                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                        <!--  INFO Button mit SVG Icon  -->
+                        <Button
+                            x:Name="btnInfo"
+                            Width="32"
+                            Height="32"
+                            Margin="0,0,10,0"
+                            ToolTip="Information">
+                            <Viewbox Width="16" Height="16">
+                                <Path
+                                    Fill="{StaticResource ThemeColorDark}"
+                                    Data="M8,0 C3.582,0 0,3.582 0,8 C0,12.418 3.582,16 8,16 C12.418,16 16,12.418 16,8 C16,3.582 12.418,0 8,0 z M9,12 L7,12 L7,7 L9,7 L9,12 z M8,6 C7.448,6 7,5.552 7,5 C7,4.448 7.448,4 8,4 C8.552,4 9,4.448 9,5 C9,5.552 8.552,6 8,6 z"/>
+                            </Viewbox>
+                        </Button>
+
+                        <!--  CLOSE Button mit SVG Icon  -->
+                        <Button
+                            x:Name="btnClose"
+                            Width="32"
+                            Height="32"
+                            ToolTip="Schließen">
+                            <Viewbox Width="16" Height="16">
+                                <Path
+                                    Fill="{StaticResource ThemeColorDark}"
+                                    Data="M13.46,12.04L9.42,8L13.46,3.96L12.04,2.54L8,6.58L3.96,2.54L2.54,3.96L6.58,8L2.54,12.04L3.96,13.46L8,9.42L12.04,13.46L13.46,12.04z"/>
+                            </Viewbox>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+
+            <!--  Formularbereich mit TabControl  -->
+            <TabControl
+                x:Name="tabContent"
+                Grid.Column="1"
+                Margin="10,0,0,0"
+                BorderThickness="0">
+                <!--  Kalender Tab  -->
+                <TabItem
+                    x:Name="tabCalendar"
+                    Header="Kalenderberechtigungen"
+                    Visibility="Collapsed">
+                    <Grid Margin="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!--  Formular für Kalenderberechtigungen  -->
+                        <GroupBox
+                            Grid.Row="0"
+                            Margin="0,0,0,10"
+                            Padding="10"
+                            Header="Kalenderberechtigung verwalten">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Linke Box: Eingabefelder -->
+                                <GroupBox 
+                                    Grid.Column="0"
+                                    Header="Einstellungen"
+                                    Margin="0,0,10,0"
+                                    Padding="10">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <!--  Quellpostfach  -->
+                                        <TextBlock
+                                            Grid.Row="0"
+                                            Grid.Column="0"
+                                            Margin="0,0,10,5"
+                                            VerticalAlignment="Center"
+                                            Text="Quellpostfach:" />
+                                        <TextBox
+                                            x:Name="txtCalSourceUser"
+                                            Grid.Row="0"
+                                            Grid.Column="1"
+                                            Height="25"
+                                            Margin="0,0,0,5"
+                                            ToolTip="E-Mail-Adresse des Postfachs, dessen Kalender freigegeben werden soll" />
+
+                                        <!--  Zielbenutzer  -->
+                                        <TextBlock
+                                            Grid.Row="1"
+                                            Grid.Column="0"
+                                            Margin="0,0,10,5"
+                                            VerticalAlignment="Center"
+                                            Text="Zielbenutzer:" />
+                                        <TextBox
+                                            x:Name="txtCalTargetUser"
+                                            Grid.Row="1"
+                                            Grid.Column="1"
+                                            Height="25"
+                                            Margin="0,0,0,5"
+                                            ToolTip="E-Mail-Adresse des Benutzers, der Zugriff erhalten soll" />
+
+                                        <!--  Berechtigungstyp  -->
+                                        <TextBlock
+                                            Grid.Row="2"
+                                            Grid.Column="0"
+                                            Margin="0,0,10,5"
+                                            VerticalAlignment="Center"
+                                            Text="Berechtigungstyp:" />
+                                        <ComboBox
+                                            x:Name="cmbCalPermission"
+                                            Grid.Row="2"
+                                            Grid.Column="1"
+                                            Height="25"
+                                            Margin="0,0,0,5">
+                                            <ComboBoxItem Content="Keine" ToolTip="Keine Berechtigung" />
+                                            <ComboBoxItem Content="Besitzer" ToolTip="Voller Zugriff und Eigentümerrechte" />
+                                            <ComboBoxItem Content="PublishingEditor" ToolTip="Alle Elemente erstellen, lesen, bearbeiten, löschen und Unterordner erstellen" />
+                                            <ComboBoxItem Content="Editor" ToolTip="Alle Elemente erstellen, lesen, bearbeiten und löschen" />
+                                            <ComboBoxItem Content="PublishingAuthor" ToolTip="Alle Elemente erstellen und lesen, nur eigene bearbeiten und löschen, Unterordner erstellen" />
+                                            <ComboBoxItem Content="Autor" ToolTip="Alle Elemente erstellen und lesen, nur eigene bearbeiten und löschen" />
+                                            <ComboBoxItem Content="NichtBearbeitenderAutor" ToolTip="Alle Elemente erstellen und lesen, nur eigene löschen" />
+                                            <ComboBoxItem Content="Reviewer" ToolTip="Nur Leserechte auf alle Elemente" />
+                                            <ComboBoxItem Content="Mitwirkender" ToolTip="Nur Erstellungsrechte, keine Ansicht des Inhalts" />
+                                            <ComboBoxItem Content="FreiBusyZeit" ToolTip="Nur Frei/Gebucht-Zeiten sichtbar" />
+                                            <ComboBoxItem Content="FreiBusyZeitBetreffortUndBeschreibung" ToolTip="Frei/Gebucht-Zeit, Betreff und Ort sichtbar" />
+                                        </ComboBox>
+                                    </Grid>
+                                </GroupBox>
+
+                                <!-- Rechte Box: Aktions-Buttons -->
+                                <GroupBox 
+                                    Grid.Column="1"
+                                    Header="Aktionen"
+                                    Margin="0,0,0,0"
+                                    Padding="10">
+                                    <StackPanel>
+                                        <Button
+                                            x:Name="btnCalAddPermission"
+                                            Width="180"
+                                            Height="30"
+                                            Margin="0,0,0,10"
+                                            Style="{StaticResource ButtonStyle}"
+                                            Content="Berechtigung hinzufügen" />
+                                        <Button
+                                            x:Name="btnCalRemovePermission"
+                                            Width="180"
+                                            Height="30"
+                                            Margin="0,0,0,10"
+                                            Style="{StaticResource ButtonStyle}"
+                                            Content="Berechtigung entfernen" />
+                                        <Button
+                                            x:Name="btnCalGetPermissions"
+                                            Width="180"
+                                            Height="30"
+                                            Style="{StaticResource ButtonStyle}"
+                                            Content="Berechtigungen abrufen" />
+                                    </StackPanel>
+                                </GroupBox>
+                            </Grid>
+                        </GroupBox>
+
+                        <!--  Boxen für Standard/Anonym und Massenaktionen  -->
+                        <Grid Grid.Row="1" Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!--  Linke Box: Standard/Anonym Berechtigungen  -->
+                            <GroupBox
+                                Grid.Column="0"
+                                Margin="0,0,5,0"
+                                Padding="8,5,8,8"
+                                Header="Standard/Anonym Berechtigungen"
+                                Style="{StaticResource GroupBoxStyle}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <!--  Postfach  -->
+                                    <DockPanel Grid.Row="0" Margin="0,0,0,3">
+                                        <TextBlock
+                                            Width="130"
+                                            VerticalAlignment="Center"
+                                            Text="Kalenderpostfach:" />
+                                        <TextBox
+                                            x:Name="txtCalSpecialUser"
+                                            Height="22"
+                                            ToolTip="E-Mail-Adresse des Postfachs, dessen Kalender-Standardberechtigungen geändert werden sollen" />
+                                    </DockPanel>
+
+                                    <!--  Standard-Berechtigungstyp  -->
+                                    <DockPanel Grid.Row="1" Margin="0,0,0,3">
+                                        <TextBlock
+                                            Width="130"
+                                            VerticalAlignment="Center"
+                                            Text="Standard-Berechtigung:" />
+                                        <ComboBox
+                                            x:Name="cmbCalDefaultPermission"
+                                            Height="22">
+                                            <ComboBoxItem Content="Keine" ToolTip="Keine Berechtigung" />
+                                            <ComboBoxItem Content="FreiBusyZeit" ToolTip="Nur Frei/Gebucht-Zeiten sichtbar" />
+                                            <ComboBoxItem Content="FreiBusyZeitBetreffortUndBeschreibung" ToolTip="Frei/Gebucht-Zeit, Betreff und Ort sichtbar" />
+                                            <ComboBoxItem Content="Reviewer" ToolTip="Nur Leserechte auf alle Elemente" />
+                                            <ComboBoxItem Content="Autor" ToolTip="Alle Elemente erstellen und lesen, nur eigene bearbeiten und löschen" />
+                                        </ComboBox>
+                                    </DockPanel>
+
+                                    <!--  Anonym-Berechtigungstyp  -->
+                                    <DockPanel Grid.Row="2" Margin="0,0,0,3">
+                                        <TextBlock
+                                            Width="130"
+                                            VerticalAlignment="Center"
+                                            Text="Anonym-Berechtigung:" />
+                                        <ComboBox
+                                            x:Name="cmbCalAnonymousPermission"
+                                            Height="22">
+                                            <ComboBoxItem Content="Keine" ToolTip="Keine Berechtigung" />
+                                            <ComboBoxItem Content="FreiBusyZeit" ToolTip="Nur Frei/Gebucht-Zeiten sichtbar" />
+                                            <ComboBoxItem Content="FreiBusyZeitBetreffortUndBeschreibung" ToolTip="Frei/Gebucht-Zeit, Betreff und Ort sichtbar" />
+                                        </ComboBox>
+                                    </DockPanel>
+
+                                    <!--  Aktions-Buttons  -->
+                                    <UniformGrid Grid.Row="3" Columns="3" Margin="0,5,0,5">
+                                        <Button
+                                            x:Name="btnCalSetDefaultPermission"
+                                            Margin="0,0,3,0"
+                                            Height="18"
+                                            Style="{StaticResource ButtonStyle}"
+                                            Content="Standard setzen" />
+                                        <Button
+                                            x:Name="btnCalSetAnonymousPermission"
+                                            Margin="3,0,3,0"
+                                            Height="18"
+                                            Style="{StaticResource ButtonStyle}"
+                                            Content="Anonym setzen" />
+                                        <Button
+                                            x:Name="btnCalGetSpecialPermissions"
+                                            Margin="3,0,0,0"
+                                            Height="18"
+                                            Style="{StaticResource ButtonStyle}"
+                                            Content="akt. Berechtigungen" />
+                                    </UniformGrid>
+                                </Grid>
+                            </GroupBox>
+
+                            <!--  Rechte Box: Massenaktionen  -->
+                            <GroupBox
+                                Grid.Column="1"
+                                Margin="5,0,0,0"
+                                Padding="8,5,8,8"
+                                Header="Massenaktionen für alle Postfächer"
+                                Style="{StaticResource GroupBoxStyle}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <!--  Standard-Berechtigungstyp für alle  -->
+                                    <DockPanel Grid.Row="0" Margin="0,0,0,3">
+                                        <TextBlock
+                                            Width="130"
+                                            VerticalAlignment="Center"
+                                            Text="Standard für ALLE:" />
+                                        <ComboBox
+                                            x:Name="cmbCalDefaultPermissionAll"
+                                            Height="22">
+                                            <ComboBoxItem Content="Keine" ToolTip="Keine Berechtigung" />
+                                            <ComboBoxItem Content="FreiBusyZeit" ToolTip="Nur Frei/Gebucht-Zeiten sichtbar" />
+                                            <ComboBoxItem Content="FreiBusyZeitBetreffortUndBeschreibung" ToolTip="Frei/Gebucht-Zeit, Betreff und Ort sichtbar" />
+                                            <ComboBoxItem Content="Reviewer" ToolTip="Nur Leserechte auf alle Elemente" />
+                                        </ComboBox>
+                                    </DockPanel>
+
+                                    <!--  Anonym-Berechtigungstyp für alle  -->
+                                    <DockPanel Grid.Row="1" Margin="0,0,0,3">
+                                        <TextBlock
+                                            Width="130"
+                                            VerticalAlignment="Center"
+                                            Text="Anonym für ALLE:" />
+                                        <ComboBox
+                                            x:Name="cmbCalAnonymousPermissionAll"
+                                            Height="22">
+                                            <ComboBoxItem Content="Keine" ToolTip="Keine Berechtigung" />
+                                            <ComboBoxItem Content="FreiBusyZeit" ToolTip="Nur Frei/Gebucht-Zeiten sichtbar" />
+                                            <ComboBoxItem Content="FreiBusyZeitBetreffortUndBeschreibung" ToolTip="Frei/Gebucht-Zeit, Betreff und Ort sichtbar" />
+                                        </ComboBox>
+                                    </DockPanel>
+
+                                    <!--  Aktions-Buttons  -->
+                                    <UniformGrid Grid.Row="3" Columns="3" Margin="0,5,0,5">
+                                        <Button
+                                            x:Name="btnCalSetDefaultPermissionAll"
+                                            Margin="0,0,3,0"
+                                            Height="18"
+                                            Style="{StaticResource ButtonStyle}"
+                                            Content="Standard für ALLE" />
+                                        <Button
+                                            x:Name="btnCalSetAnonymousPermissionAll"
+                                            Margin="3,0,3,0"
+                                            Height="18"
+                                            Style="{StaticResource ButtonStyle}"
+                                            Content="Anonym für ALLE" />
+                                        <Button
+                                            x:Name="btnCalSetBothPermissionsAll"
+                                            Margin="3,0,0,0"
+                                            Height="18"
+                                            Style="{StaticResource ButtonStyle}"
+                                            Content="Std. / Anonym für ALLE" />
+                                    </UniformGrid>
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
+                        <!--  Ergebnis der Kalenderberechtigungen  -->
+                        <GroupBox
+                            Grid.Row="3"
+                            Margin="0,0,0,10"
+                            Padding="10"
+                            Header="Aktuelle Kalenderberechtigungen">
+                            <DataGrid
+                                x:Name="dgCalPermissions"
+                                Height="100"
+                                AutoGenerateColumns="False"
+                                IsReadOnly="True">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn
+                                        Width="*"
+                                        Binding="{Binding Identity}"
+                                        Header="Identität" />
+                                    <DataGridTextColumn
+                                        Width="*"
+                                        Binding="{Binding User}"
+                                        Header="Benutzer" />
+                                    <DataGridTextColumn
+                                        Width="*"
+                                        Binding="{Binding AccessRights}"
+                                        Header="Zugriffsrechte" />
+                                    <DataGridTextColumn
+                                        Width="*"
+                                        Binding="{Binding SharingPermissionFlags}"
+                                        Header="SharingPermissionFlags" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </GroupBox>
+                    </Grid>
+                </TabItem>
+
+                <!--  Postfach Tab  -->
+                <TabItem
+                    x:Name="tabMailbox"
+                    Header="Postfachberechtigungen"
+                    Visibility="Collapsed">
+                    <Grid Margin="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!--  Hauptcontainer für Postfach- und erweiterte Berechtigungen  -->
+                        <Grid Grid.Row="0" Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!--  Linke Box: Postfachberechtigungen  -->
+                            <GroupBox
+                                Grid.Column="0"
+                                Margin="0,0,5,0"
+                                Padding="10"
+                                Header="Postfachberechtigungen"
+                                Style="{StaticResource GroupBoxStyle}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <!--  Quellpostfach  -->
+                                    <DockPanel Grid.Row="0" Margin="0,0,0,10">
+                                        <TextBlock
+                                            Width="100"
+                                            VerticalAlignment="Center"
+                                            Text="Quellpostfach:" />
+                                        <TextBox
+                                            x:Name="txtMbxSourceUser"
+                                            Height="25"
+                                            ToolTip="E-Mail-Adresse des Postfachs, das freigegeben werden soll" />
+                                    </DockPanel>
+
+                                    <!--  Zielbenutzer  -->
+                                    <DockPanel Grid.Row="1" Margin="0,0,0,10">
+                                        <TextBlock
+                                            Width="100"
+                                            VerticalAlignment="Center"
+                                            Text="Zielbenutzer:" />
+                                        <TextBox
+                                            x:Name="txtMbxTargetUser"
+                                            Height="25"
+                                            ToolTip="E-Mail-Adresse des Benutzers, der Zugriff erhalten soll" />
+                                    </DockPanel>
+
+                                    <!--  Aktions-Buttons  -->
+                                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <Button
+                                            x:Name="btnMbxAddPermission"
+                                            Width="130"
+                                            Height="30"
+                                            Margin="0,0,10,0"
+                                            Style="{StaticResource ButtonStyle}"
+                                            Content="Vollzugriff gewähren" />
+                                        <Button
+                                            x:Name="btnMbxRemovePermission"
+                                            Width="130"
+                                            Height="30"
+                                            Margin="0,0,10,0"
+                                            Style="{StaticResource ButtonStyle}"
+                                            Content="Vollzugriff entziehen" />
+                                        <Button
+                                            x:Name="btnMbxGetPermissions"
+                                            Width="150"
+                                            Height="30"
+                                            Style="{StaticResource ButtonStyle}"
+                                            Content="Berechtigungen abrufen" />
+                                    </StackPanel>
+                                </Grid>
+                            </GroupBox>
+
+                            <!--  Rechte Box: Erweiterte Berechtigungen  -->
+                            <GroupBox
+                                Grid.Column="1"
+                                Margin="5,0,0,0"
+                                Padding="10"
+                                Header="Erweiterte Berechtigungen"
+                                Style="{StaticResource GroupBoxStyle}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <!--  Informationstext  -->
+                                    <TextBlock
+                                        Grid.Row="0"
+                                        Margin="0,0,0,10"
+                                        TextWrapping="Wrap"
+                                        FontStyle="Italic"
+                                        ToolTip="Hinweise zur Verwendung der erweiterten Berechtigungen">
+                                        Hier können Sie erweiterte Stellvertretungsberechtigungen verwalten:
+                                        "SendAs" (im Namen von) oder "SendOnBehalf" (im Auftrag von).
+                                    </TextBlock>
+
+                                    <!--  SendAs-Berechtigungen  -->
+                                    <GroupBox 
+                                        Grid.Row="1"
+                                        Header="SendAs (Im Namen von)"
+                                        Margin="0,0,0,10"
+                                        Padding="5">
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <Button
+                                                x:Name="btnMbxAddSendAsPermission"
+                                                Width="140"
+                                                Height="30"
+                                                Margin="0,5,5,5"
+                                                Style="{StaticResource ButtonStyle}"
+                                                ToolTip="Gewährt dem Zielbenutzer die Berechtigung, E-Mails im Namen des Quellbenutzers zu senden"
+                                                Content="Hinzufügen" />
+                                            <Button
+                                                x:Name="btnMbxRemoveSendAsPermission"
+                                                Width="140"
+                                                Height="30"
+                                                Margin="5,5,5,5"
+                                                Style="{StaticResource ButtonStyle}"
+                                                ToolTip="Entzieht dem Zielbenutzer die Berechtigung, E-Mails im Namen des Quellbenutzers zu senden"
+                                                Content="Entfernen" />
+                                            <Button
+                                                x:Name="btnMbxGetSendAsPermissions"
+                                                Width="140"
+                                                Height="30"
+                                                Margin="5,5,0,5"
+                                                Style="{StaticResource ButtonStyle}"
+                                                ToolTip="Zeigt alle bestehenden SendAs-Berechtigungen für das angegebene Quellpostfach an"
+                                                Content="Anzeigen" />
+                                        </StackPanel>
+                                    </GroupBox>
+
+                                    <!--  SendOnBehalf-Berechtigungen  -->
+                                    <GroupBox 
+                                        Grid.Row="2"
+                                        Header="SendOnBehalf (Im Auftrag von)"
+                                        Margin="0,0,0,0"
+                                        Padding="5">
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <Button
+                                                x:Name="btnMbxAddSendOnBehalfPermission"
+                                                Width="140"
+                                                Height="30"
+                                                Margin="0,5,5,5"
+                                                Style="{StaticResource ButtonStyle}"
+                                                ToolTip="Gewährt dem Zielbenutzer die Berechtigung, E-Mails im Auftrag des Quellbenutzers zu senden"
+                                                Content="Hinzufügen" />
+                                            <Button
+                                                x:Name="btnMbxRemoveSendOnBehalfPermission"
+                                                Width="140"
+                                                Height="30"
+                                                Margin="5,5,5,5"
+                                                Style="{StaticResource ButtonStyle}"
+                                                ToolTip="Entzieht dem Zielbenutzer die Berechtigung, E-Mails im Auftrag des Quellbenutzers zu senden"
+                                                Content="Entfernen" />
+                                            <Button
+                                                x:Name="btnMbxGetSendOnBehalfPermissions"
+                                                Width="140"
+                                                Height="30"
+                                                Margin="5,5,0,5"
+                                                Style="{StaticResource ButtonStyle}"
+                                                ToolTip="Zeigt alle bestehenden SendOnBehalf-Berechtigungen für das angegebene Quellpostfach an"
+                                                Content="Anzeigen" />
+                                        </StackPanel>
+                                    </GroupBox>
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
+
+
+                        <!--  Ergebnis der Postfachberechtigungen  -->
+                        <GroupBox
+                            Grid.Row="1"
+                            Margin="0,0,0,10"
+                            Padding="10"
+                            Header="Aktuelle Postfachberechtigungen">
+                            <DataGrid
+                                x:Name="dgMbxPermissions"
+                                Height="200"
+                                AutoGenerateColumns="False"
+                                IsReadOnly="True">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn
+                                        Width="*"
+                                        Binding="{Binding Identity}"
+                                        Header="Identität" />
+                                    <DataGridTextColumn
+                                        Width="*"
+                                        Binding="{Binding User}"
+                                        Header="Benutzer" />
+                                    <DataGridTextColumn
+                                        Width="*"
+                                        Binding="{Binding AccessRights}"
+                                        Header="Zugriffsrechte" />
+                                    <DataGridTextColumn
+                                        Width="*"
+                                        Binding="{Binding IsInherited}"
+                                        Header="Vererbung" />
+                                    <DataGridTextColumn
+                                        Width="*"
+                                        Binding="{Binding Deny}"
+                                        Header="Verweigern" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </GroupBox>
+                    </Grid>
+                </TabItem>
+
+                <!--  Public Folder Tab  -->
+                <TabItem
+                    x:Name="tabPublicFolder"
+                    Header="Öffentliche Ordner"
+                    Visibility="Collapsed">
+                    <Grid Margin="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!--  Formular für Public Folder Berechtigungen  -->
+                        <GroupBox
+                            Grid.Row="0"
+                            Margin="0,0,0,10"
+                            Padding="10"
+                            Header="Öffentliche Ordner Berechtigungen verwalten"
+                            Style="{StaticResource GroupBoxStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Linke Box: Eingabefelder -->
+                                <GroupBox 
+                                    Grid.Column="0"
+                                    Header="Einstellungen"
+                                    Margin="0,0,10,0"
+                                    Padding="10">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <!--  Public Folder  -->
+                                        <TextBlock
+                                            Grid.Row="0"
+                                            Grid.Column="0"
+                                            Margin="0,0,10,5"
+                                            VerticalAlignment="Center"
+                                            Text="Öffentlicher Ordner:" />
+                                        <TextBox
+                                            x:Name="txtPublicFolderPath"
+                                            Grid.Row="0"
+                                            Grid.Column="1"
+                                            Height="25"
+                                            Margin="0,0,0,5"
+                                            ToolTip="Pfad des öffentlichen Ordners (z.B. '\Ordnername' oder '\Ordner\Unterordner')" />
+
+                                        <!--  Zielbenutzer  -->
+                                        <TextBlock
+                                            Grid.Row="1"
+                                            Grid.Column="0"
+                                            Margin="0,0,10,5"
+                                            VerticalAlignment="Center"
+                                            Text="Benutzer/Gruppe:" />
+                                        <TextBox
+                                            x:Name="txtPublicFolderUser"
+                                            Grid.Row="1"
+                                            Grid.Column="1"
+                                            Height="25"
+                                            Margin="0,0,0,5"
+                                            ToolTip="E-Mail-Adresse des Benutzers oder der Gruppe, der/die Zugriff erhalten soll" />
+
+                                        <!--  Berechtigungstyp  -->
+                                        <TextBlock
+                                            Grid.Row="2"
+                                            Grid.Column="0"
+                                            Margin="0,0,10,5"
+                                            VerticalAlignment="Center"
+                                            Text="Berechtigungstyp:" />
+                                        <ComboBox
+                                            x:Name="cmbPublicFolderPermission"
+                                            Grid.Row="2"
+                                            Grid.Column="1"
+                                            Height="25"
+                                            Margin="0,0,0,5">
+                                            <ComboBoxItem Content="Keine" ToolTip="Keine Berechtigung" />
+                                            <ComboBoxItem Content="Owner" ToolTip="Besitzer - Voller Zugriff und Eigentümerrechte" />
+                                            <ComboBoxItem Content="PublishingEditor" ToolTip="Alle Elemente erstellen, lesen, bearbeiten, löschen und Unterordner erstellen" />
+                                            <ComboBoxItem Content="Editor" ToolTip="Alle Elemente erstellen, lesen, bearbeiten und löschen" />
+                                            <ComboBoxItem Content="PublishingAuthor" ToolTip="Alle Elemente erstellen und lesen, nur eigene bearbeiten und löschen, Unterordner erstellen" />
+                                            <ComboBoxItem Content="Author" ToolTip="Alle Elemente erstellen und lesen, nur eigene bearbeiten und löschen" />
+                                            <ComboBoxItem Content="NonEditingAuthor" ToolTip="Alle Elemente erstellen und lesen, nur eigene löschen" />
+                                            <ComboBoxItem Content="Reviewer" ToolTip="Nur Leserechte auf alle Elemente" />
+                                            <ComboBoxItem Content="Contributor" ToolTip="Nur Erstellungsrechte, keine Ansicht des Inhalts" />
+                                            <ComboBoxItem Content="CreateItems" ToolTip="Nur Erstellungsrechte für Elemente" />
+                                            <ComboBoxItem Content="ReadItems" ToolTip="Nur Leserechte für Elemente" />
+                                        </ComboBox>
+                                    </Grid>
+                                </GroupBox>
+
+                                <!-- Rechte Box: Aktions-Buttons -->
+                                <GroupBox 
+                                    Grid.Column="1"
+                                    Header="Aktionen"
+                                    Margin="0,0,0,0"
+                                    Padding="10">
+                                    <StackPanel>
+                                        <Button
+                                            x:Name="btnPublicFolderAddPermission"
+                                            Width="180"
+                                            Height="30"
+                                            Margin="0,0,0,10"
+                                            Style="{StaticResource ButtonStyle}"
+                                            Content="Berechtigung hinzufügen" />
+                                        <Button
+                                            x:Name="btnPublicFolderRemovePermission"
+                                            Width="180"
+                                            Height="30"
+                                            Margin="0,0,0,10"
+                                            Style="{StaticResource ButtonStyle}"
+                                            Content="Berechtigung entfernen" />
+                                        <Button
+                                            x:Name="btnPublicFolderGetPermissions"
+                                            Width="180"
+                                            Height="30"
+                                            Style="{StaticResource ButtonStyle}"
+                                            Content="Berechtigungen abrufen" />
+                                    </StackPanel>
+                                </GroupBox>
+                            </Grid>
+                        </GroupBox>
+
+                        <!-- Public Folder Auswahl und Suche -->
+                        <GroupBox
+                            Grid.Row="1"
+                            Margin="0,0,0,10"
+                            Padding="10"
+                            Header="Öffentliche Ordner durchsuchen"
+                            Style="{StaticResource GroupBoxStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <!-- Suchfeld -->
+                                <DockPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,0">
+                                    <TextBlock
+                                        Width="130"
+                                        VerticalAlignment="Center"
+                                        Text="Ordner suchen:" />
+                                    <TextBox
+                                        x:Name="txtPublicFolderSearch"
+                                        Height="25"
+                                        ToolTip="Suche nach öffentlichen Ordnern (z.B. '*marketing*' für alle Ordner, die 'marketing' enthalten)" />
+                                </DockPanel>
+
+                                <Button
+                                    x:Name="btnPublicFolderSearch"
+                                    Grid.Row="0"
+                                    Grid.Column="1"
+                                    Width="100"
+                                    Height="30"
+                                    Style="{StaticResource ButtonStyle}"
+                                    Content="Suchen" />
+
+                                <!-- Hinweis zur Struktur -->
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Grid.Column="0"
+                                    Grid.ColumnSpan="2"
+                                    Margin="0,10,0,0"
+                                    TextWrapping="Wrap"
+                                    FontStyle="Italic"
+                                    Text="Tipp: Verwenden Sie Wildcards wie '*' für die Suche. Beispiel: '*Finance*' findet alle Ordner, die 'Finance' im Namen enthalten." />
+                            </Grid>
+                        </GroupBox>
+
+                        <!--  Ergebnis der Public Folder Berechtigungen  -->
+                        <GroupBox
+                            Grid.Row="2"
+                            Margin="0,0,0,10"
+                            Padding="10"
+                            Header="Aktuelle Berechtigungen"
+                            Style="{StaticResource GroupBoxStyle}">
+                            <DataGrid
+                                x:Name="dgPublicFolderPermissions"
+                                Height="180"
+                                AutoGenerateColumns="False"
+                                IsReadOnly="True">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn
+                                        Width="2*"
+                                        Binding="{Binding Identity}"
+                                        Header="Öffentlicher Ordner" />
+                                    <DataGridTextColumn
+                                        Width="*"
+                                        Binding="{Binding User}"
+                                        Header="Benutzer/Gruppe" />
+                                    <DataGridTextColumn
+                                        Width="*"
+                                        Binding="{Binding AccessRights}"
+                                        Header="Zugriffsrechte" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </GroupBox>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+        </Grid>
+        <!--  Footer mit Webseite  -->
+        <Grid Grid.Row="3" Background="{StaticResource ThemeColorLight}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!--  Status Information  -->
+            <StackPanel
+                Grid.Column="0"
+                Margin="10,0"
+                Orientation="Horizontal">
+                <TextBlock
+                    x:Name="txtStatus"
+                    VerticalAlignment="Center"
+                    Text="Bereit" />
+                <Separator Margin="10,0" Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
+                <TextBlock
+                    x:Name="txtVersion"
+                    VerticalAlignment="Center"
+                    Text="Version 0.0.1" />
+                <Separator Margin="10,0" Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
+                <TextBlock
+                    x:Name="txtConnectionStatus"
+                    VerticalAlignment="Center"
+                    Text="Nicht verbunden" />
+            </StackPanel>
+
+            <!--  Verlinkte Webseite  -->
+            <TextBlock
+                x:Name="txtWebsite"
+                Grid.Column="1"
+                Margin="0,0,20,0"
+                VerticalAlignment="Center"
+                Cursor="Hand"
+                Foreground="{StaticResource ThemeColorDark}"
+                Text="www.phinit.de"
+                TextDecorations="Underline" />
+        </Grid>
+    </Grid>
+</Window>
