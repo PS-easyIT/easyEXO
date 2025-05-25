@@ -1,0 +1,697 @@
+2025-05-24 14:00:02 - Aktueller Status: PowerShell Version 7.5.1, Läuft als Administrator: True
+2025-05-24 14:00:02 - Optimale Bedingungen (PowerShell 7+ und Administratorrechte) sind erfüllt.
+2025-05-24 14:00:02 - Prüfe und initialisiere Registry-Konfiguration unter 'HKCU:\Software\easyIT\easyEXO'.
+2025-05-24 14:00:02 - Registry-Version ('0.0.9') ist aktuell mit Skript-Version ('0.0.9'). Keine Aktualisierung der Standardwerte erforderlich.
+[2025-05-24 14:00:02] [Info] Lade XAML von: \\192.168.100.15\Daten1\06-Scripts\!PS-easyIT\#GitHub-Repos\easyEXO\assets\EXOGUI.xaml
+[2025-05-24 14:00:02] [Info] TabControl hat 11 Items
+[2025-05-24 14:00:02] [Info] Tab gefunden: Name=tabCalendar, Header=Kalenderberechtigungen, Visibility=Collapsed
+[2025-05-24 14:00:02] [Info] Tab gefunden: Name=tabMailbox, Header=Postfachberechtigungen, Visibility=Collapsed
+[2025-05-24 14:00:02] [Info] Tab gefunden: Name=tabMailboxAudit, Header=Audit & Information, Visibility=Collapsed
+[2025-05-24 14:00:02] [Info] Tab gefunden: Name=tabTroubleshooting, Header=Troubleshooting, Visibility=Collapsed
+[2025-05-24 14:00:02] [Info] Tab gefunden: Name=tabEXOSettings, Header=Allg. EXO Settings, Visibility=Collapsed
+[2025-05-24 14:00:02] [Info] Tab gefunden: Name=tabGroups, Header=Gruppen / Verteiler, Visibility=Collapsed
+[2025-05-24 14:00:02] [Info] Tab gefunden: Name=tabSharedMailbox, Header=Shared Mailboxes, Visibility=Collapsed
+[2025-05-24 14:00:02] [Info] Tab gefunden: Name=tabResources, Header=Ressourcen, Visibility=Collapsed
+[2025-05-24 14:00:02] [Info] Tab gefunden: Name=tabContacts, Header=Kontakte, Visibility=Collapsed
+[2025-05-24 14:00:02] [Info] Tab gefunden: Name=tabReports, Header=Berichte & Export, Visibility=Collapsed
+[2025-05-24 14:00:03] [Info] Tab gefunden: Name=tabRegion, Header=Regionaleinstellungen, Visibility=Collapsed
+[2025-05-24 14:00:03] [Info] Event-Handler f?r btnShowConnectionStatus hinzugef?gt.
+[2025-05-24 14:00:03] [Info] Event-Handler f?r btnSettings hinzugef?gt.
+[2025-05-24 14:00:03] [Info] Event-Handler f?r btnInfo hinzugef?gt.
+[2025-05-24 14:00:03] [Info] Event-Handler f?r btnClose hinzugef?gt.
+[2025-05-24 14:00:03] [Info] Event-Handler f?r Header-Buttons erfolgreich registriert.
+[2025-05-24 14:00:03] ?ffne GUI-Fenster
+[2025-05-24 14:00:03] TabControl Status vor ShowDialog: Items=11
+[2025-05-24 14:00:03] Tab vorhanden: tabCalendar
+[2025-05-24 14:00:03] Tab vorhanden: tabMailbox
+[2025-05-24 14:00:03] Tab vorhanden: tabMailboxAudit
+[2025-05-24 14:00:03] Tab vorhanden: tabTroubleshooting
+[2025-05-24 14:00:03] Tab vorhanden: tabEXOSettings
+[2025-05-24 14:00:03] Tab vorhanden: tabGroups
+[2025-05-24 14:00:03] Tab vorhanden: tabSharedMailbox
+[2025-05-24 14:00:03] Tab vorhanden: tabResources
+[2025-05-24 14:00:03] Tab vorhanden: tabContacts
+[2025-05-24 14:00:03] Tab vorhanden: tabReports
+[2025-05-24 14:00:03] Tab vorhanden: tabRegion
+[2025-05-24 14:00:03] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:00:03] GUI-Loaded-Event ausgel?st, initialisiere Komponenten
+[2025-05-24 14:00:03] [Info] Beginne Initialisierung: EXO Settings Tab
+[2025-05-24 14:00:03] [Debug] EXOSettingsTab: Pr?fe Verbindung nicht bei Initialisierung, nur Event Handler setzen.
+[2025-05-24 14:00:04] [Debug] EXOSettingsTab: HelpLink Handler registriert.
+[2025-05-24 14:00:04] [Debug] EXOSettingsTab: btnGetOrganizationConfig Handler registriert.
+[2025-05-24 14:00:04] [Debug] EXOSettingsTab: btnSetOrganizationConfig Handler registriert.
+[2025-05-24 14:00:04] [Debug] EXOSettingsTab: btnExportOrganizationConfig Handler registriert.
+[2025-05-24 14:00:04] [Debug] EXOSettingsTab: Sichtbarkeit f?r Elemente in knownUIElements ?berpr?ft.
+[2025-05-24 14:00:04] [Debug] EXOSettingsTab: Rufe Initialize-OrganizationConfigControls auf...
+[2025-05-24 14:00:04] [Info] Event-Handler f?r chkAppsForOfficeEnabled.Click registriert
+[2025-05-24 14:00:04] [Debug] CheckBox 'chkAppsForOfficeEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:04] [Info] Event-Handler f?r chkFocusedInboxOn.Click registriert
+[2025-05-24 14:00:04] [Debug] CheckBox 'chkFocusedInboxOn' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:04] [Info] Event-Handler f?r chkReadTrackingEnabled.Click registriert
+[2025-05-24 14:00:04] [Debug] CheckBox 'chkReadTrackingEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:04] [Info] Event-Handler f?r chkSendFromAliasEnabled.Click registriert
+[2025-05-24 14:00:04] [Debug] CheckBox 'chkSendFromAliasEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:04] [Info] Event-Handler f?r chkLinkPreviewEnabled.Click registriert
+[2025-05-24 14:00:04] [Debug] CheckBox 'chkLinkPreviewEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:04] [Info] Event-Handler f?r chkMessageRecallEnabled.Click registriert
+[2025-05-24 14:00:04] [Debug] CheckBox 'chkMessageRecallEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:04] [Info] Event-Handler f?r chkRecallReadMessagesEnabled.Click registriert
+[2025-05-24 14:00:04] [Debug] CheckBox 'chkRecallReadMessagesEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:04] [Info] Event-Handler f?r cmbShortenEventScopeDefault.SelectionChanged registriert
+[2025-05-24 14:00:04] [Debug] ComboBox 'cmbShortenEventScopeDefault' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:04] [Info] Event-Handler f?r txtDefaultMinutesToReduceShortEventsBy.TextChanged registriert
+[2025-05-24 14:00:04] [Debug] TextBox 'txtDefaultMinutesToReduceShortEventsBy' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:04] [Info] Event-Handler f?r txtDefaultMinutesToReduceLongEventsBy.TextChanged registriert
+[2025-05-24 14:00:04] [Debug] TextBox 'txtDefaultMinutesToReduceLongEventsBy' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:04] [Info] Event-Handler f?r chkAsyncSendEnabled.Click registriert
+[2025-05-24 14:00:04] [Debug] CheckBox 'chkAsyncSendEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:04] [Info] Event-Handler f?r chkOutlookGifPickerDisabled.Click registriert
+[2025-05-24 14:00:05] [Debug] CheckBox 'chkOutlookGifPickerDisabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:05] [Info] Event-Handler f?r chkWebPushNotificationsDisabled.Click registriert
+[2025-05-24 14:00:05] [Debug] CheckBox 'chkWebPushNotificationsDisabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:05] [Info] Event-Handler f?r chkWebSuggestedRepliesDisabled.Click registriert
+[2025-05-24 14:00:05] [Debug] CheckBox 'chkWebSuggestedRepliesDisabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:05] [Info] Event-Handler f?r chkMessageRemindersEnabled.Click registriert
+[2025-05-24 14:00:05] [Debug] CheckBox 'chkMessageRemindersEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:05] [Info] Event-Handler f?r chkOutlookPayEnabled.Click registriert
+[2025-05-24 14:00:05] [Debug] CheckBox 'chkOutlookPayEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:05] [Info] Event-Handler f?r chkOutlookTextPredictionDisabled.Click registriert
+[2025-05-24 14:00:05] [Debug] CheckBox 'chkOutlookTextPredictionDisabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:05] [Info] Event-Handler f?r chkEnableOutlookEvents.Click registriert
+[2025-05-24 14:00:05] [Debug] CheckBox 'chkEnableOutlookEvents' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:05] [Info] Event-Handler f?r chkActivityBasedAuthenticationTimeoutEnabled.Click registriert
+[2025-05-24 14:00:05] [Debug] CheckBox 'chkActivityBasedAuthenticationTimeoutEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:05] [Info] Event-Handler f?r txtActivityBasedAuthenticationTimeoutInterval.TextChanged registriert
+[2025-05-24 14:00:05] [Debug] TextBox 'txtActivityBasedAuthenticationTimeoutInterval' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:05] [Info] Event-Handler f?r chkActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled.Click registriert
+[2025-05-24 14:00:05] [Debug] CheckBox 'chkActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:05] [Info] Event-Handler f?r chkOwaRedirectToOD4BThisUserEnabled.Click registriert
+[2025-05-24 14:00:05] [Debug] CheckBox 'chkOwaRedirectToOD4BThisUserEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:05] [Info] Event-Handler f?r chkPublicComputersDetectionEnabled.Click registriert
+[2025-05-24 14:00:05] [Debug] CheckBox 'chkPublicComputersDetectionEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:05] [Info] Event-Handler f?r chkBookingsEnabled.Click registriert
+[2025-05-24 14:00:05] [Debug] CheckBox 'chkBookingsEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:05] [Info] Event-Handler f?r chkBookingsAddressEntryRestricted.Click registriert
+[2025-05-24 14:00:05] [Debug] CheckBox 'chkBookingsAddressEntryRestricted' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:05] [Info] Event-Handler f?r chkBookingsAuthEnabled.Click registriert
+[2025-05-24 14:00:05] [Debug] CheckBox 'chkBookingsAuthEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:06] [Info] Event-Handler f?r chkBookingsCreationOfCustomQuestionsRestricted.Click registriert
+[2025-05-24 14:00:06] [Debug] CheckBox 'chkBookingsCreationOfCustomQuestionsRestricted' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:06] [Info] Event-Handler f?r chkBookingsExposureOfStaffDetailsRestricted.Click registriert
+[2025-05-24 14:00:06] [Debug] CheckBox 'chkBookingsExposureOfStaffDetailsRestricted' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:06] [Info] Event-Handler f?r chkBookingsMembershipApprovalRequired.Click registriert
+[2025-05-24 14:00:06] [Debug] CheckBox 'chkBookingsMembershipApprovalRequired' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:06] [Info] Event-Handler f?r chkBookingsNotesEntryRestricted.Click registriert
+[2025-05-24 14:00:06] [Debug] CheckBox 'chkBookingsNotesEntryRestricted' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:06] [Info] Event-Handler f?r chkBookingsPaymentsEnabled.Click registriert
+[2025-05-24 14:00:06] [Debug] CheckBox 'chkBookingsPaymentsEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:06] [Info] Event-Handler f?r chkBookingsPhoneNumberEntryRestricted.Click registriert
+[2025-05-24 14:00:06] [Debug] CheckBox 'chkBookingsPhoneNumberEntryRestricted' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:06] [Info] Event-Handler f?r chkBookingsSocialSharingRestricted.Click registriert
+[2025-05-24 14:00:06] [Debug] CheckBox 'chkBookingsSocialSharingRestricted' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:06] [Info] Event-Handler f?r chkBookingsSmsMicrosoftEnabled.Click registriert
+[2025-05-24 14:00:06] [Debug] CheckBox 'chkBookingsSmsMicrosoftEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:06] [Info] Event-Handler f?r chkBookingsSchedulingPolicyEnabled.Click registriert
+[2025-05-24 14:00:06] [Debug] CheckBox 'chkBookingsSchedulingPolicyEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:06] [Info] Event-Handler f?r txtBookingsSchedulingPolicy.TextChanged registriert
+[2025-05-24 14:00:06] [Debug] TextBox 'txtBookingsSchedulingPolicy' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:06] [Info] Event-Handler f?r chkBookingsStaffControlEnabled.Click registriert
+[2025-05-24 14:00:06] [Debug] CheckBox 'chkBookingsStaffControlEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:06] [Info] Event-Handler f?r chkBookingsAvailabilityAndPricingEnabled.Click registriert
+[2025-05-24 14:00:06] [Debug] CheckBox 'chkBookingsAvailabilityAndPricingEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:06] [Info] Event-Handler f?r chkBookingsCustomizationEnabled.Click registriert
+[2025-05-24 14:00:06] [Debug] CheckBox 'chkBookingsCustomizationEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:06] [Info] Event-Handler f?r chkBookingsInternalSharingEnabled.Click registriert
+[2025-05-24 14:00:06] [Debug] CheckBox 'chkBookingsInternalSharingEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:06] [Info] Event-Handler f?r chkBookingsExternalSharingEnabled.Click registriert
+[2025-05-24 14:00:06] [Debug] CheckBox 'chkBookingsExternalSharingEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:06] [Info] Event-Handler f?r chkBookingsOnlinePaymentEnabled.Click registriert
+[2025-05-24 14:00:07] [Debug] CheckBox 'chkBookingsOnlinePaymentEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:07] [Info] Event-Handler f?r chkBookingsBusinessHoursEnabled.Click registriert
+[2025-05-24 14:00:07] [Debug] CheckBox 'chkBookingsBusinessHoursEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:07] [Info] Event-Handler f?r chkBookingsCustomerDataUsageEnabled.Click registriert
+[2025-05-24 14:00:07] [Debug] CheckBox 'chkBookingsCustomerDataUsageEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:07] [Info] Event-Handler f?r chkBookingsDataExportEnabled.Click registriert
+[2025-05-24 14:00:07] [Debug] CheckBox 'chkBookingsDataExportEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:07] [Info] Event-Handler f?r chkBookingsSearchEngineIndexDisabled.Click registriert
+[2025-05-24 14:00:07] [Debug] CheckBox 'chkBookingsSearchEngineIndexDisabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:07] [Info] Event-Handler f?r chkBookingsPersonalDataCollectionAndUseConsentRequired.Click registriert
+[2025-05-24 14:00:07] [Debug] CheckBox 'chkBookingsPersonalDataCollectionAndUseConsentRequired' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:07] [Info] Event-Handler f?r chkAuditDisabled.Click registriert
+[2025-05-24 14:00:07] [Debug] CheckBox 'chkAuditDisabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:07] [Info] Event-Handler f?r chkAutoEnableArchiveMailbox.Click registriert
+[2025-05-24 14:00:07] [Debug] CheckBox 'chkAutoEnableArchiveMailbox' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:07] [Info] Event-Handler f?r chkAutoExpandingArchive.Click registriert
+[2025-05-24 14:00:07] [Debug] CheckBox 'chkAutoExpandingArchive' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:07] [Info] Event-Handler f?r chkComplianceEnabled.Click registriert
+[2025-05-24 14:00:07] [Debug] CheckBox 'chkComplianceEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:07] [Info] Event-Handler f?r chkCustomerLockboxEnabled.Click registriert
+[2025-05-24 14:00:07] [Debug] CheckBox 'chkCustomerLockboxEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:07] [Info] Event-Handler f?r chkElcProcessingDisabled.Click registriert
+[2025-05-24 14:00:07] [Debug] CheckBox 'chkElcProcessingDisabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:07] [Info] Event-Handler f?r chkMailTipsExternalRecipientsTipsEnabled.Click registriert
+[2025-05-24 14:00:07] [Debug] CheckBox 'chkMailTipsExternalRecipientsTipsEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:07] [Info] Event-Handler f?r chkMailTipsGroupMetricsEnabled.Click registriert
+[2025-05-24 14:00:07] [Debug] CheckBox 'chkMailTipsGroupMetricsEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:07] [Info] Event-Handler f?r chkMailTipsLargeAudienceThreshold.Click registriert
+[2025-05-24 14:00:07] [Debug] CheckBox 'chkMailTipsLargeAudienceThreshold' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:07] [Info] Event-Handler f?r txtMailTipsLargeAudienceThreshold.TextChanged registriert
+[2025-05-24 14:00:07] [Debug] TextBox 'txtMailTipsLargeAudienceThreshold' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:07] [Info] Event-Handler f?r chkMailTipsMailboxSourcedTipsEnabled.Click registriert
+[2025-05-24 14:00:08] [Debug] CheckBox 'chkMailTipsMailboxSourcedTipsEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:08] [Info] Event-Handler f?r chkConnectorsEnabled.Click registriert
+[2025-05-24 14:00:08] [Debug] CheckBox 'chkConnectorsEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:08] [Info] Event-Handler f?r chkConnectorsActionableMessagesEnabled.Click registriert
+[2025-05-24 14:00:08] [Debug] CheckBox 'chkConnectorsActionableMessagesEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:08] [Info] Event-Handler f?r chkConnectorsEnabledForOutlook.Click registriert
+[2025-05-24 14:00:08] [Debug] CheckBox 'chkConnectorsEnabledForOutlook' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:08] [Info] Event-Handler f?r chkConnectorsEnabledForSharepoint.Click registriert
+[2025-05-24 14:00:08] [Debug] CheckBox 'chkConnectorsEnabledForSharepoint' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:08] [Info] Event-Handler f?r chkConnectorsEnabledForTeams.Click registriert
+[2025-05-24 14:00:08] [Debug] CheckBox 'chkConnectorsEnabledForTeams' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:08] [Info] Event-Handler f?r chkConnectorsEnabledForYammer.Click registriert
+[2025-05-24 14:00:08] [Debug] CheckBox 'chkConnectorsEnabledForYammer' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:08] [Info] Event-Handler f?r chkSmtpActionableMessagesEnabled.Click registriert
+[2025-05-24 14:00:08] [Debug] CheckBox 'chkSmtpActionableMessagesEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:08] [Info] Event-Handler f?r chkPublicFolderShowClientControl.Click registriert
+[2025-05-24 14:00:08] [Debug] CheckBox 'chkPublicFolderShowClientControl' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:08] [Info] Event-Handler f?r chkAutodiscoverPartialDirSync.Click registriert
+[2025-05-24 14:00:08] [Debug] CheckBox 'chkAutodiscoverPartialDirSync' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:08] [Info] Event-Handler f?r chkWorkspaceTenantEnabled.Click registriert
+[2025-05-24 14:00:08] [Debug] CheckBox 'chkWorkspaceTenantEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:08] [Info] Event-Handler f?r chkAdditionalStorageProvidersBlocked.Click registriert
+[2025-05-24 14:00:08] [Debug] CheckBox 'chkAdditionalStorageProvidersBlocked' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:08] [Info] Event-Handler f?r txtDefaultPublicFolderMaxItemSize.TextChanged registriert
+[2025-05-24 14:00:08] [Debug] TextBox 'txtDefaultPublicFolderMaxItemSize' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:08] [Info] Event-Handler f?r txtDefaultPublicFolderIssueWarningQuota.TextChanged registriert
+[2025-05-24 14:00:08] [Debug] TextBox 'txtDefaultPublicFolderIssueWarningQuota' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:08] [Info] Event-Handler f?r txtDefaultPublicFolderProhibitPostQuota.TextChanged registriert
+[2025-05-24 14:00:08] [Debug] TextBox 'txtDefaultPublicFolderProhibitPostQuota' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:08] [Info] Event-Handler f?r txtDefaultPublicFolderAgeLimit.TextChanged registriert
+[2025-05-24 14:00:09] [Debug] TextBox 'txtDefaultPublicFolderAgeLimit' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:09] [Info] Event-Handler f?r txtDefaultPublicFolderDeletedItemRetention.TextChanged registriert
+[2025-05-24 14:00:09] [Debug] TextBox 'txtDefaultPublicFolderDeletedItemRetention' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:09] [Info] Event-Handler f?r txtDefaultPublicFolderMovedItemRetention.TextChanged registriert
+[2025-05-24 14:00:09] [Debug] TextBox 'txtDefaultPublicFolderMovedItemRetention' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:09] [Info] Event-Handler f?r txtRemotePublicFolderMailboxes.TextChanged registriert
+[2025-05-24 14:00:09] [Debug] TextBox 'txtRemotePublicFolderMailboxes' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:09] [Info] Event-Handler f?r chkSIPEnabled.Click registriert
+[2025-05-24 14:00:09] [Debug] CheckBox 'chkSIPEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:09] [Info] Event-Handler f?r chkRemotePublicFolderBlobsEnabled.Click registriert
+[2025-05-24 14:00:09] [Debug] CheckBox 'chkRemotePublicFolderBlobsEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:09] [Info] Event-Handler f?r chkMapiHttpEnabled.Click registriert
+[2025-05-24 14:00:09] [Debug] CheckBox 'chkMapiHttpEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:09] [Info] Event-Handler f?r chkCalendarVersionStoreEnabled.Click registriert
+[2025-05-24 14:00:09] [Debug] CheckBox 'chkCalendarVersionStoreEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:09] [Info] Event-Handler f?r chkEcRequiresTls.Click registriert
+[2025-05-24 14:00:09] [Debug] CheckBox 'chkEcRequiresTls' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:09] [Info] Event-Handler f?r chkPreferredInternetCodePageForShiftJis.Click registriert
+[2025-05-24 14:00:09] [Debug] CheckBox 'chkPreferredInternetCodePageForShiftJis' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:09] [Info] Event-Handler f?r txtPreferredInternetCodePageForShiftJis.TextChanged registriert
+[2025-05-24 14:00:09] [Debug] TextBox 'txtPreferredInternetCodePageForShiftJis' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:09] [Info] Event-Handler f?r chkSearchQueryLanguage.Click registriert
+[2025-05-24 14:00:09] [Debug] CheckBox 'chkSearchQueryLanguage' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:09] [Info] Event-Handler f?r cmbSearchQueryLanguage.SelectionChanged registriert
+[2025-05-24 14:00:09] [Debug] ComboBox 'cmbSearchQueryLanguage' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:09] [Info] Event-Handler f?r chkVisibilityEnabled.Click registriert
+[2025-05-24 14:00:09] [Debug] CheckBox 'chkVisibilityEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:09] [Info] Event-Handler f?r chkOnlineMeetingsByDefaultEnabled.Click registriert
+[2025-05-24 14:00:09] [Debug] CheckBox 'chkOnlineMeetingsByDefaultEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:09] [Info] Event-Handler f?r chkDirectReportsGroupAutoCreationEnabled.Click registriert
+[2025-05-24 14:00:09] [Debug] CheckBox 'chkDirectReportsGroupAutoCreationEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:09] [Info] Event-Handler f?r chkUnblockUnsafeSenderPromptEnabled.Click registriert
+[2025-05-24 14:00:10] [Debug] CheckBox 'chkUnblockUnsafeSenderPromptEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:10] [Info] Event-Handler f?r chkExecutiveAttestation.Click registriert
+[2025-05-24 14:00:10] [Debug] CheckBox 'chkExecutiveAttestation' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:10] [Info] Event-Handler f?r chkPDPLocationEnabled.Click registriert
+[2025-05-24 14:00:10] [Debug] CheckBox 'chkPDPLocationEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:10] [Info] Event-Handler f?r txtPowerShellMaxConcurrency.TextChanged registriert
+[2025-05-24 14:00:10] [Debug] TextBox 'txtPowerShellMaxConcurrency' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:10] [Info] Event-Handler f?r txtPowerShellMaxCmdletQueueDepth.TextChanged registriert
+[2025-05-24 14:00:10] [Debug] TextBox 'txtPowerShellMaxCmdletQueueDepth' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:10] [Info] Event-Handler f?r txtPowerShellMaxCmdletsExecutionDuration.TextChanged registriert
+[2025-05-24 14:00:10] [Debug] TextBox 'txtPowerShellMaxCmdletsExecutionDuration' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:00:10] [Info] Registrierte Controls: CheckBoxes: 76, ComboBoxes: 2, TextBoxes: 16
+[2025-05-24 14:00:10] [Debug] EXOSettingsTab: Initialize-OrganizationConfigControls Ergebnis: True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True
+[2025-05-24 14:00:10] [Debug] EXOSettingsTab: Tab auf sichtbar gesetzt.
+[2025-05-24 14:00:10] [Warning] EXOSettingsTab: Haupt-TabControl 'mainTabControl' nicht gefunden.
+[2025-05-24 14:00:10] [Success] Abschluss Initialisierung: EXO Settings Tab (Erfolg: True)
+[2025-05-24 14:00:10] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:00:10] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:00:10] [Info] Event-Handler f?r btnAddCalendarPermission.Click registriert
+[2025-05-24 14:00:10] [Info] Event-Handler f?r btnRemoveCalendarPermission.Click registriert
+[2025-05-24 14:00:10] [Info] Event-Handler f?r btnShowCalendarPermissions.Click registriert
+[2025-05-24 14:00:10] [Info] Event-Handler f?r btnSetDefaultPermission.Click registriert
+[2025-05-24 14:00:10] [Info] Event-Handler f?r btnSetAnonymousPermission.Click registriert
+[2025-05-24 14:00:10] [Info] Event-Handler f?r btnSetAllCalPermission.Click registriert
+[2025-05-24 14:00:10] [Info] Event-Handler f?r btnExportCalendarPermissions.Click registriert
+[2025-05-24 14:00:10] [Info] Event-Handler f?r btnAddMailboxPermission.Click registriert
+[2025-05-24 14:00:10] [Info] Event-Handler f?r btnRemoveMailboxPermission.Click registriert
+[2025-05-24 14:00:10] [Info] Event-Handler f?r btnShowMailboxPermissions.Click registriert
+[2025-05-24 14:00:11] [Info] Event-Handler f?r btnAddSendAs.Click registriert
+[2025-05-24 14:00:11] [Info] Event-Handler f?r btnRemoveSendAs.Click registriert
+[2025-05-24 14:00:11] [Info] Event-Handler f?r btnShowSendAs.Click registriert
+[2025-05-24 14:00:11] [Info] Event-Handler f?r btnAddSendOnBehalf.Click registriert
+[2025-05-24 14:00:11] [Info] Event-Handler f?r btnRemoveSendOnBehalf.Click registriert
+[2025-05-24 14:00:11] [Info] Event-Handler f?r btnShowSendOnBehalf.Click registriert
+[2025-05-24 14:00:11] [Info] Event-Handler f?r btnRunAudit.Click registriert
+[2025-05-24 14:00:11] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:00:11] [Success] Audit-Tab erfolgreich initialisiert
+[2025-05-24 14:00:11] [Info] Initialisiere Troubleshooting-Tab
+[2025-05-24 14:00:11] [Info] Event-Handler f?r btnRunDiagnostic.Click registriert
+[2025-05-24 14:00:11] [Info] Event-Handler f?r btnAdminCenter.Click registriert
+[2025-05-24 14:00:11] [Success] Troubleshooting-Tab erfolgreich initialisiert
+[2025-05-24 14:00:11] [Info] Initialisiere Gruppen-Tab...
+[2025-05-24 14:00:11] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:00:11] [Info] Event-Handler f?r btnRefreshExistingGroups.Click registriert
+[2025-05-24 14:00:11] [Info] Aktualisiere Gruppenliste in ComboBox 'cmbSelectExistingGroup'
+[2025-05-24 14:00:11] [Debug] StatusBar aktualisiert: [Info] Aktualisiere Gruppen-Dropdown...
+[2025-05-24 14:00:11] [Info] Rufe alle relevanten Gruppen ab (Verteiler, E-Mail-aktivierte Sicherheitsgruppen, Microsoft 365-Gruppen)
+[2025-05-24 14:00:11] [Debug] StatusBar aktualisiert: [Info] Rufe alle Gruppentypen ab...
+[2025-05-24 14:00:11] [Error] Fehler beim Abrufen der Gruppen: The term 'Get-DistributionGroup' is not recognized as a name of a cmdlet, function, script file, or executable program.??Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[2025-05-24 14:00:11] [Debug] StatusBar aktualisiert: [Error] Fehler beim Abrufen der Gruppen.
+2025-05-24 14:00:15 - Fehler Gruppenabruf - Error - Fehler beim Abrufen der Gruppen: The term 'Get-DistributionGroup' is not recognized as a name of a cmdlet, function, script file, or executable program.
+Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[2025-05-24 14:00:15] [Success] Gruppenliste aktualisiert. 1 Gruppen geladen.
+[2025-05-24 14:00:15] [Debug] StatusBar aktualisiert: [Success] Gruppenliste aktualisiert. 1 Gruppen geladen.
+[2025-05-24 14:00:15] [Info] Event-Handler f?r btnCreateGroup.Click registriert
+[2025-05-24 14:00:15] [Info] Event-Handler f?r btnDeleteGroup.Click registriert
+[2025-05-24 14:00:15] [Info] Event-Handler f?r btnAddUserToGroup.Click registriert
+[2025-05-24 14:00:15] [Info] Event-Handler f?r btnRemoveUserFromGroup.Click registriert
+[2025-05-24 14:00:15] [Info] Event-Handler f?r btnShowGroupMembers.Click registriert
+[2025-05-24 14:00:15] [Info] Event-Handler f?r btnUpdateGroupSettings.Click registriert
+[2025-05-24 14:00:16] [Info] Event-Handler f?r btnExportGroupMembers.Click registriert
+[2025-05-24 14:00:16] [Info] Initialize-GroupsTab erfolgreich abgeschlossen.
+[2025-05-24 14:00:16] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:00:16] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:00:16] [Info] Event-Handler f?r btnCreateSharedMailbox.Click registriert
+[2025-05-24 14:00:16] [Info] Event-Handler f?r btnConvertToShared.Click registriert
+[2025-05-24 14:00:16] [Info] Event-Handler f?r btnAddSharedMailboxPermission.Click registriert
+[2025-05-24 14:00:16] [Info] Event-Handler f?r btnRemoveSharedMailboxPermission.Click registriert
+[2025-05-24 14:00:16] [Info] Event-Handler f?r UnknownControl.Click registriert
+[2025-05-24 14:00:16] [Info] Event-Handler f?r btnShowSharedMailboxPerms.Click registriert
+[2025-05-24 14:00:16] [Info] Event-Handler f?r btnGetForwardingMailboxes.Click registriert
+[2025-05-24 14:00:16] [Info] Event-Handler f?r btnUpdateAutoMapping.Click registriert
+[2025-05-24 14:00:16] [Info] Event-Handler f?r btnSetForwarding.Click registriert
+[2025-05-24 14:00:16] [Info] Event-Handler f?r btnRemoveForwarding.Click registriert
+[2025-05-24 14:00:16] [Info] Event-Handler f?r btnShowInGAL.Click registriert
+[2025-05-24 14:00:16] [Info] Event-Handler f?r btnRemoveSharedMailbox.Click registriert
+[2025-05-24 14:00:16] [Info] Initialisiere Kontakte-Tab
+[2025-05-24 14:00:16] [Info] Event-Handler f?r btnCreateContact.Click registriert
+[2025-05-24 14:00:16] [Info] Event-Handler f?r btnShowMailContacts.Click registriert
+[2025-05-24 14:00:16] [Info] Event-Handler f?r btnShowMailUsers registrieren
+[2025-05-24 14:00:16] [Info] Event-Handler f?r btnShowMailUsers.Click registriert
+[2025-05-24 14:00:16] [Info] Event-Handler f?r btnRemoveContact.Click registriert
+[2025-05-24 14:00:16] [Info] Event-Handler f?r btnExportContacts.Click registriert
+[2025-05-24 14:00:16] [Info] Event-Handler f?r btnCreateResource.Click registriert
+[2025-05-24 14:00:16] [Info] Event-Handler f?r btnEditResourceSettings.Click registriert
+[2025-05-24 14:00:16] [Info] Event-Handler f?r btnRemoveResource.Click registriert
+[2025-05-24 14:00:16] [Info] Event-Handler f?r btnExportResources.Click registriert
+[2025-05-24 14:00:16] [Info] Initialisiere Berichte-Tab
+[2025-05-24 14:00:16] [Info] Event-Handler f?r btnGenerateReport.Click registriert
+[2025-05-24 14:00:16] [Info] Event-Handler f?r btnExportReport.Click registriert
+[2025-05-24 14:00:16] [Success] Berichte-Tab erfolgreich initialisiert
+[2025-05-24 14:00:16] [Info] Initialisiere Regionaleinstellungen-Tab...
+[2025-05-24 14:00:16] [Debug] Bef?lle Sprachen-ComboBox mit gefilterter Sprachliste...
+[2025-05-24 14:00:16] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:00:16] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:00:17] [Debug] Sprachen-ComboBox erfolgreich mit gefilterter Liste bef?llt.
+[2025-05-24 14:00:17] [Debug] Bef?lle Zeitzonen-ComboBox f?r Kultur 'DEFAULT_ALL'...
+[2025-05-24 14:00:17] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:00:17] [Debug] Kultur 'DEFAULT_ALL' ist DEFAULT_ALL. Lade alle Systemzeitzonen.
+[2025-05-24 14:00:17] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:00:17] [Debug] Zeitzonen-ComboBox erfolgreich bef?llt f?r Kultur 'DEFAULT_ALL'. Ausgew?hlt: '(Keine ?nderung)' (Tag: '')
+[2025-05-24 14:00:17] [Debug] Bef?lle Datumsformat-ComboBox f?r Kultur ''...
+[2025-05-24 14:00:17] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:00:17] [Debug] Kultur '' nicht in ExchangeValidDateFormats gefunden oder leer, verwende DEFAULT Datumsformate.
+[2025-05-24 14:00:17] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:00:17] [Debug] Datumsformat-ComboBox erfolgreich bef?llt. Ausgew?hlt: '(Keine ?nderung)' (Tag: '')
+[2025-05-24 14:00:17] [Debug] Bef?lle Zeitformat-ComboBox f?r Kultur ''...
+[2025-05-24 14:00:17] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:00:17] [Debug] Kultur '' nicht in RelevantTimeFormatsPerCulture gefunden oder leer, verwende DEFAULT Zeitformate.
+[2025-05-24 14:00:17] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:00:17] [Debug] Zeitformat-ComboBox erfolgreich bef?llt. Ausgew?hlt: '(Keine ?nderung)' (Tag: '')
+[2025-05-24 14:00:17] [Debug] chkRegionDefaultFolderNameMatchingUserLanguage.IsChecked auf \ (unbestimmt) gesetzt.
+[2025-05-24 14:00:17] [Debug] Event-Handler f?r cmbRegionLanguage.SelectionChanged registriert (inkl. Datums-, Zeitformat- und Zeitzonen-Update).
+[2025-05-24 14:00:17] [Debug] Event-Handler f?r 'btnGetRegionSettings' registriert.
+[2025-05-24 14:00:17] [Debug] Event-Handler f?r 'btnSetRegionSettings' registriert.
+[2025-05-24 14:00:17] [Debug] Event-Handler f?r 'helpLinkRegionSettings' registriert.
+[2025-05-24 14:00:17] [Success] Regionaleinstellungen-Tab erfolgreich initialisiert.
+[2025-05-24 14:00:17] Regionaleinstellungen-Tab initialisiert.
+[2025-05-24 14:00:17] Initialize-AllTabs Ergebnis: True
+[2025-05-24 14:00:17] Initialize-HelpLinks Ergebnis: True
+[2025-05-24 14:00:21] [Info] Tab gewechselt zu: Postfachberechtigungen
+[2025-05-24 14:00:23] [Info] Tab gewechselt zu: Shared Mailboxes
+[2025-05-24 14:00:26] [Info] Tab gewechselt zu: Gruppen / Verteiler
+[2025-05-24 14:00:28] [Info] Button 'Gruppenliste aktualisieren' (btnRefreshExistingGroups) geklickt.
+[2025-05-24 14:00:28] [Info] Aktualisiere Gruppenliste in ComboBox 'cmbSelectExistingGroup'
+[2025-05-24 14:00:28] [Debug] StatusBar aktualisiert: [Info] Aktualisiere Gruppen-Dropdown...
+[2025-05-24 14:00:28] [Info] Rufe alle relevanten Gruppen ab (Verteiler, E-Mail-aktivierte Sicherheitsgruppen, Microsoft 365-Gruppen)
+[2025-05-24 14:00:28] [Debug] StatusBar aktualisiert: [Info] Rufe alle Gruppentypen ab...
+[2025-05-24 14:00:28] [Error] Fehler beim Abrufen der Gruppen: The term 'Get-DistributionGroup' is not recognized as a name of a cmdlet, function, script file, or executable program.??Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[2025-05-24 14:00:28] [Debug] StatusBar aktualisiert: [Error] Fehler beim Abrufen der Gruppen.
+2025-05-24 14:00:29 - Fehler Gruppenabruf - Error - Fehler beim Abrufen der Gruppen: The term 'Get-DistributionGroup' is not recognized as a name of a cmdlet, function, script file, or executable program.
+Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[2025-05-24 14:00:29] [Success] Gruppenliste aktualisiert. 1 Gruppen geladen.
+[2025-05-24 14:00:29] [Debug] StatusBar aktualisiert: [Success] Gruppenliste aktualisiert. 1 Gruppen geladen.
+[2025-05-24 14:00:30] GUI-Fenster wurde geschlossen
+[2025-05-24 14:00:30] Aufr?umarbeiten abgeschlossen
+2025-05-24 14:38:14 - Aktueller Status: PowerShell Version 7.5.1, Läuft als Administrator: True
+2025-05-24 14:38:14 - Optimale Bedingungen (PowerShell 7+ und Administratorrechte) sind erfüllt.
+2025-05-24 14:38:14 - Prüfe und initialisiere Registry-Konfiguration unter 'HKCU:\Software\easyIT\easyEXO'.
+2025-05-24 14:38:14 - Registry-Version ('0.0.9') ist aktuell mit Skript-Version ('0.0.9'). Keine Aktualisierung der Standardwerte erforderlich.
+[2025-05-24 14:38:14] [Info] Lade XAML von: \\192.168.100.15\Daten1\06-Scripts\!PS-easyIT\#GitHub-Repos\easyEXO\assets\EXOGUI.xaml
+[2025-05-24 14:38:14] [Info] TabControl hat 11 Items
+[2025-05-24 14:38:14] [Info] Tab gefunden: Name=tabCalendar, Header=Kalenderberechtigungen, Visibility=Collapsed
+[2025-05-24 14:38:14] [Info] Tab gefunden: Name=tabMailbox, Header=Postfachberechtigungen, Visibility=Collapsed
+[2025-05-24 14:38:14] [Info] Tab gefunden: Name=tabMailboxAudit, Header=Audit & Information, Visibility=Collapsed
+[2025-05-24 14:38:14] [Info] Tab gefunden: Name=tabTroubleshooting, Header=Troubleshooting, Visibility=Collapsed
+[2025-05-24 14:38:14] [Info] Tab gefunden: Name=tabEXOSettings, Header=Allg. EXO Settings, Visibility=Collapsed
+[2025-05-24 14:38:14] [Info] Tab gefunden: Name=tabGroups, Header=Gruppen / Verteiler, Visibility=Collapsed
+[2025-05-24 14:38:14] [Info] Tab gefunden: Name=tabSharedMailbox, Header=Shared Mailboxes, Visibility=Collapsed
+[2025-05-24 14:38:15] [Info] Tab gefunden: Name=tabResources, Header=Ressourcen, Visibility=Collapsed
+[2025-05-24 14:38:15] [Info] Tab gefunden: Name=tabContacts, Header=Kontakte, Visibility=Collapsed
+[2025-05-24 14:38:15] [Info] Tab gefunden: Name=tabReports, Header=Berichte & Export, Visibility=Collapsed
+[2025-05-24 14:38:15] [Info] Tab gefunden: Name=tabRegion, Header=Regionaleinstellungen, Visibility=Collapsed
+[2025-05-24 14:38:15] [Info] Event-Handler f?r btnShowConnectionStatus hinzugef?gt.
+[2025-05-24 14:38:15] [Info] Event-Handler f?r btnSettings hinzugef?gt.
+[2025-05-24 14:38:15] [Info] Event-Handler f?r btnInfo hinzugef?gt.
+[2025-05-24 14:38:15] [Info] Event-Handler f?r btnClose hinzugef?gt.
+[2025-05-24 14:38:15] [Info] Event-Handler f?r Header-Buttons erfolgreich registriert.
+[2025-05-24 14:38:15] ?ffne GUI-Fenster
+[2025-05-24 14:38:15] TabControl Status vor ShowDialog: Items=11
+[2025-05-24 14:38:15] Tab vorhanden: tabCalendar
+[2025-05-24 14:38:15] Tab vorhanden: tabMailbox
+[2025-05-24 14:38:15] Tab vorhanden: tabMailboxAudit
+[2025-05-24 14:38:15] Tab vorhanden: tabTroubleshooting
+[2025-05-24 14:38:15] Tab vorhanden: tabEXOSettings
+[2025-05-24 14:38:15] Tab vorhanden: tabGroups
+[2025-05-24 14:38:15] Tab vorhanden: tabSharedMailbox
+[2025-05-24 14:38:15] Tab vorhanden: tabResources
+[2025-05-24 14:38:15] Tab vorhanden: tabContacts
+[2025-05-24 14:38:15] Tab vorhanden: tabReports
+[2025-05-24 14:38:15] Tab vorhanden: tabRegion
+[2025-05-24 14:38:15] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:38:16] GUI-Loaded-Event ausgel?st, initialisiere Komponenten
+[2025-05-24 14:38:16] [Info] Beginne Initialisierung: EXO Settings Tab
+[2025-05-24 14:38:16] [Debug] EXOSettingsTab: Pr?fe Verbindung nicht bei Initialisierung, nur Event Handler setzen.
+[2025-05-24 14:38:16] [Debug] EXOSettingsTab: HelpLink Handler registriert.
+[2025-05-24 14:38:16] [Debug] EXOSettingsTab: btnGetOrganizationConfig Handler registriert.
+[2025-05-24 14:38:16] [Debug] EXOSettingsTab: btnSetOrganizationConfig Handler registriert.
+[2025-05-24 14:38:16] [Debug] EXOSettingsTab: btnExportOrganizationConfig Handler registriert.
+[2025-05-24 14:38:16] [Debug] EXOSettingsTab: Sichtbarkeit f?r Elemente in knownUIElements ?berpr?ft.
+[2025-05-24 14:38:16] [Debug] EXOSettingsTab: Rufe Initialize-OrganizationConfigControls auf...
+[2025-05-24 14:38:16] [Info] Event-Handler f?r chkAppsForOfficeEnabled.Click registriert
+[2025-05-24 14:38:16] [Debug] CheckBox 'chkAppsForOfficeEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:16] [Info] Event-Handler f?r chkFocusedInboxOn.Click registriert
+[2025-05-24 14:38:16] [Debug] CheckBox 'chkFocusedInboxOn' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:16] [Info] Event-Handler f?r chkReadTrackingEnabled.Click registriert
+[2025-05-24 14:38:16] [Debug] CheckBox 'chkReadTrackingEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:16] [Info] Event-Handler f?r chkSendFromAliasEnabled.Click registriert
+[2025-05-24 14:38:16] [Debug] CheckBox 'chkSendFromAliasEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:16] [Info] Event-Handler f?r chkLinkPreviewEnabled.Click registriert
+[2025-05-24 14:38:16] [Debug] CheckBox 'chkLinkPreviewEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:16] [Info] Event-Handler f?r chkMessageRecallEnabled.Click registriert
+[2025-05-24 14:38:16] [Debug] CheckBox 'chkMessageRecallEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:16] [Info] Event-Handler f?r chkRecallReadMessagesEnabled.Click registriert
+[2025-05-24 14:38:16] [Debug] CheckBox 'chkRecallReadMessagesEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:16] [Info] Event-Handler f?r cmbShortenEventScopeDefault.SelectionChanged registriert
+[2025-05-24 14:38:16] [Debug] ComboBox 'cmbShortenEventScopeDefault' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:16] [Info] Event-Handler f?r txtDefaultMinutesToReduceShortEventsBy.TextChanged registriert
+[2025-05-24 14:38:16] [Debug] TextBox 'txtDefaultMinutesToReduceShortEventsBy' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:16] [Info] Event-Handler f?r txtDefaultMinutesToReduceLongEventsBy.TextChanged registriert
+[2025-05-24 14:38:16] [Debug] TextBox 'txtDefaultMinutesToReduceLongEventsBy' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:16] [Info] Event-Handler f?r chkAsyncSendEnabled.Click registriert
+[2025-05-24 14:38:17] [Debug] CheckBox 'chkAsyncSendEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:17] [Info] Event-Handler f?r chkOutlookGifPickerDisabled.Click registriert
+[2025-05-24 14:38:17] [Debug] CheckBox 'chkOutlookGifPickerDisabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:17] [Info] Event-Handler f?r chkWebPushNotificationsDisabled.Click registriert
+[2025-05-24 14:38:17] [Debug] CheckBox 'chkWebPushNotificationsDisabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:17] [Info] Event-Handler f?r chkWebSuggestedRepliesDisabled.Click registriert
+[2025-05-24 14:38:17] [Debug] CheckBox 'chkWebSuggestedRepliesDisabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:17] [Info] Event-Handler f?r chkMessageRemindersEnabled.Click registriert
+[2025-05-24 14:38:17] [Debug] CheckBox 'chkMessageRemindersEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:17] [Info] Event-Handler f?r chkOutlookPayEnabled.Click registriert
+[2025-05-24 14:38:17] [Debug] CheckBox 'chkOutlookPayEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:17] [Info] Event-Handler f?r chkOutlookTextPredictionDisabled.Click registriert
+[2025-05-24 14:38:17] [Debug] CheckBox 'chkOutlookTextPredictionDisabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:17] [Info] Event-Handler f?r chkEnableOutlookEvents.Click registriert
+[2025-05-24 14:38:17] [Debug] CheckBox 'chkEnableOutlookEvents' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:17] [Info] Event-Handler f?r chkActivityBasedAuthenticationTimeoutEnabled.Click registriert
+[2025-05-24 14:38:17] [Debug] CheckBox 'chkActivityBasedAuthenticationTimeoutEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:17] [Info] Event-Handler f?r txtActivityBasedAuthenticationTimeoutInterval.TextChanged registriert
+[2025-05-24 14:38:17] [Debug] TextBox 'txtActivityBasedAuthenticationTimeoutInterval' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:17] [Info] Event-Handler f?r chkActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled.Click registriert
+[2025-05-24 14:38:17] [Debug] CheckBox 'chkActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:17] [Info] Event-Handler f?r chkOwaRedirectToOD4BThisUserEnabled.Click registriert
+[2025-05-24 14:38:17] [Debug] CheckBox 'chkOwaRedirectToOD4BThisUserEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:17] [Info] Event-Handler f?r chkPublicComputersDetectionEnabled.Click registriert
+[2025-05-24 14:38:17] [Debug] CheckBox 'chkPublicComputersDetectionEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:17] [Info] Event-Handler f?r chkBookingsEnabled.Click registriert
+[2025-05-24 14:38:17] [Debug] CheckBox 'chkBookingsEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:17] [Info] Event-Handler f?r chkBookingsAddressEntryRestricted.Click registriert
+[2025-05-24 14:38:17] [Debug] CheckBox 'chkBookingsAddressEntryRestricted' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:17] [Info] Event-Handler f?r chkBookingsAuthEnabled.Click registriert
+[2025-05-24 14:38:17] [Debug] CheckBox 'chkBookingsAuthEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:17] [Info] Event-Handler f?r chkBookingsCreationOfCustomQuestionsRestricted.Click registriert
+[2025-05-24 14:38:17] [Debug] CheckBox 'chkBookingsCreationOfCustomQuestionsRestricted' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:17] [Info] Event-Handler f?r chkBookingsExposureOfStaffDetailsRestricted.Click registriert
+[2025-05-24 14:38:17] [Debug] CheckBox 'chkBookingsExposureOfStaffDetailsRestricted' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:18] [Info] Event-Handler f?r chkBookingsMembershipApprovalRequired.Click registriert
+[2025-05-24 14:38:18] [Debug] CheckBox 'chkBookingsMembershipApprovalRequired' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:18] [Info] Event-Handler f?r chkBookingsNotesEntryRestricted.Click registriert
+[2025-05-24 14:38:18] [Debug] CheckBox 'chkBookingsNotesEntryRestricted' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:18] [Info] Event-Handler f?r chkBookingsPaymentsEnabled.Click registriert
+[2025-05-24 14:38:18] [Debug] CheckBox 'chkBookingsPaymentsEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:18] [Info] Event-Handler f?r chkBookingsPhoneNumberEntryRestricted.Click registriert
+[2025-05-24 14:38:18] [Debug] CheckBox 'chkBookingsPhoneNumberEntryRestricted' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:18] [Info] Event-Handler f?r chkBookingsSocialSharingRestricted.Click registriert
+[2025-05-24 14:38:18] [Debug] CheckBox 'chkBookingsSocialSharingRestricted' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:18] [Info] Event-Handler f?r chkBookingsSmsMicrosoftEnabled.Click registriert
+[2025-05-24 14:38:18] [Debug] CheckBox 'chkBookingsSmsMicrosoftEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:18] [Info] Event-Handler f?r chkBookingsSchedulingPolicyEnabled.Click registriert
+[2025-05-24 14:38:18] [Debug] CheckBox 'chkBookingsSchedulingPolicyEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:18] [Info] Event-Handler f?r txtBookingsSchedulingPolicy.TextChanged registriert
+[2025-05-24 14:38:18] [Debug] TextBox 'txtBookingsSchedulingPolicy' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:18] [Info] Event-Handler f?r chkBookingsStaffControlEnabled.Click registriert
+[2025-05-24 14:38:18] [Debug] CheckBox 'chkBookingsStaffControlEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:18] [Info] Event-Handler f?r chkBookingsAvailabilityAndPricingEnabled.Click registriert
+[2025-05-24 14:38:18] [Debug] CheckBox 'chkBookingsAvailabilityAndPricingEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:18] [Info] Event-Handler f?r chkBookingsCustomizationEnabled.Click registriert
+[2025-05-24 14:38:18] [Debug] CheckBox 'chkBookingsCustomizationEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:18] [Info] Event-Handler f?r chkBookingsInternalSharingEnabled.Click registriert
+[2025-05-24 14:38:18] [Debug] CheckBox 'chkBookingsInternalSharingEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:18] [Info] Event-Handler f?r chkBookingsExternalSharingEnabled.Click registriert
+[2025-05-24 14:38:18] [Debug] CheckBox 'chkBookingsExternalSharingEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:18] [Info] Event-Handler f?r chkBookingsOnlinePaymentEnabled.Click registriert
+[2025-05-24 14:38:18] [Debug] CheckBox 'chkBookingsOnlinePaymentEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:18] [Info] Event-Handler f?r chkBookingsBusinessHoursEnabled.Click registriert
+[2025-05-24 14:38:18] [Debug] CheckBox 'chkBookingsBusinessHoursEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:18] [Info] Event-Handler f?r chkBookingsCustomerDataUsageEnabled.Click registriert
+[2025-05-24 14:38:18] [Debug] CheckBox 'chkBookingsCustomerDataUsageEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:18] [Info] Event-Handler f?r chkBookingsDataExportEnabled.Click registriert
+[2025-05-24 14:38:18] [Debug] CheckBox 'chkBookingsDataExportEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:18] [Info] Event-Handler f?r chkBookingsSearchEngineIndexDisabled.Click registriert
+[2025-05-24 14:38:18] [Debug] CheckBox 'chkBookingsSearchEngineIndexDisabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:18] [Info] Event-Handler f?r chkBookingsPersonalDataCollectionAndUseConsentRequired.Click registriert
+[2025-05-24 14:38:19] [Debug] CheckBox 'chkBookingsPersonalDataCollectionAndUseConsentRequired' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:19] [Info] Event-Handler f?r chkAuditDisabled.Click registriert
+[2025-05-24 14:38:19] [Debug] CheckBox 'chkAuditDisabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:19] [Info] Event-Handler f?r chkAutoEnableArchiveMailbox.Click registriert
+[2025-05-24 14:38:19] [Debug] CheckBox 'chkAutoEnableArchiveMailbox' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:19] [Info] Event-Handler f?r chkAutoExpandingArchive.Click registriert
+[2025-05-24 14:38:19] [Debug] CheckBox 'chkAutoExpandingArchive' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:19] [Info] Event-Handler f?r chkComplianceEnabled.Click registriert
+[2025-05-24 14:38:19] [Debug] CheckBox 'chkComplianceEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:19] [Info] Event-Handler f?r chkCustomerLockboxEnabled.Click registriert
+[2025-05-24 14:38:19] [Debug] CheckBox 'chkCustomerLockboxEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:19] [Info] Event-Handler f?r chkElcProcessingDisabled.Click registriert
+[2025-05-24 14:38:19] [Debug] CheckBox 'chkElcProcessingDisabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:19] [Info] Event-Handler f?r chkMailTipsExternalRecipientsTipsEnabled.Click registriert
+[2025-05-24 14:38:19] [Debug] CheckBox 'chkMailTipsExternalRecipientsTipsEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:19] [Info] Event-Handler f?r chkMailTipsGroupMetricsEnabled.Click registriert
+[2025-05-24 14:38:19] [Debug] CheckBox 'chkMailTipsGroupMetricsEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:19] [Info] Event-Handler f?r chkMailTipsLargeAudienceThreshold.Click registriert
+[2025-05-24 14:38:19] [Debug] CheckBox 'chkMailTipsLargeAudienceThreshold' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:19] [Info] Event-Handler f?r txtMailTipsLargeAudienceThreshold.TextChanged registriert
+[2025-05-24 14:38:19] [Debug] TextBox 'txtMailTipsLargeAudienceThreshold' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:19] [Info] Event-Handler f?r chkMailTipsMailboxSourcedTipsEnabled.Click registriert
+[2025-05-24 14:38:19] [Debug] CheckBox 'chkMailTipsMailboxSourcedTipsEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:19] [Info] Event-Handler f?r chkConnectorsEnabled.Click registriert
+[2025-05-24 14:38:19] [Debug] CheckBox 'chkConnectorsEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:19] [Info] Event-Handler f?r chkConnectorsActionableMessagesEnabled.Click registriert
+[2025-05-24 14:38:19] [Debug] CheckBox 'chkConnectorsActionableMessagesEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:19] [Info] Event-Handler f?r chkConnectorsEnabledForOutlook.Click registriert
+[2025-05-24 14:38:19] [Debug] CheckBox 'chkConnectorsEnabledForOutlook' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:19] [Info] Event-Handler f?r chkConnectorsEnabledForSharepoint.Click registriert
+[2025-05-24 14:38:19] [Debug] CheckBox 'chkConnectorsEnabledForSharepoint' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:19] [Info] Event-Handler f?r chkConnectorsEnabledForTeams.Click registriert
+[2025-05-24 14:38:19] [Debug] CheckBox 'chkConnectorsEnabledForTeams' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:19] [Info] Event-Handler f?r chkConnectorsEnabledForYammer.Click registriert
+[2025-05-24 14:38:20] [Debug] CheckBox 'chkConnectorsEnabledForYammer' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:20] [Info] Event-Handler f?r chkSmtpActionableMessagesEnabled.Click registriert
+[2025-05-24 14:38:20] [Debug] CheckBox 'chkSmtpActionableMessagesEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:20] [Info] Event-Handler f?r chkPublicFolderShowClientControl.Click registriert
+[2025-05-24 14:38:20] [Debug] CheckBox 'chkPublicFolderShowClientControl' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:20] [Info] Event-Handler f?r chkAutodiscoverPartialDirSync.Click registriert
+[2025-05-24 14:38:20] [Debug] CheckBox 'chkAutodiscoverPartialDirSync' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:20] [Info] Event-Handler f?r chkWorkspaceTenantEnabled.Click registriert
+[2025-05-24 14:38:20] [Debug] CheckBox 'chkWorkspaceTenantEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:20] [Info] Event-Handler f?r chkAdditionalStorageProvidersBlocked.Click registriert
+[2025-05-24 14:38:20] [Debug] CheckBox 'chkAdditionalStorageProvidersBlocked' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:20] [Info] Event-Handler f?r txtDefaultPublicFolderMaxItemSize.TextChanged registriert
+[2025-05-24 14:38:20] [Debug] TextBox 'txtDefaultPublicFolderMaxItemSize' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:20] [Info] Event-Handler f?r txtDefaultPublicFolderIssueWarningQuota.TextChanged registriert
+[2025-05-24 14:38:20] [Debug] TextBox 'txtDefaultPublicFolderIssueWarningQuota' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:20] [Info] Event-Handler f?r txtDefaultPublicFolderProhibitPostQuota.TextChanged registriert
+[2025-05-24 14:38:20] [Debug] TextBox 'txtDefaultPublicFolderProhibitPostQuota' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:20] [Info] Event-Handler f?r txtDefaultPublicFolderAgeLimit.TextChanged registriert
+[2025-05-24 14:38:20] [Debug] TextBox 'txtDefaultPublicFolderAgeLimit' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:20] [Info] Event-Handler f?r txtDefaultPublicFolderDeletedItemRetention.TextChanged registriert
+[2025-05-24 14:38:20] [Debug] TextBox 'txtDefaultPublicFolderDeletedItemRetention' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:20] [Info] Event-Handler f?r txtDefaultPublicFolderMovedItemRetention.TextChanged registriert
+[2025-05-24 14:38:20] [Debug] TextBox 'txtDefaultPublicFolderMovedItemRetention' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:20] [Info] Event-Handler f?r txtRemotePublicFolderMailboxes.TextChanged registriert
+[2025-05-24 14:38:20] [Debug] TextBox 'txtRemotePublicFolderMailboxes' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:20] [Info] Event-Handler f?r chkSIPEnabled.Click registriert
+[2025-05-24 14:38:20] [Debug] CheckBox 'chkSIPEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:20] [Info] Event-Handler f?r chkRemotePublicFolderBlobsEnabled.Click registriert
+[2025-05-24 14:38:20] [Debug] CheckBox 'chkRemotePublicFolderBlobsEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:20] [Info] Event-Handler f?r chkMapiHttpEnabled.Click registriert
+[2025-05-24 14:38:20] [Debug] CheckBox 'chkMapiHttpEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:20] [Info] Event-Handler f?r chkCalendarVersionStoreEnabled.Click registriert
+[2025-05-24 14:38:20] [Debug] CheckBox 'chkCalendarVersionStoreEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:20] [Info] Event-Handler f?r chkEcRequiresTls.Click registriert
+[2025-05-24 14:38:20] [Debug] CheckBox 'chkEcRequiresTls' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:20] [Info] Event-Handler f?r chkPreferredInternetCodePageForShiftJis.Click registriert
+[2025-05-24 14:38:21] [Debug] CheckBox 'chkPreferredInternetCodePageForShiftJis' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:21] [Info] Event-Handler f?r txtPreferredInternetCodePageForShiftJis.TextChanged registriert
+[2025-05-24 14:38:21] [Debug] TextBox 'txtPreferredInternetCodePageForShiftJis' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:21] [Info] Event-Handler f?r chkSearchQueryLanguage.Click registriert
+[2025-05-24 14:38:21] [Debug] CheckBox 'chkSearchQueryLanguage' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:21] [Info] Event-Handler f?r cmbSearchQueryLanguage.SelectionChanged registriert
+[2025-05-24 14:38:21] [Debug] ComboBox 'cmbSearchQueryLanguage' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:21] [Info] Event-Handler f?r chkVisibilityEnabled.Click registriert
+[2025-05-24 14:38:21] [Debug] CheckBox 'chkVisibilityEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:21] [Info] Event-Handler f?r chkOnlineMeetingsByDefaultEnabled.Click registriert
+[2025-05-24 14:38:21] [Debug] CheckBox 'chkOnlineMeetingsByDefaultEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:21] [Info] Event-Handler f?r chkDirectReportsGroupAutoCreationEnabled.Click registriert
+[2025-05-24 14:38:21] [Debug] CheckBox 'chkDirectReportsGroupAutoCreationEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:21] [Info] Event-Handler f?r chkUnblockUnsafeSenderPromptEnabled.Click registriert
+[2025-05-24 14:38:21] [Debug] CheckBox 'chkUnblockUnsafeSenderPromptEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:21] [Info] Event-Handler f?r chkExecutiveAttestation.Click registriert
+[2025-05-24 14:38:21] [Debug] CheckBox 'chkExecutiveAttestation' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:21] [Info] Event-Handler f?r chkPDPLocationEnabled.Click registriert
+[2025-05-24 14:38:21] [Debug] CheckBox 'chkPDPLocationEnabled' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:21] [Info] Event-Handler f?r txtPowerShellMaxConcurrency.TextChanged registriert
+[2025-05-24 14:38:21] [Debug] TextBox 'txtPowerShellMaxConcurrency' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:21] [Info] Event-Handler f?r txtPowerShellMaxCmdletQueueDepth.TextChanged registriert
+[2025-05-24 14:38:21] [Debug] TextBox 'txtPowerShellMaxCmdletQueueDepth' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:21] [Info] Event-Handler f?r txtPowerShellMaxCmdletsExecutionDuration.TextChanged registriert
+[2025-05-24 14:38:21] [Debug] TextBox 'txtPowerShellMaxCmdletsExecutionDuration' aktiviert (OrgConfig noch nicht geladen).
+[2025-05-24 14:38:21] [Info] Registrierte Controls: CheckBoxes: 76, ComboBoxes: 2, TextBoxes: 16
+[2025-05-24 14:38:21] [Debug] EXOSettingsTab: Initialize-OrganizationConfigControls Ergebnis: True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True True
+[2025-05-24 14:38:21] [Debug] EXOSettingsTab: Tab auf sichtbar gesetzt.
+[2025-05-24 14:38:21] [Warning] EXOSettingsTab: Haupt-TabControl 'mainTabControl' nicht gefunden.
+[2025-05-24 14:38:21] [Success] Abschluss Initialisierung: EXO Settings Tab (Erfolg: True)
+[2025-05-24 14:38:21] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:38:21] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:38:21] [Info] Event-Handler f?r btnAddCalendarPermission.Click registriert
+[2025-05-24 14:38:21] [Info] Event-Handler f?r btnRemoveCalendarPermission.Click registriert
+[2025-05-24 14:38:21] [Info] Event-Handler f?r btnShowCalendarPermissions.Click registriert
+[2025-05-24 14:38:21] [Info] Event-Handler f?r btnSetDefaultPermission.Click registriert
+[2025-05-24 14:38:22] [Info] Event-Handler f?r btnSetAnonymousPermission.Click registriert
+[2025-05-24 14:38:22] [Info] Event-Handler f?r btnSetAllCalPermission.Click registriert
+[2025-05-24 14:38:22] [Info] Event-Handler f?r btnExportCalendarPermissions.Click registriert
+[2025-05-24 14:38:22] [Info] Event-Handler f?r btnAddMailboxPermission.Click registriert
+[2025-05-24 14:38:22] [Info] Event-Handler f?r btnRemoveMailboxPermission.Click registriert
+[2025-05-24 14:38:22] [Info] Event-Handler f?r btnShowMailboxPermissions.Click registriert
+[2025-05-24 14:38:22] [Info] Event-Handler f?r btnAddSendAs.Click registriert
+[2025-05-24 14:38:22] [Info] Event-Handler f?r btnRemoveSendAs.Click registriert
+[2025-05-24 14:38:22] [Info] Event-Handler f?r btnShowSendAs.Click registriert
+[2025-05-24 14:38:22] [Info] Event-Handler f?r btnAddSendOnBehalf.Click registriert
+[2025-05-24 14:38:22] [Info] Event-Handler f?r btnRemoveSendOnBehalf.Click registriert
+[2025-05-24 14:38:22] [Info] Event-Handler f?r btnShowSendOnBehalf.Click registriert
+[2025-05-24 14:38:22] [Info] Event-Handler f?r btnRunAudit.Click registriert
+[2025-05-24 14:38:22] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:38:22] [Success] Audit-Tab erfolgreich initialisiert
+[2025-05-24 14:38:22] [Info] Initialisiere Troubleshooting-Tab
+[2025-05-24 14:38:22] [Info] Event-Handler f?r btnRunDiagnostic.Click registriert
+[2025-05-24 14:38:22] [Info] Event-Handler f?r btnAdminCenter.Click registriert
+[2025-05-24 14:38:22] [Success] Troubleshooting-Tab erfolgreich initialisiert
+[2025-05-24 14:38:22] [Info] Initialisiere Gruppen-Tab...
+[2025-05-24 14:38:22] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:38:22] [Info] Event-Handler f?r btnRefreshExistingGroups.Click registriert
+[2025-05-24 14:38:22] [Info] Aktualisiere Gruppenliste in ComboBox 'cmbSelectExistingGroup'
+[2025-05-24 14:38:22] [Debug] StatusBar aktualisiert: [Info] Aktualisiere Gruppen-Dropdown...
+[2025-05-24 14:38:22] [Warning] Keine Exchange Online Verbindung vorhanden. Gruppenabruf abgebrochen.
+[2025-05-24 14:38:22] [Debug] StatusBar aktualisiert: [Warning] Nicht mit Exchange Online verbunden.
+2025-05-24 14:38:24 - Keine Verbindung - Warning - Bitte stellen Sie zuerst eine Verbindung zu Exchange Online her.
+[2025-05-24 14:38:24] [Success] Gruppenliste aktualisiert. 1 Gruppen geladen.
+[2025-05-24 14:38:24] [Debug] StatusBar aktualisiert: [Success] Gruppenliste aktualisiert. 1 Gruppen geladen.
+[2025-05-24 14:38:24] [Info] Event-Handler f?r btnCreateGroup.Click registriert
+[2025-05-24 14:38:24] [Info] Event-Handler f?r btnDeleteGroup.Click registriert
+[2025-05-24 14:38:24] [Info] Event-Handler f?r btnAddUserToGroup.Click registriert
+[2025-05-24 14:38:24] [Info] Event-Handler f?r btnRemoveUserFromGroup.Click registriert
+[2025-05-24 14:38:24] [Info] Event-Handler f?r btnShowGroupMembers.Click registriert
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnUpdateGroupSettings.Click registriert
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnExportGroupMembers.Click registriert
+[2025-05-24 14:38:25] [Info] Initialize-GroupsTab erfolgreich abgeschlossen.
+[2025-05-24 14:38:25] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:38:25] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnCreateSharedMailbox.Click registriert
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnConvertToShared.Click registriert
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnAddSharedMailboxPermission.Click registriert
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnRemoveSharedMailboxPermission.Click registriert
+[2025-05-24 14:38:25] [Info] Event-Handler f?r UnknownControl.Click registriert
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnShowSharedMailboxPerms.Click registriert
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnGetForwardingMailboxes.Click registriert
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnUpdateAutoMapping.Click registriert
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnSetForwarding.Click registriert
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnRemoveForwarding.Click registriert
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnShowInGAL.Click registriert
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnRemoveSharedMailbox.Click registriert
+[2025-05-24 14:38:25] [Info] Initialisiere Kontakte-Tab
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnCreateContact.Click registriert
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnShowMailContacts.Click registriert
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnShowMailUsers registrieren
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnShowMailUsers.Click registriert
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnRemoveContact.Click registriert
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnExportContacts.Click registriert
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnCreateResource.Click registriert
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnEditResourceSettings.Click registriert
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnRemoveResource.Click registriert
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnExportResources.Click registriert
+[2025-05-24 14:38:25] [Info] Initialisiere Berichte-Tab
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnGenerateReport.Click registriert
+[2025-05-24 14:38:25] [Info] Event-Handler f?r btnExportReport.Click registriert
+[2025-05-24 14:38:25] [Success] Berichte-Tab erfolgreich initialisiert
+[2025-05-24 14:38:25] [Info] Initialisiere Regionaleinstellungen-Tab...
+[2025-05-24 14:38:25] [Debug] Bef?lle Sprachen-ComboBox mit gefilterter Sprachliste...
+[2025-05-24 14:38:26] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:38:26] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:38:26] [Debug] Sprachen-ComboBox erfolgreich mit gefilterter Liste bef?llt.
+[2025-05-24 14:38:26] [Debug] Bef?lle Zeitzonen-ComboBox f?r Kultur 'DEFAULT_ALL'...
+[2025-05-24 14:38:26] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:38:26] [Debug] Kultur 'DEFAULT_ALL' ist DEFAULT_ALL. Lade alle Systemzeitzonen.
+[2025-05-24 14:38:26] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:38:26] [Debug] Zeitzonen-ComboBox erfolgreich bef?llt f?r Kultur 'DEFAULT_ALL'. Ausgew?hlt: '(Keine ?nderung)' (Tag: '')
+[2025-05-24 14:38:26] [Debug] Bef?lle Datumsformat-ComboBox f?r Kultur ''...
+[2025-05-24 14:38:26] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:38:26] [Debug] Kultur '' nicht in ExchangeValidDateFormats gefunden oder leer, verwende DEFAULT Datumsformate.
+[2025-05-24 14:38:26] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:38:26] [Debug] Datumsformat-ComboBox erfolgreich bef?llt. Ausgew?hlt: '(Keine ?nderung)' (Tag: '')
+[2025-05-24 14:38:26] [Debug] Bef?lle Zeitformat-ComboBox f?r Kultur ''...
+[2025-05-24 14:38:26] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:38:26] [Debug] Kultur '' nicht in RelevantTimeFormatsPerCulture gefunden oder leer, verwende DEFAULT Zeitformate.
+[2025-05-24 14:38:26] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-05-24 14:38:26] [Debug] Zeitformat-ComboBox erfolgreich bef?llt. Ausgew?hlt: '(Keine ?nderung)' (Tag: '')
+[2025-05-24 14:38:26] [Debug] chkRegionDefaultFolderNameMatchingUserLanguage.IsChecked auf \ (unbestimmt) gesetzt.
+[2025-05-24 14:38:26] [Debug] Event-Handler f?r cmbRegionLanguage.SelectionChanged registriert (inkl. Datums-, Zeitformat- und Zeitzonen-Update).
+[2025-05-24 14:38:26] [Debug] Event-Handler f?r 'btnGetRegionSettings' registriert.
+[2025-05-24 14:38:26] [Debug] Event-Handler f?r 'btnSetRegionSettings' registriert.
+[2025-05-24 14:38:26] [Debug] Event-Handler f?r 'helpLinkRegionSettings' registriert.
+[2025-05-24 14:38:26] [Success] Regionaleinstellungen-Tab erfolgreich initialisiert.
+[2025-05-24 14:38:26] Regionaleinstellungen-Tab initialisiert.
+[2025-05-24 14:38:26] Initialize-AllTabs Ergebnis: True
+[2025-05-24 14:38:26] Initialize-HelpLinks Ergebnis: True
