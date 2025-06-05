@@ -416,7 +416,7 @@ function Show-MessageBox {
         $result = [System.Windows.MessageBox]::Show($Message, $Title, $buttons, $icon)
         
         # Erfolg loggen
-        Write-LogEntry -Message "$Title - $Type - $Message" -Type "Info"
+        Write-Log -Message "$Title - $Message" -Type $Type
         
         # Ergebnis zurückgeben (wichtig für Ja/Nein-Fragen)
         return $result
