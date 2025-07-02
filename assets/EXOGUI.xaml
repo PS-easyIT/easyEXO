@@ -3,22 +3,106 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Title="Exchange Online Verwaltung"
     Width="1400"
-    Height="975"
+    Height="1000"
     MinWidth="950"
     MinHeight="650"
-    Background="#f9f9f9"
+    Background="#FFFFFF"
+    FontFamily="Segoe UI"
+    FontSize="12"
     WindowStartupLocation="CenterScreen">
     <Window.Resources>
-        <!--  Button Style anpassen für modernes Windows 10 Design  -->
+        <!-- Modern Button Style -->
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Background" Value="#0078D4"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="18,8"/>
+            <Setter Property="Margin" Value="6"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="MinWidth" Value="80"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                                Background="{TemplateBinding Background}" 
+                                CornerRadius="4"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                BorderBrush="{TemplateBinding BorderBrush}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#106EBE"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#005A9E"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Navigation Button Style -->
+        <Style x:Key="NavButton" TargetType="Button">
+            <Setter Property="Background" Value="#4A90E2"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="Margin" Value="8,1,8,1"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}" 
+                                CornerRadius="3"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                BorderBrush="{TemplateBinding BorderBrush}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                            VerticalAlignment="Center"
+                                            Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#60A0F0"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#0078D4"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#0078D4"/> 
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Button Style anpassen für modernes Design -->
         <Style TargetType="Button">
-            <Setter Property="Background" Value="#f0f0f0" />
-            <Setter Property="Foreground" Value="#202020" />
-            <Setter Property="BorderBrush" Value="#e0e0e0" />
+            <Setter Property="Background" Value="#0078D4" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderBrush" Value="#005A9E" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="10,6" />
             <Setter Property="MaxHeight" Value="30" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -26,7 +110,7 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="2">
+                            CornerRadius="4">
                             <ContentPresenter
                                 Margin="{TemplateBinding Padding}"
                                 HorizontalAlignment="Center"
@@ -37,11 +121,11 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#e5e5e5" />
-                    <Setter Property="BorderBrush" Value="#d0d0d0" />
+                    <Setter Property="Background" Value="#106EBE" />
+                    <Setter Property="BorderBrush" Value="#004578" />
                 </Trigger>
                 <Trigger Property="IsPressed" Value="True">
-                    <Setter Property="Background" Value="#d0d0d0" />
+                    <Setter Property="Background" Value="#005A9E" />
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -58,10 +142,11 @@
         </Style>
 
         <Style TargetType="GroupBox">
-            <Setter Property="BorderBrush" Value="#d4d4d4" />
+            <Setter Property="BorderBrush" Value="#E0E0E0" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="10" />
             <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="Background" Value="White"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="GroupBox">
@@ -76,7 +161,7 @@
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="3" />
+                                CornerRadius="8" />
                             <Border
                                 Grid.Row="0"
                                 Margin="10,0,0,0"
@@ -92,11 +177,13 @@
         </Style>
 
         <Style TargetType="TextBox">
-            <Setter Property="BorderBrush" Value="#d4d4d4" />
+            <Setter Property="BorderBrush" Value="#BFBFBF" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="8,2" />
             <Setter Property="Height" Value="30" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
@@ -104,12 +191,22 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="2">
+                            CornerRadius="4">
                             <ScrollViewer
                                 x:Name="PART_ContentHost"
                                 Margin="{TemplateBinding Padding}"
                                 VerticalAlignment="Center" />
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="#0078D4"/>
+                                <Setter Property="BorderThickness" Value="2"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                                <Setter Property="Background" Value="#F0F0F0"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -125,8 +222,8 @@
                 <Border
                     x:Name="Border"
                     Grid.ColumnSpan="2"
-                    Background="#f0f0f0"
-                    BorderBrush="#d4d4d4"
+                    Background="White"
+                    BorderBrush="#BFBFBF"
                     BorderThickness="1"
                     CornerRadius="4" />
                 <Path
@@ -139,10 +236,12 @@
             </Grid>
             <ControlTemplate.Triggers>
                 <Trigger Property="IsMouseOver" Value="true">
-                    <Setter TargetName="Border" Property="Background" Value="#e5e5e5" />
+                    <Setter TargetName="Border" Property="Background" Value="#F5F5F5" />
+                    <Setter TargetName="Border" Property="BorderBrush" Value="#0078D4" />
                 </Trigger>
                 <Trigger Property="IsChecked" Value="true">
-                    <Setter TargetName="Border" Property="Background" Value="#e0e0e0" />
+                    <Setter TargetName="Border" Property="Background" Value="#F0F0F0" />
+                    <Setter TargetName="Border" Property="BorderBrush" Value="#0078D4" />
                 </Trigger>
             </ControlTemplate.Triggers>
         </ControlTemplate>
@@ -155,10 +254,11 @@
         </ControlTemplate>
 
         <Style TargetType="ComboBox">
-            <Setter Property="BorderBrush" Value="#d4d4d4" />
+            <Setter Property="BorderBrush" Value="#BFBFBF" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="8,5" />
             <Setter Property="Height" Value="30" />
+            <Setter Property="Background" Value="White"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ComboBox">
@@ -205,9 +305,9 @@
                                     <Border
                                         x:Name="DropDownBorder"
                                         Background="White"
-                                        BorderBrush="#d4d4d4"
+                                        BorderBrush="#BFBFBF"
                                         BorderThickness="1"
-                                        CornerRadius="0,0,2,2" />
+                                        CornerRadius="0,0,4,4" />
                                     <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
                                         <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
                                     </ScrollViewer>
@@ -220,10 +320,10 @@
         </Style>
 
         <Style TargetType="DataGrid">
-            <Setter Property="BorderBrush" Value="#d4d4d4" />
+            <Setter Property="BorderBrush" Value="#E0E0E0" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="RowBackground" Value="#ffffff" />
-            <Setter Property="AlternatingRowBackground" Value="#f5f5f5" />
+            <Setter Property="AlternatingRowBackground" Value="#f8f9fa" />
             <Setter Property="HorizontalGridLinesBrush" Value="#e5e5e5" />
             <Setter Property="VerticalGridLinesBrush" Value="#e5e5e5" />
             <Setter Property="RowHeight" Value="28" />
@@ -243,6 +343,11 @@
         </Style>
 
         <Style TargetType="TabItem">
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#1C1C1C"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TabItem">
@@ -251,7 +356,7 @@
                             Margin="2,0"
                             BorderBrush="Transparent"
                             BorderThickness="1,1,1,0"
-                            CornerRadius="2,2,0,0">
+                            CornerRadius="4,4,0,0">
                             <ContentPresenter
                                 x:Name="ContentSite"
                                 Margin="10,5"
@@ -262,13 +367,15 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter TargetName="Border" Property="Background" Value="#ffffff" />
-                                <Setter TargetName="Border" Property="BorderBrush" Value="#d4d4d4" />
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#E0E0E0" />
+                                <Setter Property="Foreground" Value="#0078D4"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="False">
-                                <Setter TargetName="Border" Property="Background" Value="#f0f0f0" />
+                                <Setter TargetName="Border" Property="Background" Value="#f8f9fa" />
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#e5e5e5" />
+                                <Setter TargetName="Border" Property="Background" Value="#e9ecef" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -279,7 +386,7 @@
         <!--  ListBox-Style verbessern  -->
         <Style TargetType="ListBox">
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="BorderBrush" Value="#d4d4d4" />
+            <Setter Property="BorderBrush" Value="#E0E0E0" />
             <Setter Property="Background" Value="#ffffff" />
         </Style>
 
@@ -324,340 +431,286 @@
         </Style>
     </Window.Resources>
 
-    <Border
-        Margin="3"
-        Background="#ffffff"
-        BorderBrush="#e0e0e0"
-        BorderThickness="1"
-        CornerRadius="8">
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="60" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="30" />
-            </Grid.RowDefinitions>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="40" />
+        </Grid.RowDefinitions>
 
-            <!--  Header mit abgerundeten Ecken  -->
-            <Border
-                Grid.Row="0"
-                Background="#0067c0"
-                CornerRadius="8,8,0,0">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
+        <!--  Header mit modernem Design  -->
+        <Border Grid.Row="0" Background="#142831" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+            <Grid Margin="20,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
 
-                    <!--  Linker Bereich mit Logo/Icon  -->
-                    <StackPanel
-                        Grid.Column="0"
-                        Margin="14,0,0,0"
-                        Orientation="Horizontal">
+                <!--  Linker Bereich mit Logo/Icon  -->
+                <StackPanel
+                    Grid.Column="0"
+                    Orientation="Horizontal"
+                    VerticalAlignment="Center">
+                    <TextBlock
+                        Margin="0,0,10,0"
+                        VerticalAlignment="Center"
+                        FontSize="32"
+                        Foreground="#e2e2e2"
+                        Text="🔄" />
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="18"
+                            FontWeight="SemiBold"
+                            Foreground="#e2e2e2"
+                            Text="PSscripts.de  |  easyIT - Exchange Online" />
+                        <TextBlock
+                            x:Name="txtVersion"
+                            Margin="2,2,0,0"
+                            VerticalAlignment="Center"
+                            FontSize="11"
+                            Foreground="#a0a0a0"
+                            Text="v0.0.7" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!--  Mittlerer Bereich - Status  -->
+                <Border
+                    x:Name="headerStatusContainer"
+                    Grid.Column="1"
+                    Margin="20,12,20,12"
+                    Background="#0078D7"
+                    CornerRadius="4"
+                    Visibility="Collapsed">
+                    <Grid Margin="10,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
                         <TextBlock
                             Margin="0,0,10,0"
                             VerticalAlignment="Center"
-                            FontSize="40"
+                            FontSize="16"
                             Foreground="White"
-                            Text="🔄" />
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                FontSize="20"
-                                FontWeight="SemiBold"
-                                Foreground="White"
-                                Text="PSscripts.de  |  easyIT - Exchange Online" />
-                            <TextBlock
-                                x:Name="txtVersion"
-                                Margin="2,2,0,0"
-                                VerticalAlignment="Center"
-                                FontSize="12"
-                                Foreground="#e0e0e0"
-                                Text="v0.0.7" />
-                        </StackPanel>
-                    </StackPanel>
-
-                    <!--  Mittlerer Bereich - Status  -->
-                    <Border
-                        x:Name="headerStatusContainer"
-                        Grid.Column="1"
-                        Margin="20,12,20,12"
-                        Background="#0078D7"
-                        CornerRadius="4"
-                        Visibility="Collapsed">
-                        <Grid Margin="10,4">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock
-                                Margin="0,0,10,0"
-                                VerticalAlignment="Center"
-                                FontSize="16"
-                                Foreground="White"
-                                Text="🔔" />
-                            <TextBlock
-                                x:Name="headerStatus"
-                                Grid.Column="1"
-                                VerticalAlignment="Center"
-                                Foreground="White"
-                                Text="Status-Nachricht"
-                                TextTrimming="CharacterEllipsis" />
-                        </Grid>
-                    </Border>
-
-                    <!--  Rechter Bereich mit Buttons  -->
-                    <StackPanel
-                        Grid.Column="2"
-                        Height="52"
-                        Margin="0,0,10,0"
-                        Orientation="Horizontal">
-                        <Button
-                            x:Name="btnShowConnectionStatus"
-                            Width="48"
-                            Height="48"
-                            Margin="5,0"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            ToolTip="Verbindungsstatus anzeigen">
-                            <TextBlock
-                                FontSize="18"
-                                Foreground="White"
-                                Text="🔌" />
-                        </Button>
-                        <Button
-                            x:Name="btnSettings"
-                            Width="48"
-                            Height="48"
-                            Margin="5,0"
-                            Background="Transparent"
-                            BorderThickness="0"
+                            Text="🔔" />
+                        <TextBlock
+                            x:Name="headerStatus"
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
                             Foreground="White"
-                            ToolTip="Einstellungen">
-                            <TextBlock
-                                FontSize="20"
-                                FontWeight="Bold"
-                                Text="⚙" />
-                        </Button>
-                        <Button
-                            x:Name="btnInfo"
-                            Width="48"
-                            Height="48"
-                            Margin="5,0"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            ToolTip="Info">
-                            <Grid>
-                                <Ellipse
-                                    Width="20"
-                                    Height="20"
-                                    Fill="White" />
-                                <TextBlock
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    FontSize="16"
-                                    FontWeight="Bold"
-                                    Foreground="#0067c0"
-                                    Text="i" />
-                            </Grid>
-                        </Button>
-                        <Button
-                            x:Name="btnClose"
-                            Width="48"
-                            Height="48"
-                            Margin="5,0"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            ToolTip="Schließen">
-                            <TextBlock
-                                FontSize="20"
-                                FontWeight="Bold"
-                                Foreground="#FF5252"
-                                Text="✕" />
-                        </Button>
-                    </StackPanel>
-                </Grid>
-            </Border>
-
-            <!--  Main Content mit abgerundetem Navigationsbereich  -->
-            <Grid Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="220" MinWidth="200" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
-                <!--  Navigation Panel mit abgerundeten Ecken  -->
-                <Border
-                    Grid.Column="0"
-                    Background="#f3f3f3"
-                    CornerRadius="8,0,0,8"
-                    Effect="{DynamicResource MaterialDesignShadowDepth1}">
-                    <StackPanel Margin="10,12,10,5">
-                        <Button
-                            x:Name="btnConnect"
-                            Height="38"
-                            Margin="0,5,0,12"
-                            Padding="0,0"
-                            Background="#FF7600"
-                            BorderBrush="#E86C00"
-                            BorderThickness="1"
-                            Content="Mit Exchange verbinden"
-                            FontWeight="Bold"
-                            Foreground="White" />
-
-                        <Border
-                            Margin="0,0,0,15"
-                            Padding="8,8,8,10"
-                            Background="#FFFFF8E3"
-                            BorderBrush="#FFE5DEC0"
-                            BorderThickness="1"
-                            CornerRadius="3" Height="80">
-                            <StackPanel>
-                                <TextBlock
-                                    Margin="0,0,0,5"
-                                    FontWeight="Bold"
-                                    Text="Verbindungsstatus:" />
-                                <TextBlock
-                                    x:Name="txtConnectionStatus"
-                                    Margin="0,0,0,0"
-                                    FontWeight="SemiBold"
-                                    Foreground="#d83b01"
-                                    Text="Nicht verbunden" />
-                            </StackPanel>
-                        </Border>
-
-                        <!--  Verwaltung Gruppe  -->
-                        <Border
-                            Margin="0,0,0,8"
-                            BorderBrush="#e0e0e0"
-                            BorderThickness="0,0,0,1">
-                            <TextBlock
-                                Margin="4,5,0,0"
-                                FontSize="14"
-                                FontWeight="Bold"
-                                Text="Einstellungen" />
-                        </Border>
-                        <Button
-                            x:Name="btnNavEXOSettings"
-                            Margin="0,2,0,5"
-                            Background="#FFFFFFC6"
-                            BorderBrush="#FFC0C0D8"
-                            BorderThickness="1"
-                            Content="Exchange Online"
-                            Style="{StaticResource NavigationButtonStyle}" />
-                        <Button
-                            x:Name="btnNavRegion"
-                            Margin="0,2,0,10"
-                            Background="#FFCDF9FF"
-                            BorderBrush="#FF9DCCDD"
-                            BorderThickness="1"
-                            Content="Sprache / Zeitzone"
-                            Style="{StaticResource NavigationButtonStyle}" />
-
-
-                        <Border
-                            Margin="0,0,0,8"
-                            BorderBrush="#e0e0e0"
-                            BorderThickness="0,0,0,1">
-                            <TextBlock
-                                Margin="4,10,0,0"
-                                FontSize="14"
-                                FontWeight="Bold"
-                                Text="Verwaltung" />
-                        </Border>
-                        <Button
-                            x:Name="btnNavCalendar"
-                            Margin="0,2,0,2"
-                            Background="#FFD1FFC1"
-                            BorderBrush="#FFA0D990"
-                            BorderThickness="1"
-                            Content="Kalenderberechtigungen"
-                            Style="{StaticResource NavigationButtonStyle}" />
-                        <Button
-                            x:Name="btnNavMailbox"
-                            Margin="0,2,0,15"
-                            Background="#FFD1FFC1"
-                            BorderBrush="#FFA0D990"
-                            BorderThickness="1"
-                            Content="Postfachberechtigungen"
-                            Style="{StaticResource NavigationButtonStyle}" />
-                        <Button
-                            x:Name="btnNavSharedMailbox"
-                            Margin="0,2,0,2"
-                            Background="#FFC5FFE3"
-                            BorderBrush="#FF95D0B3"
-                            BorderThickness="1"
-                            Content="Shared Mailboxes"
-                            Style="{StaticResource NavigationButtonStyle}" />
-                        <Button
-                            x:Name="btnNavGroups"
-                            Margin="0,2,0,15"
-                            Background="#FFC5FFE3"
-                            BorderBrush="#FF95D0B3"
-                            BorderThickness="1"
-                            Content="Gruppen / Verteiler"
-                            Style="{StaticResource NavigationButtonStyle}" />
-                        <Button
-                            x:Name="btnNavResources"
-                            Margin="0,2,0,2"
-                            Background="#FFE6CCFF"
-                            BorderBrush="#FFC8A3E0"
-                            BorderThickness="1"
-                            Content="Ressourcen"
-                            Style="{StaticResource NavigationButtonStyle}" />
-                        <Button
-                            x:Name="btnNavContacts"
-                            Margin="0,2,0,10"
-                            Background="#FFE6CCFF"
-                            BorderBrush="#FFC8A3E0"
-                            BorderThickness="1"
-                            Content="Kontakte"
-                            Style="{StaticResource NavigationButtonStyle}" />
-
-                        <!--  Info Gruppe  -->
-                        <Border
-                            Margin="0,20,0,8"
-                            BorderBrush="#e0e0e0"
-                            BorderThickness="0,0,0,1">
-                            <TextBlock
-                                Margin="4,0,0,0"
-                                FontSize="14"
-                                FontWeight="Bold"
-                                Text="Info / Support" />
-                        </Border>
-
-                        <Button
-                            x:Name="btnNavAudit"
-                            Margin="0,2,0,2"
-                            Background="#FFCDF9FF"
-                            BorderBrush="#FF9DCCDD"
-                            BorderThickness="1"
-                            Content="Information / Audit"
-                            Style="{StaticResource NavigationButtonStyle}" />
-                        <Button
-                            x:Name="btnNavReports"
-                            Margin="0,2,0,25"
-                            Background="#FFCDF9FF"
-                            BorderBrush="#FF9DCCDD"
-                            BorderThickness="1"
-                            Content="export Berichte"
-                            Style="{StaticResource NavigationButtonStyle}" />
-                        <Button
-                            x:Name="btnNavTroubleshooting"
-                            Margin="0,5,0,45"
-                            Background="#FFFDC6E4"
-                            BorderBrush="#FFC0ADDB"
-                            BorderThickness="1"
-                            Content="Troubleshooting"
-                            Style="{StaticResource NavigationButtonStyle}" />
-                    </StackPanel>
+                            Text="Status-Nachricht"
+                            TextTrimming="CharacterEllipsis" />
+                    </Grid>
                 </Border>
 
-                <!--  Content Tabs mit abgerundeten Tab-Headers  -->
+                <!--  Rechter Bereich mit Buttons  -->
+                <StackPanel
+                    Grid.Column="2"
+                    Height="52"
+                    Orientation="Horizontal"
+                    VerticalAlignment="Center">
+                    <Button
+                        x:Name="btnShowConnectionStatus"
+                        Width="48"
+                        Height="48"
+                        Margin="5,0"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Foreground="#e2e2e2"
+                        ToolTip="Verbindungsstatus anzeigen">
+                        <TextBlock
+                            FontSize="18"
+                            Text="🔌" />
+                    </Button>
+                    <Button
+                        x:Name="btnSettings"
+                        Width="48"
+                        Height="48"
+                        Margin="5,0"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Foreground="#e2e2e2"
+                        ToolTip="Einstellungen">
+                        <TextBlock
+                            FontSize="20"
+                            FontWeight="Bold"
+                            Text="⚙" />
+                    </Button>
+                    <Button
+                        x:Name="btnInfo"
+                        Width="48"
+                        Height="48"
+                        Margin="5,0"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        ToolTip="Info">
+                        <Grid>
+                            <Ellipse
+                                Width="20"
+                                Height="20"
+                                Fill="#e2e2e2" />
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Foreground="#142831"
+                                Text="i" />
+                        </Grid>
+                    </Button>
+                    <Button
+                        x:Name="btnClose"
+                        Width="48"
+                        Height="48"
+                        Margin="5,0"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        ToolTip="Schließen">
+                        <TextBlock
+                            FontSize="20"
+                            FontWeight="Bold"
+                            Foreground="#FF5252"
+                            Text="✕" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!--  Main Content mit moderner Navigation  -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220" MinWidth="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!--  Navigation Panel mit modernem Design  -->
+            <Border Grid.Column="0" Background="#2B3E50" BorderBrush="#1E2A38" BorderThickness="0,0,1,0">
+                <StackPanel Margin="0,10">
+                    <Button
+                        x:Name="btnConnect"
+                        Height="38"
+                        Margin="8,5,8,12"
+                        Padding="0,0"
+                        Background="#FF7600"
+                        BorderBrush="#E86C00"
+                        BorderThickness="1"
+                        Content="Mit Exchange verbinden"
+                        FontWeight="Bold"
+                        Foreground="White" />
+
+                    <GroupBox
+                        Header="Verbindungsstatus"
+                        Foreground="#E0E0E0"
+                        BorderBrush="#4A5C6E" BorderThickness="1"
+                        Margin="8,0,8,15"
+                        Padding="8"
+                        Background="Transparent">
+                        <StackPanel>
+                            <TextBlock
+                                x:Name="txtConnectionStatus"
+                                Margin="0,0,0,0"
+                                FontWeight="SemiBold"
+                                Foreground="#d83b01"
+                                Text="Nicht verbunden" />
+                        </StackPanel>
+                    </GroupBox>
+
+                    <!-- Navigation Header -->
+                    <TextBlock Text="Einstellungen" Foreground="#FFFFFF" FontSize="12" FontWeight="SemiBold" 
+                              Margin="16,10,16,8" HorizontalAlignment="Left"/>
+
+                    <Button
+                        x:Name="btnNavEXOSettings"
+                        Content="Exchange Online"
+                        Style="{StaticResource NavButton}" />
+                    <Button
+                        x:Name="btnNavRegion"
+                        Content="Sprache / Zeitzone"
+                        Style="{StaticResource NavButton}" />
+
+                    <!-- Trennlinie -->
+                    <Border Height="1" Background="#4A5C6E" Margin="16,8,16,8" Opacity="0.5"/>
+
+                    <!-- Navigation Header -->
+                    <TextBlock Text="Verwaltung" Foreground="#FFFFFF" FontSize="12" FontWeight="SemiBold" 
+                              Margin="16,0,16,8" HorizontalAlignment="Left"/>
+
+                    <Button
+                        x:Name="btnNavCalendar"
+                        Content="Kalenderberechtigungen"
+                        Style="{StaticResource NavButton}" />
+                    <Button
+                        x:Name="btnNavMailbox"
+                        Content="Postfachberechtigungen"
+                        Style="{StaticResource NavButton}" />
+                    <Button
+                        x:Name="btnNavSharedMailbox"
+                        Content="Shared Mailboxes"
+                        Style="{StaticResource NavButton}" />
+                    <Button
+                        x:Name="btnNavGroups"
+                        Content="Gruppen / Verteiler"
+                        Style="{StaticResource NavButton}" />
+                    <Button
+                        x:Name="btnNavResources"
+                        Content="Ressourcen"
+                        Style="{StaticResource NavButton}" />
+                    <Button
+                        x:Name="btnNavContacts"
+                        Content="Kontakte"
+                        Style="{StaticResource NavButton}" />
+
+                    <!-- Trennlinie -->
+                    <Border Height="1" Background="#4A5C6E" Margin="16,8,16,8" Opacity="0.5"/>
+
+                    <!-- Mail Flow Management -->
+                    <TextBlock Text="Mail Flow" Foreground="#FFFFFF" FontSize="12" FontWeight="SemiBold" 
+                              Margin="16,0,16,8" HorizontalAlignment="Left"/>
+
+                    <Button
+                        x:Name="btnNavMailFlowRules"
+                        Content="Transport Rules"
+                        Style="{StaticResource NavButton}" />
+                    <Button
+                        x:Name="btnNavInboxRules"
+                        Content="Inbox Rules"
+                        Style="{StaticResource NavButton}" />
+                    <Button
+                        x:Name="btnNavMessageTrace"
+                        Content="Message Trace"
+                        Style="{StaticResource NavButton}" />
+                    <Button
+                        x:Name="btnNavAutoReply"
+                        Content="Auto Reply"
+                        Style="{StaticResource NavButton}" />
+
+                    <!-- Trennlinie -->
+                    <Border Height="1" Background="#4A5C6E" Margin="16,8,16,8" Opacity="0.5"/>
+
+                    <!--  Info Gruppe  -->
+                    <TextBlock Text="Info / Support" Foreground="#FFFFFF" FontSize="12" FontWeight="SemiBold" 
+                              Margin="16,0,16,8" HorizontalAlignment="Left"/>
+
+                    <Button
+                        x:Name="btnNavAudit"
+                        Content="Information / Audit"
+                        Style="{StaticResource NavButton}" />
+                    <Button
+                        x:Name="btnNavReports"
+                        Content="export Berichte"
+                        Style="{StaticResource NavButton}" />
+                    <Button
+                        x:Name="btnNavTroubleshooting"
+                        Content="Troubleshooting"
+                        Style="{StaticResource NavButton}" />
+                </StackPanel>
+            </Border>
+
+            <!--  Content Tabs mit modernem Design  -->
+            <Border Grid.Column="1" Background="#FFFFFF" Padding="20">
                 <TabControl
                     x:Name="tabContent"
-                    Grid.Column="1"
-                    Margin="8,0,0,0"
                     Background="Transparent"
                     BorderThickness="0">
                     <TabItem
@@ -4360,21 +4413,396 @@
                             </StackPanel>
                         </ScrollViewer>
                     </TabItem>
-                </TabControl>
-            </Grid>
 
-            <!--  Status Bar  -->
-            <Border
-                Grid.Row="2"
-                Background="#f3f3f3"
-                CornerRadius="0,0,8,8">
-                <TextBlock
-                    x:Name="txtStatus"
-                    Margin="14,0,0,0"
-                    Padding="0,5"
-                    VerticalAlignment="Center"
-                    Text="Bereit" FontWeight="Bold" />
+                    <!-- Mail Flow Rules Tab -->
+                    <TabItem
+                        x:Name="tabMailFlowRules"
+                        Header="Transport Rules"
+                        Visibility="Collapsed">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="10">
+                                <GroupBox Header="Transport Rules Management">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        
+                                        <!-- Rule Creation Section -->
+                                        <Expander Grid.Row="0" Header="Create New Rule" Margin="5">
+                                            <Grid Margin="10">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="120"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="120"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+                                                
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Rule Name:" VerticalAlignment="Center"/>
+                                                <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Name="txtRuleName" Margin="5,2"/>
+                                                
+                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Condition:" VerticalAlignment="Center"/>
+                                                <ComboBox Grid.Row="1" Grid.Column="1" Name="cmbCondition" Margin="5,2">
+                                                    <ComboBoxItem Content="Sender is..." Tag="From"/>
+                                                    <ComboBoxItem Content="Recipient is..." Tag="SentTo"/>
+                                                    <ComboBoxItem Content="Subject contains..." Tag="SubjectContainsWords"/>
+                                                    <ComboBoxItem Content="Body contains..." Tag="BodyContainsWords"/>
+                                                    <ComboBoxItem Content="Sender is external..." Tag="FromScope"/>
+                                                    <ComboBoxItem Content="Message size over..." Tag="MessageSizeOver"/>
+                                                    <ComboBoxItem Content="Sender address contains..." Tag="FromAddressContainsWords"/>
+                                                </ComboBox>
+                                                
+                                                <TextBlock Grid.Row="1" Grid.Column="2" Text="Value:" VerticalAlignment="Center"/>
+                                                <TextBox Grid.Row="1" Grid.Column="3" Name="txtConditionValue" Margin="5,2"/>
+                                                
+                                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Action:" VerticalAlignment="Center"/>
+                                                <ComboBox Grid.Row="2" Grid.Column="1" Name="cmbAction" Margin="5,2">
+                                                    <ComboBoxItem Content="Prepend subject..." Tag="PrependSubject"/>
+                                                    <ComboBoxItem Content="Redirect to..." Tag="RedirectMessageTo"/>
+                                                    <ComboBoxItem Content="Copy to..." Tag="BlindCopyTo"/>
+                                                    <ComboBoxItem Content="Reject message..." Tag="RejectMessageEnhancedStatusCode"/>
+                                                    <ComboBoxItem Content="Delete message" Tag="DeleteMessage"/>
+                                                    <ComboBoxItem Content="Quarantine..." Tag="Quarantine"/>
+                                                </ComboBox>
+                                                
+                                                <TextBlock Grid.Row="2" Grid.Column="2" Text="Action Value:" VerticalAlignment="Center"/>
+                                                <TextBox Grid.Row="2" Grid.Column="3" Name="txtActionValue" Margin="5,2"/>
+                                                
+                                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Mode:" VerticalAlignment="Center"/>
+                                                <ComboBox Grid.Row="3" Grid.Column="1" Name="cmbRuleMode" Margin="5,2">
+                                                    <ComboBoxItem Content="Enforce" Tag="Enforce"/>
+                                                    <ComboBoxItem Content="Test with Policy Tips" Tag="Test" IsSelected="True"/>
+                                                    <ComboBoxItem Content="Test without Policy Tips" Tag="AuditAndNotify"/>
+                                                </ComboBox>
+                                                
+                                                <StackPanel Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="5,10,0,0">
+                                                    <Button Name="btnCreateRule" Content="Create Rule" Background="#28a745" Foreground="White" Margin="0,0,10,0" Padding="15,5"/>
+                                                    <Button Name="btnTestRule" Content="Test Rule" Background="#ffc107" Foreground="Black" Padding="15,5"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Expander>
+                                        
+                                        <!-- Existing Rules List -->
+                                        <DataGrid Grid.Row="1" Name="dgMailFlowRules" Margin="5" MinHeight="300">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="200"/>
+                                                <DataGridTextColumn Header="State" Binding="{Binding State}" Width="80"/>
+                                                <DataGridTextColumn Header="Priority" Binding="{Binding Priority}" Width="80"/>
+                                                <DataGridTextColumn Header="Conditions" Binding="{Binding Conditions}" Width="*"/>
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                        
+                                        <!-- Rule Management Buttons -->
+                                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="5">
+                                            <Button Name="btnRefreshRules" Content="Refresh" Margin="0,0,5,0" Padding="10,5"/>
+                                            <Button Name="btnEnableRule" Content="Enable" Margin="5,0" Padding="10,5"/>
+                                            <Button Name="btnDisableRule" Content="Disable" Margin="5,0" Padding="10,5"/>
+                                            <Button Name="btnDeleteRule" Content="Delete" Background="#dc3545" Foreground="White" Margin="5,0" Padding="10,5"/>
+                                            <Button Name="btnExportRules" Content="Export" Margin="5,0" Padding="10,5"/>
+                                            <Button Name="btnImportRules" Content="Import" Margin="5,0" Padding="10,5"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </GroupBox>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
+
+                    <!-- Inbox Rules Tab -->
+                    <TabItem
+                        x:Name="tabInboxRules"
+                        Header="Inbox Rules"
+                        Visibility="Collapsed">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="10">
+                                <GroupBox Header="User Inbox Rules Management">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        
+                                        <!-- User Selection -->
+                                        <Grid Grid.Row="0" Margin="5">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="User:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                            <ComboBox Grid.Column="1" Name="cmbInboxRuleUser" Margin="0,0,10,0"/>
+                                            <Button Grid.Column="2" Name="btnLoadInboxRules" Content="Load Rules" Padding="10,5"/>
+                                        </Grid>
+                                        
+                                        <!-- Quick Rule Creation -->
+                                        <Expander Grid.Row="1" Header="Quick Rule Creation" Margin="5">
+                                            <Grid Margin="10">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+                                                
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Rule Name:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBox Grid.Row="0" Grid.Column="1" Name="txtInboxRuleName" Margin="0,2,10,2"/>
+                                                
+                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="From Address:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBox Grid.Row="1" Grid.Column="1" Name="txtFromAddress" Margin="0,2,10,2"/>
+                                                
+                                                <TextBlock Grid.Row="2" Grid.Column="0" Text="To Folder:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <ComboBox Grid.Row="2" Grid.Column="1" Name="cmbTargetFolder" Margin="0,2,10,2">
+                                                    <ComboBoxItem Content="Inbox\VIP"/>
+                                                    <ComboBoxItem Content="Inbox\Newsletter"/>
+                                                    <ComboBoxItem Content="Inbox\Automatic"/>
+                                                    <ComboBoxItem Content="Junk Email"/>
+                                                    <ComboBoxItem Content="Deleted Items"/>
+                                                </ComboBox>
+                                                
+                                                <CheckBox Grid.Row="3" Grid.Column="1" Name="chkMarkAsRead" Content="Mark as read" Margin="0,5"/>
+                                                
+                                                <Button Grid.Row="0" Grid.Column="2" Grid.RowSpan="4" Name="btnCreateInboxRule" 
+                                                        Content="Create Rule" Width="80" VerticalAlignment="Center" Background="#28a745" Foreground="White"/>
+                                            </Grid>
+                                        </Expander>
+                                        
+                                        <!-- Existing Inbox Rules -->
+                                        <DataGrid Grid.Row="2" Name="dgInboxRules" Margin="5" MinHeight="250">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="150"/>
+                                                <DataGridCheckBoxColumn Header="Active" Binding="{Binding Enabled}" Width="60"/>
+                                                <DataGridTextColumn Header="Conditions" Binding="{Binding Conditions}" Width="*"/>
+                                                <DataGridTextColumn Header="Actions" Binding="{Binding Actions}" Width="*"/>
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                        
+                                        <!-- Inbox Rule Management -->
+                                        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="5">
+                                            <Button Name="btnRefreshInboxRules" Content="Refresh" Margin="0,0,5,0" Padding="10,5"/>
+                                            <Button Name="btnEnableInboxRule" Content="Enable" Margin="5,0" Padding="10,5"/>
+                                            <Button Name="btnDisableInboxRule" Content="Disable" Margin="5,0" Padding="10,5"/>
+                                            <Button Name="btnDeleteInboxRule" Content="Delete" Background="#dc3545" Foreground="White" Margin="5,0" Padding="10,5"/>
+                                            <Button Name="btnMoveRuleUp" Content="Move Up" Margin="5,0" Padding="10,5"/>
+                                            <Button Name="btnMoveRuleDown" Content="Move Down" Margin="5,0" Padding="10,5"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </GroupBox>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
+
+                    <!-- Message Trace Tab -->
+                    <TabItem
+                        x:Name="tabMessageTrace"
+                        Header="Message Trace"
+                        Visibility="Collapsed">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="10">
+                                <GroupBox Header="Advanced Message Tracking">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        
+                                        <!-- Search Parameters -->
+                                        <Expander Grid.Row="0" Header="Search Parameters" IsExpanded="True" Margin="5">
+                                            <Grid Margin="10">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+                                                
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Sender:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBox Grid.Row="0" Grid.Column="1" Name="txtTraceSender" Margin="0,2,10,2"/>
+                                                
+                                                <TextBlock Grid.Row="0" Grid.Column="2" Text="Recipient:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBox Grid.Row="0" Grid.Column="3" Name="txtTraceRecipient" Margin="0,2"/>
+                                                
+                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Subject:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBox Grid.Row="1" Grid.Column="1" Name="txtTraceSubject" Margin="0,2,10,2"/>
+                                                
+                                                <TextBlock Grid.Row="1" Grid.Column="2" Text="Message ID:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBox Grid.Row="1" Grid.Column="3" Name="txtTraceMessageId" Margin="0,2"/>
+                                                
+                                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Start Date:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <DatePicker Grid.Row="2" Grid.Column="1" Name="dpTraceStart" Margin="0,2,10,2"/>
+                                                
+                                                <TextBlock Grid.Row="2" Grid.Column="2" Text="End Date:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <DatePicker Grid.Row="2" Grid.Column="3" Name="dpTraceEnd" Margin="0,2"/>
+                                                
+                                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Status:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <ComboBox Grid.Row="3" Grid.Column="1" Name="cmbTraceStatus" Margin="0,2,10,2">
+                                                    <ComboBoxItem Content="All" IsSelected="True"/>
+                                                    <ComboBoxItem Content="Delivered"/>
+                                                    <ComboBoxItem Content="Failed"/>
+                                                    <ComboBoxItem Content="Pending"/>
+                                                    <ComboBoxItem Content="Quarantined"/>
+                                                </ComboBox>
+                                                
+                                                <Button Grid.Row="3" Grid.Column="3" Name="btnStartTrace" Content="Start Search" 
+                                                        Background="#007bff" Foreground="White" HorizontalAlignment="Left" Width="120" Padding="10,5"/>
+                                            </Grid>
+                                        </Expander>
+                                        
+                                        <!-- Results -->
+                                        <DataGrid Grid.Row="1" Name="dgMessageTrace" Margin="5" MinHeight="300">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Received" Binding="{Binding Received}" Width="130"/>
+                                                <DataGridTextColumn Header="Sender" Binding="{Binding SenderAddress}" Width="200"/>
+                                                <DataGridTextColumn Header="Recipient" Binding="{Binding RecipientAddress}" Width="200"/>
+                                                <DataGridTextColumn Header="Subject" Binding="{Binding Subject}" Width="*"/>
+                                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
+                                                <DataGridTextColumn Header="Size (KB)" Binding="{Binding Size}" Width="80"/>
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                        
+                                        <!-- Export Options -->
+                                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="5">
+                                            <Button Name="btnExportTrace" Content="Export CSV" Margin="0,0,5,0" Padding="10,5"/>
+                                            <Button Name="btnDetailedTrace" Content="Detailed View" Margin="5,0" Padding="10,5"/>
+                                            <Button Name="btnClearTrace" Content="Clear Results" Margin="5,0" Padding="10,5"/>
+                                            <TextBlock Name="txtTraceCount" Text="Results: 0" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </GroupBox>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
+
+                    <!-- Auto Reply Tab -->
+                    <TabItem
+                        x:Name="tabAutoReply"
+                        Header="Auto Reply Management"
+                        Visibility="Collapsed">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="10">
+                                <GroupBox Header="Out of Office Management">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+                                        
+                                        <!-- Quick Setup -->
+                                        <Expander Grid.Row="0" Header="Quick Auto Reply Setup" Margin="5">
+                                            <Grid Margin="10">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+                                                
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="User:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <ComboBox Grid.Row="0" Grid.Column="1" Name="cmbAutoReplyUser" Margin="0,2,10,2"/>
+                                                
+                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Start Date:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <DatePicker Grid.Row="1" Grid.Column="1" Name="dpAutoReplyStart" Margin="0,2,10,2"/>
+                                                
+                                                <TextBlock Grid.Row="2" Grid.Column="0" Text="End Date:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <DatePicker Grid.Row="2" Grid.Column="1" Name="dpAutoReplyEnd" Margin="0,2,10,2"/>
+                                                
+                                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Message:" VerticalAlignment="Top" Margin="0,8,10,0"/>
+                                                <TextBox Grid.Row="3" Grid.Column="1" Name="txtAutoReplyMessage" 
+                                                         TextWrapping="Wrap" AcceptsReturn="True" Height="80" 
+                                                         Text="I am out of office from {StartDate} to {EndDate} and have no access to emails."
+                                                         Margin="0,5,10,5"/>
+                                                
+                                                <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" Margin="0,10,0,0">
+                                                    <Button Name="btnSetAutoReply" Content="Enable Auto Reply" Background="#28a745" Foreground="White" Margin="0,0,10,0" Padding="15,5"/>
+                                                    <Button Name="btnDisableAutoReply" Content="Disable Auto Reply" Background="#dc3545" Foreground="White" Padding="15,5"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Expander>
+                                        
+                                        <!-- Current Auto-Reply Status -->
+                                        <GroupBox Grid.Row="1" Header="Current Auto Reply Status" Margin="5">
+                                            <DataGrid Name="dgAutoReplyStatus" Height="150">
+                                                <DataGrid.Columns>
+                                                    <DataGridTextColumn Header="User" Binding="{Binding DisplayName}" Width="150"/>
+                                                    <DataGridCheckBoxColumn Header="Active" Binding="{Binding AutoReplyState}" Width="60"/>
+                                                    <DataGridTextColumn Header="Start" Binding="{Binding StartTime}" Width="100"/>
+                                                    <DataGridTextColumn Header="End" Binding="{Binding EndTime}" Width="100"/>
+                                                    <DataGridTextColumn Header="Message" Binding="{Binding InternalMessage}" Width="*"/>
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+                                        </GroupBox>
+                                        
+                                        <!-- Management Buttons -->
+                                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="5" VerticalAlignment="Top">
+                                            <Button Name="btnRefreshAutoReply" Content="Refresh Status" Margin="0,0,5,0" Padding="10,5"/>
+                                            <Button Name="btnBulkAutoReply" Content="Bulk Setup" Margin="5,0" Padding="10,5"/>
+                                            <Button Name="btnExportAutoReply" Content="Export Status" Margin="5,0" Padding="10,5"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </GroupBox>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
+                </TabControl>
             </Border>
         </Grid>
-    </Border>
+
+        <!--  Status Bar  -->
+        <Border
+            Grid.Row="2"
+            Background="#142831" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0">
+            <Grid Margin="20,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock
+                    x:Name="txtStatus"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    FontSize="11"
+                    Foreground="#e2e2e2"
+                    Text="Bereit" />
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="Copyright 2025 @" FontSize="11" Foreground="#e2e2e2" Margin="0,0,5,0"/>
+                    <TextBlock Text="by PSscripts.de" FontSize="11" Foreground="#e2e2e2" Margin="0,0,35,0"/>
+                    <TextBlock Text="www.psscripts.de" FontSize="11" Foreground="#d0e8ff" Cursor="Hand"/>
+                </StackPanel>
+
+                <TextBlock Grid.Column="2" Text="Exchange Online Management v0.0.7" 
+                          HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="11" Foreground="#e2e2e2"/>
+            </Grid>
+        </Border>
+    </Grid>
 </Window>

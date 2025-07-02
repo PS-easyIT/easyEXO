@@ -491,6 +491,2185 @@ try {
     if ($performUpdate) {
         Write-LogEntry "Setze/Aktualisiere Registry-Standardwerte für '$($script:registryPath)'."
         New-ItemProperty -Path $script:registryPath -Name "Debug" -Value 0 -PropertyType DWORD -Force -ErrorAction Stop | Out-Null
+        New-ItemProperty -Path $script:registryPath -Name "AppName" -Value easyEXO - Exchange Online Verwaltung" -PropertyType String -Force -ErrorAction Stop | Out-Null
+        New-ItemProperty -Path $script:registryPath -Name "Version" -Value $currentScriptVersion -PropertyType String -Force -ErrorAction Stop | Out-Null
+        New-ItemProperty -Path $script:registryPath -Name "ThemeColor" -Value "#0078D7" -PropertyType String -Force -ErrorAction Stop | Out-Null
+        New-ItemProperty -Path $script:registryPath -Name "LogPath" -Value "$PSScriptRoot\Logs" -PropertyType String -Force -ErrorAction Stop | Out-Null
+        New-ItemProperty -Path $script:registryPath -Name "HeaderLogoURL" -Value "https://psscripts.de" -PropertyType String -Force -ErrorAction Stop | Out-Null
+        Write-LogEntry "Registry-Standardwerte für '$($script:registryPath)' erfolgreich gesetzt/aktualisiert."
+    }
+}
+catch {
+    $errorMsg = $_.Exception.Message
+    Write-LogEntry "FEHLER bei der Registry-Konfigurationsinitialisierung für '$($script:registryPath)': $errorMsg"
+}
+
+# Lade Konfiguration aus Registry
+function Get-RegistryConfig {
+    [CmdletBinding()]
+    param()
+    
+    try {
+        $config = @{
+            "General" = @{}
+            "Paths" = @{}
+            "UI" = @{}
+        }
+        
+        # Lese alle Registry-Werte
+        $regValues = Get-ItemProperty -Path $script:registryPath -ErrorAction SilentlyContinue
+        
+        if ($regValues) {
+            # Debug-Einstellung
+            if ($null -ne $regValues.Debug) {
+                $config["General"]["Debug"] = $regValues.Debug.ToString()
+            }
+            
+            # AppName
+            if ($null -ne $regValues.AppName) {
+                $config["General"]["AppName"] = $regValues.AppName
+            }
+            
+            # Version
+            if ($null -ne $regValues.Version) {
+                $config["General"]["Version"] = $regValues.Version
+            }
+            
+            # ThemeColor
+            if ($null -ne $regValues.ThemeColor) {
+                $config["General"]["ThemeColor"] = $regValues.ThemeColor
+            }
+            
+            # LogPath
+            if ($null -ne $regValues.LogPath) {
+                $config["Paths"]["LogPath"] = $regValues.LogPath
+            }
+            
+            # HeaderLogoURL
+            if ($null -ne $regValues.HeaderLogoURL) {
+                $config["UI"]["HeaderLogoURL"] = $regValues.HeaderLogoURL
+            }
+        }
+        
+        return $config
+    }
+    catch {
+        # Fallback zu Standardwerten bei Fehlern
+        return @{
+            "General" = @{
+                "Debug" = "0"
+                "AppName" = "Exchange Online Verwaltung"
+                "Version" = "0.0.9"
+                "ThemeColor" = "#0078D7"
+            }
+            "Paths" = @{
+                "LogPath" = "$PSScriptRoot\Logs"
+            }
+            "UI" = @{
+                "HeaderLogoURL" = "https://psscripts.de"
+            }
+        }
+    }
+}
+
+# Lade Konfiguration
+$script:config = Get-RegistryConfig
+
+# Debug-Modus einschalten, wenn in Registry aktiviert
+if ($script:config["General"]["Debug"] -eq "1") {
+    $script:debugMode = $true
+}
+
+# --------------------------------------------------------------
+# Verbesserte Debug- und Logging-Funktionen
+# --------------------------------------------------------------
+function Log-Action {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true, Position = 0)]
+        [string]$Message
+    )
+    
+    try {
+        # Sicherstellen, dass nur druckbare ASCII-Zeichen verwendet werden
+        $sanitizedMessage = $Message -replace '[^\x20-\x7E]', '?'
+        
+        # Zeitstempel erzeugen
+        $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+        
+        # Logverzeichnis erstellen, falls nicht vorhanden
+        $logFolder = Split-Path -Path $script:logFilePath -Parent
+        if (-not (Test-Path $logFolder)) {
+            New-Item -ItemType Directory -Path $logFolder -Force | Out-Null
+            Write-LogEntry  "Logverzeichnis wurde erstellt: $logFolder" -Type "Info" # Konsolenausgabe hiervon wird durch Write-Log gesteuert
+        }
+        
+        # Log-Eintrag schreiben
+        Add-Content -Path $script:logFilePath -Value "[$timestamp] $sanitizedMessage" -Encoding UTF8
+        
+        # Bei zu langer Logdatei (>10 MB) rotieren
+        $logFile = Get-Item -Path $script:logFilePath -ErrorAction SilentlyContinue
+        if ($logFile -and $logFile.Length -gt 10MB) {
+            $backupLogPath = "$($script:logFilePath)_$(Get-Date -Format 'yyyyMMdd_HHmmss').bak"
+            Move-Item -Path $script:logFilePath -Destination $backupLogPath -Force
+            Write-LogEntry  "Logdatei wurde rotiert: $backupLogPath" -Type "Info" # Konsolenausgabe hiervon wird durch Write-Log gesteuert
+        }
+    }
+    catch {
+        # Fallback für Fehler in der Log-Funktion
+        try {
+            $errorMsg = $_.Exception.Message -replace '[^\x20-\x7E]', '?'
+            $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+            $fallbackLogFile = Join-Path -Path "$PSScriptRoot\Logs" -ChildPath "log_fallback.log"
+            $fallbackLogFolder = Split-Path -Path $fallbackLogFile -Parent
+            
+            if (-not (Test-Path $fallbackLogFolder)) {
+                New-Item -ItemType Directory -Path $fallbackLogFolder -Force | Out-Null
+            }
+            
+            Add-Content -Path $fallbackLogFile -Value "[$timestamp] Fehler in Log-Action: $errorMsg" -Encoding UTF8
+            Add-Content -Path $fallbackLogFile -Value "[$timestamp] Ursprüngliche Nachricht: $sanitizedMessage" -Encoding UTF8
+        }
+        catch {
+            # Absoluter Fallback - ignoriere Fehler um Programmablauf nicht zu stören
+        }
+    }
+}
+
+function Write-Log {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true, Position = 0)]
+        [string]$Message,
+
+        [Parameter(Mandatory = $false, Position = 1)]
+        [ValidateSet("Info", "Warning", "Error", "Success", "Debug")]
+        [string]$Type = "Info",
+
+        [Parameter(Mandatory = $false)]
+        [switch]$NoLog,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$NoConsole
+    )
+
+    try {
+        # Farbzuordnung für verschiedene Nachrichtentypen
+        $colorMap = @{
+            "Info"     = "White"
+            "Warning"  = "Yellow"
+            "Error"    = "Red"
+            "Success"  = "Green"
+            "Debug"    = "Cyan"
+        }
+
+        # Zeitstempel erzeugen
+        $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+
+        # Nachricht formatieren für Konsolenausgabe
+        $formattedMessage = "[$timestamp] [$Type] $Message"
+
+        # Ausgabe in Konsole, wenn nicht unterdrückt UND Debug-Modus aktiv ist
+        if (-not $NoConsole -and $script:debugMode) {
+            # Prüfen, ob die aktuelle Host-Umgebung Farben unterstützt oder der Parameter vorhanden ist.
+            try {
+                # Versuch mit Farbe
+                Write-Host $formattedMessage -ForegroundColor $colorMap[$Type]
+            }
+            catch [System.Management.Automation.ParameterBindingException] {
+                # Speziell den Parameter-Fehler abfangen
+                if ($_.Exception.Message -like "*ForegroundColor*") {
+                    # Fallback ohne Farbe, wenn -ForegroundColor nicht unterstützt wird
+                    Write-Host $formattedMessage
+                } else {
+                    # Anderen Parameterfehler weiterwerfen (könnte im äußeren Catch landen)
+                    throw
+                }
+            }
+            catch {
+                # Anderen Fehler beim Schreiben behandeln -> Fallback ohne Farbe
+                 Write-Host $formattedMessage # Sicherer Fallback
+            }
+        }
+
+        # Logging mit Log-Action, wenn nicht unterdrückt und Log-Pfad gesetzt ist
+        if (-not $NoLog -and $script:logFilePath) {
+            try {
+                Log-Action -Message "[$Type] $Message"
+            }
+            catch {
+                if ($script:debugMode) {
+                    # Sanitize die Fehlermeldung für die Konsolenausgabe
+                    $logActionCallError = $($_.Exception.Message) -replace '[^\x20-\x7E\r\n]', '?'
+                    Write-Host "Fehler beim Aufruf von Log-Action innerhalb von Write-Log: $logActionCallError" -ForegroundColor Red
+                }
+            }
+        }
+    }
+    catch {
+        # Fallback bei Fehlern innerhalb der Write-Log Funktion selbst (z.B. durch 'throw' oben oder andere unerwartete Fehler)
+        try {
+            $errorDetail = "Unbekannter Fehler in Write-Log"
+            if ($_) { # Prüfen ob $_ (Fehlerobjekt) existiert
+                 if ($_.Exception) { $errorDetail = $_.Exception.ToString() } # Komplette Exception für mehr Details
+                 elseif ($_.Message) { $errorDetail = $_.Message }
+                 else { $errorDetail = $_.ToString() }
+            }
+            # Sanitize für den Fall, dass die Fehlermeldung selbst problematische Zeichen enthält
+            $sanitizedErrorDetail = $errorDetail -replace '[^\x20-\x7E\r\n]', '?'
+
+            $errorMessage = "Kritischer Fehler in Write-Log Funktion: $sanitizedErrorDetail"
+
+            # Direkter Fallback zur Ausgabe ohne Farbe auf der Konsole, nur wenn Debug-Modus aktiv ist
+            if ($script:debugMode) {
+                Write-Host $errorMessage -ForegroundColor Red
+            }
+
+            # Versuch, den Fehler mit Log-Action zu loggen, falls möglich und Log-Pfad vorhanden
+            if ($script:logFilePath) {
+                try {
+                    # Log-Action kümmert sich um Zeitstempel und Fehlerbehandlung beim Schreiben.
+                    Log-Action -Message $errorMessage
+                }
+                catch {
+                    if ($script:debugMode) {
+                        $criticalLogActionError = $($_.Exception.Message) -replace '[^\x20-\x7E\r\n]', '?'
+                        Write-Host "Kritischer Fehler: Log-Action konnte den Fehler in Write-Log nicht protokollieren. Fehler beim Aufruf von Log-Action: $criticalLogActionError" -ForegroundColor Red
+                    }
+                }
+            }
+        }
+        catch {
+        }
+    }
+}
+
+# Funktion zur Initialisierung des Loggings für Log-Action
+function Initialize-Logging {
+    [CmdletBinding()]
+    param()
+
+    try {
+        # Standard-Logverzeichnis definieren
+        $defaultLogDirectory = Join-Path -Path $PSScriptRoot -ChildPath "Logs"
+        $logDirectoryToUse = $defaultLogDirectory # Mit Standardwert beginnen
+
+        # Versuchen, den Log-Pfad aus der Konfiguration zu laden
+        if ($null -ne $script:config -and
+            $script:config.ContainsKey("Paths") -and
+            ($null -ne $script:config["Paths"]) -and # Prüfen, ob "Paths" selbst nicht $null ist
+            $script:config["Paths"].ContainsKey("LogPath") -and
+            -not [string]::IsNullOrWhiteSpace($script:config["Paths"]["LogPath"])) {
+
+            $configuredLogPathDir = $script:config["Paths"]["LogPath"]
+
+            # Überprüfen, ob der konfigurierte Pfad absolut oder relativ ist
+            if ([System.IO.Path]::IsPathRooted($configuredLogPathDir)) {
+                $logDirectoryToUse = [System.IO.Path]::GetFullPath($configuredLogPathDir)
+            } else {
+                # Wenn relativ, relativ zum Skriptverzeichnis auflösen
+                $pathForNormalization = Join-Path -Path $PSScriptRoot -ChildPath $configuredLogPathDir
+                $logDirectoryToUse = [System.IO.Path]::GetFullPath($pathForNormalization)
+            }
+        }
+
+        # Log-Dateiname festlegen (dieser Name wird von Log-Action für die Rotation verwendet)
+        $logFileName = "easyEXO_activity.log"
+        $script:logFilePath = Join-Path -Path $logDirectoryToUse -ChildPath $logFileName
+
+        Log-Action "Log-Action System initialisiert. Logdatei: $($script:logFilePath)"
+
+        return $true
+    }
+    catch {
+        $errorMsg = $_.Exception.Message
+        if ($script:debugMode) {
+            Write-Warning "FEHLER bei der Initialisierung des Log-Pfades für Log-Action: $errorMsg. Log-Action wird versuchen, den internen Fallback zu verwenden."
+        }
+        return $false
+    }
+}
+
+# Funktion zum Aktualisieren der GUI-Textanzeige mit Fehlerbehandlung
+function Update-GuiText {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Windows.Controls.TextBlock]$TextElement,
+        
+        [Parameter(Mandatory = $true)]
+        [string]$Message,
+        
+        [Parameter(Mandatory = $false)]
+        [System.Windows.Media.Brush]$Color = $null,
+        
+        [Parameter(Mandatory = $false)]
+        [int]$MaxLength = 10000
+    )
+    
+    try {
+        if ($null -eq $TextElement) {
+            Write-Log  "GUI-Element ist null in Update-GuiText" -Type "Warning"
+            return
+        }
+        
+        # Sicherstellen, dass nur druckbare ASCII-Zeichen verwendet werden
+        $sanitizedMessage = $Message -replace '[^\x20-\x7E]', '?'
+        
+        # Nachricht auf maximale Länge begrenzen
+        if ($sanitizedMessage.Length -gt $MaxLength) {
+            $sanitizedMessage = $sanitizedMessage.Substring(0, $MaxLength) + "..."
+        }
+        
+        # GUI-Element im UI-Thread aktualisieren mit Überprüfung des Dispatcher-Status
+        if ($null -ne $TextElement.Dispatcher -and $TextElement.Dispatcher.CheckAccess()) {
+            # Wir sind bereits im UI-Thread
+            $TextElement.Text = $sanitizedMessage
+            if ($null -ne $Color) {
+                $TextElement.Foreground = $Color
+            }
+        } 
+        else {
+            # Dispatcher verwenden für Thread-Sicherheit
+            $TextElement.Dispatcher.Invoke([Action]{
+                $TextElement.Text = $sanitizedMessage
+                if ($null -ne $Color) {
+                    $TextElement.Foreground = $Color
+                }
+            }, "Normal")
+        }
+    }
+    catch {
+        try {
+            $errorMsg = $_.Exception.Message
+            Write-Log  "Fehler in Update-GuiText: $errorMsg" -Type "Error"
+            Log-Action "GUI-Ausgabefehler: $errorMsg"
+        }
+        catch {
+            # Ignoriere Fehler in der Fehlerbehandlung
+        }
+    }
+}
+
+# Funktion zum Aktualisieren des Status in der GUI
+function Write-StatusMessage {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true, Position = 0)]
+        [string]$Message,
+        
+        [Parameter(Mandatory = $false)]
+        [string]$Type = "Info"
+    )
+    
+    try {
+        # Logge die Nachricht auch
+        Write-Log  -Message $Message -Type $Type # Konsolenausgabe hiervon wird durch Write-Log gesteuert
+        
+        # Bestimme die Farbe basierend auf dem Nachrichtentyp
+        $color = switch ($Type) {
+            "Success" { $script:connectedBrush }
+            "Error" { $script:disconnectedBrush }
+            "Warning" { New-Object System.Windows.Media.SolidColorBrush([System.Windows.Media.Colors]::Orange) }
+            "Info" { $null }
+            default { $null }
+        }
+        
+        # Aktualisiere das Status-Textfeld in der GUI
+        if ($null -ne $script:txtStatus) {
+            Update-GuiText -TextElement $script:txtStatus -Message $Message -Color $color
+        }
+    } 
+    catch {
+        # Bei Fehler einfach eine Debug-Meldung ausgeben
+        $errorMsg = $_.Exception.Message
+        Write-Log  "Fehler in Write-StatusMessage: $errorMsg" -Type "Error" # Konsolenausgabe hiervon wird durch Write-Log gesteuert
+    }
+}
+
+# -------------------------------------------------
+# Abschnitt: Selbstdiagnose
+# -------------------------------------------------
+function Test-ModuleInstalled {
+    param([string]$ModuleName)
+    try {
+        if (-not (Get-Module -ListAvailable -Name $ModuleName)) {
+            # Return false without throwing an error
+            return $false
+        }
+        return $true
+    } catch {
+        # Log the error silently without Write-Error
+        $errorMessage = $_.Exception.Message
+        Log-Action "Fehler beim Prüfen des Moduls $ModuleName - $errorMessage"
+        return $false
+    }
+}
+
+function Test-InternetConnection {
+    try {
+        $ping = Test-Connection -ComputerName "www.google.com" -Count 1 -Quiet
+        if (-not $ping) { throw "Keine Internetverbindung." }
+        return $true
+    } catch {
+        Write-Error $_.Exception.Message
+        return $false
+    }
+}
+
+# -------------------------------------------------
+# Abschnitt: Eingabevalidierung
+# -------------------------------------------------
+function  Validate-Email{
+    param([string]$Email)
+    $regex = '^[\w\.\-]+@([\w\-]+\.)+[a-zA-Z]{2,}$'
+    return $Email -match $regex
+}
+
+# -------------------------------------------------
+# Abschnitt: Exchange Online Verbindung
+# -------------------------------------------------
+function Connect-ExchangeOnline {
+    [CmdletBinding()]
+    param()
+    
+    try {
+        Write-Log "Verbindungsversuch zu Exchange Online..." -Type "Info"
+        
+        # Prüfen, ob das ExchangeOnlineManagement Modul installiert ist
+        if (-not (Get-Module -ListAvailable -Name ExchangeOnlineManagement)) {
+            $errorMsg = "ExchangeOnlineManagement Modul ist nicht installiert. Bitte installieren Sie das Modul mit 'Install-Module ExchangeOnlineManagement -Force'"
+            Write-Log $errorMsg -Type "Error"
+            Show-MessageBox -Message $errorMsg -Title "Modul fehlt" -Type "Error"
+            return $false
+        }
+        
+        # Modul laden
+        Import-Module ExchangeOnlineManagement -ErrorAction Stop
+        
+        # WPF-Fenster für die Benutzereingabe erstellen
+        $inputXaml = @"
+        <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                Title="Exchange Online Anmeldung" Height="150" Width="400" WindowStartupLocation="CenterScreen">
+            <Grid Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Label Grid.Row="0" Content="EXO Administrativer Logins:"/>
+                <TextBox Grid.Row="1" Name="txtEmail" Margin="0,5"/>
+                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                    <Button Name="btnOK" Content="OK" Width="75" Margin="0,0,5,0"/>
+                    <Button Name="btnCancel" Content="Abbrechen" Width="75"/>
+                </StackPanel>
+            </Grid>
+        </Window>
+"@
+        
+        $xmlDoc = New-Object System.Xml.XmlDocument
+        $xmlDoc.LoadXml($inputXaml)
+        $reader = New-Object System.Xml.XmlNodeReader $xmlDoc
+        $window = [Windows.Markup.XamlReader]::Load($reader)
+        
+        $txtEmail = $window.FindName("txtEmail")
+        $btnOK = $window.FindName("btnOK")
+        $btnCancel = $window.FindName("btnCancel")
+        
+        # Variable für die E-Mail-Adresse im Skript-Bereich definieren
+        $script:userPrincipalName = $null
+        
+        $btnOK.Add_Click({
+            if (-not [string]::IsNullOrWhiteSpace($txtEmail.Text)) {
+                $script:userPrincipalName = $txtEmail.Text
+                $window.DialogResult = $true
+                $window.Close()
+            }
+        })
+        
+        $btnCancel.Add_Click({
+            $window.DialogResult = $false
+            $window.Close()
+        })
+        
+        $result = $window.ShowDialog()
+        
+        if (-not $result) {
+            $errorMsg = "Anmeldung abgebrochen."
+            Write-Log $errorMsg -Type "Warning"
+            Show-MessageBox -Message $errorMsg -Title "Abgebrochen" -Type "Warning"
+            return $false
+        }
+        
+        # Überprüfen, ob die E-Mail-Adresse erfolgreich gespeichert wurde
+        if ([string]::IsNullOrWhiteSpace($script:userPrincipalName)) {
+            $errorMsg = "Keine E-Mail-Adresse eingegeben oder erkannt. Verbindung abgebrochen."
+            Write-Log $errorMsg -Type "Warning"
+            Show-MessageBox -Message $errorMsg -Title "Abgebrochen" -Type "Warning"
+            return $false
+        }
+
+        # Verbindungsparameter für V3
+        $connectParams = @{
+            UserPrincipalName = $script:userPrincipalName
+            ErrorAction = "Stop"
+        }
+        
+        # Prüfen, ob der ShowBanner-Parameter unterstützt wird
+        $cmdInfo = Get-Command Microsoft.PowerShell.Core\Get-Command -Module ExchangeOnlineManagement -Name Connect-ExchangeOnline -ErrorAction SilentlyContinue
+        if ($cmdInfo -and $cmdInfo.Parameters.ContainsKey('ShowBanner')) {
+            $connectParams.Add('ShowBanner', $false)
+        }
+        
+        # Verbindung herstellen
+        Show-MessageBox -Message "Verbindung wird hergestellt für: $script:userPrincipalName"
+        & (Get-Module ExchangeOnlineManagement).ExportedCommands['Connect-ExchangeOnline'] @connectParams
+        
+        # Verbindung testen
+        $null = Get-OrganizationConfig -ErrorAction Stop
+        
+        # Globale und Skript-Variablen setzen, um den Verbindungsstatus zu speichern
+        $Global:IsConnectedToExo = $true
+        $script:isConnected = $true
+        
+        Write-Log "Exchange Online Verbindung erfolgreich hergestellt für $script:userPrincipalName" -Type "Success"
+        $script:txtConnectionStatus.Text = "Verbunden mit Exchange Online ($script:userPrincipalName)"
+        $script:txtConnectionStatus.Foreground = "#008000"
+        
+        return $true
+    }
+    catch {
+        $errorMsg = $_.Exception.Message
+        Write-Log "Fehler beim Verbinden mit Exchange Online: $errorMsg" -Type "Error"
+        $script:txtConnectionStatus.Text = "Nicht verbunden"
+        $script:txtConnectionStatus.Foreground = "#d83b01"
+        $Global:IsConnectedToExo = $false
+        $script:isConnected = $false
+        Show-MessageBox -Message "Fehler beim Verbinden mit Exchange Online: $errorMsg" -Title "Verbindungsfehler" -Type "Error"
+        return $false
+    }
+}
+
+# Funktion zum Überprüfen der Exchange Online Verbindung
+function Test-ExchangeOnlineConnection {
+    [CmdletBinding()]
+    param()
+    
+    try {
+        # Prüfe, ob eine aktive Exchange Online Session existiert
+        $exoSession = Get-PSSession | Where-Object { 
+            $_.ConfigurationName -eq "Microsoft.Exchange" -and 
+            $_.State -eq "Opened" -and 
+            $_.Availability -eq "Available" 
+        }
+        
+        if ($null -eq $exoSession) {
+            Write-Log "Keine aktive Exchange Online Verbindung gefunden. Versuche neu zu verbinden..." -Type "Warning"
+            Connect-ExchangeOnline -ShowBanner:$false
+            Start-Sleep -Seconds 2
+            
+            # Prüfe erneut nach dem Verbindungsversuch
+            $exoSession = Get-PSSession | Where-Object { 
+                $_.ConfigurationName -eq "Microsoft.Exchange" -and 
+                $_.State -eq "Opened" -and 
+                $_.Availability -eq "Available" 
+            }
+            
+            if ($null -eq $exoSession) {
+                Write-Log "Verbindung zu Exchange Online konnte nicht hergestellt werden." -Type "Error"
+                return $false
+            }
+        }
+        
+        # Teste die Verbindung mit einem einfachen Kommando
+        $null = Get-OrganizationConfig -ErrorAction Stop
+        Write-Log "Exchange Online Verbindung erfolgreich bestätigt." -Type "Info"
+        return $true
+    }
+    catch {
+        $errorMsg = $_.Exception.Message
+        Write-Log "Fehler bei der Exchange Online Verbindung: $errorMsg" -Type "Error"
+        return $false
+    }
+}
+
+function Disconnect-ExchangeOnlineSession {
+    [CmdletBinding()]
+    param()
+    
+    try {
+        Disconnect-ExchangeOnline -Confirm:$false -ErrorAction Stop
+        Log-Action "Exchange Online Verbindung getrennt"
+        
+        # Setze alle Verbindungsvariablen zurück
+        $Global:IsConnectedToExo = $false
+        $script:isConnected = $false
+        
+        if ($null -ne $script:txtStatus) {
+            $script:txtStatus.Text = "Exchange Verbindung getrennt"
+        }
+        if ($null -ne $script:txtConnectionStatus) {
+            $script:txtConnectionStatus.Text = "Nicht verbunden"
+            $script:txtConnectionStatus.Foreground = $script:disconnectedBrush
+        }
+        
+        # Button-Status aktualisieren
+        if ($null -ne $script:btnConnect) {
+            $script:btnConnect.Content = "Mit Exchange verbinden"
+            $script:btnConnect.Tag = "connect"
+        }
+        
+        return $true
+    }
+    catch {
+        $errorMsg = $_.Exception.Message
+        if ($null -ne $script:txtStatus) {
+            $script:txtStatus.Text = "Fehler beim Trennen der Verbindung: $errorMsg"
+        }
+        Log-Action "Fehler beim Trennen der Verbindung: $errorMsg"
+        
+        # Zeige Fehlermeldung an den Benutzer
+        try {
+            [System.Windows.MessageBox]::Show(
+                "Fehler beim Trennen der Verbindung: $errorMsg", 
+                "Fehler", 
+                [System.Windows.MessageBoxButton]::OK, 
+                [System.Windows.MessageBoxImage]::Error)
+        }
+        catch {
+            # Fallback, falls MessageBox fehlschlägt
+            Write-Log "Fehler beim Trennen der Verbindung: $errorMsg"  
+        }
+        
+        return $false
+    }
+}
+
+# Funktion zur Überprüfung der Exchange Online-Verbindung
+function Confirm-ExchangeConnection {
+    [CmdletBinding()]
+    param()
+    
+    try {
+        # Überprüfen, ob eine der Verbindungsvariablen gesetzt ist
+        if ($Global:IsConnectedToExo -eq $true -or $script:isConnected -eq $true) {
+            # Verbindung testen durch Abrufen einer Exchange-Information
+            try {
+                $null = Get-OrganizationConfig -ErrorAction Stop
+                # Stelle sicher, dass beide Variablen konsistent sind
+                $Global:IsConnectedToExo = $true
+                $script:isConnected = $true
+                return $true
+            }
+            catch {
+                # Verbindung ist nicht mehr gültig, setze beide Variablen zurück
+                $Global:IsConnectedToExo = $false
+                $script:isConnected = $false
+                Write-Log "Exchange Online Verbindung getrennt: $($_.Exception.Message)" -Type "Warning"
+                return $false
+            }
+        }
+        else {
+            return $false
+        }
+    }
+    catch {
+        $Global:IsConnectedToExo = $false
+        $script:isConnected = $false
+        Write-Log "Fehler bei der Überprüfung der Exchange Online-Verbindung: $($_.Exception.Message)" -Type "Error"
+        return $false
+    }
+}
+
+function Ensure-ExchangeConnection {
+    # Prüfen, ob eine gültige Verbindung besteht
+    if (-not (Confirm-ExchangeConnection)) {
+        if ($null -ne $script:txtStatus) {
+            $script:txtStatus.Text = "Verbindung zu Exchange Online wird hergestellt..."
+        }
+        try {
+            # Verbindung herstellen
+            $result = Connect-ExchangeOnline
+            if ($result) {
+                if ($null -ne $script:txtStatus) {
+                    $script:txtStatus.Text = "Verbindung zu Exchange Online hergestellt"
+                }
+                return $true
+            } else {
+                if ($null -ne $script:txtStatus) {
+                    $script:txtStatus.Text = "Fehler beim Verbinden mit Exchange Online"
+                }
+                return $false
+            }
+        }
+        catch {
+            if ($null -ne $script:txtStatus) {
+                $script:txtStatus.Text = "Fehler beim Verbinden mit Exchange Online: $($_.Exception.Message)"
+            }
+            return $false
+        }
+    }
+    return $true
+}
+# Funktion zum Überprüfen der Voraussetzungen (Module)
+function Check-Prerequisites {
+    [CmdletBinding()]
+    param()
+    
+    try {
+        Write-Log  "Überprüfe benötigte PowerShell-Module" -Type "Info"
+        
+        $missingModules = @()
+        $requiredModules = @(
+            @{Name = "ExchangeOnlineManagement"; MinVersion = "3.0.0"; Description = "Exchange Online Management"}
+        )
+        
+        $results = @()
+        $allModulesInstalled = $true
+        
+        # Status aktualisieren
+        if ($null -ne $txtStatus) {
+            $txtStatus.Text = "Überprüfe installierte Module..."
+        }
+        
+        foreach ($moduleInfo in $requiredModules) {
+            $moduleName = $moduleInfo.Name
+            $minVersion = $moduleInfo.MinVersion
+            $description = $moduleInfo.Description
+            
+            # Prüfe, ob Modul installiert ist
+            $module = Get-Module -Name $moduleName -ListAvailable -ErrorAction SilentlyContinue
+            
+            if ($null -ne $module) {
+                # Prüfe Modul-Version, falls erforderlich
+                $latestVersion = ($module | Sort-Object Version -Descending | Select-Object -First 1).Version
+                
+                if ($null -ne $minVersion -and $latestVersion -lt [Version]$minVersion) {
+                    $results += [PSCustomObject]@{
+                        Module = $moduleName
+                        Status = "Update erforderlich"
+                        Installiert = $latestVersion
+                        Erforderlich = $minVersion
+                        Beschreibung = $description
+                    }
+                    $missingModules += $moduleInfo
+                    $allModulesInstalled = $false
+                } else {
+                    $results += [PSCustomObject]@{
+                        Module = $moduleName
+                        Status = "Installiert"
+                        Installiert = $latestVersion
+                        Erforderlich = $minVersion
+                        Beschreibung = $description
+                    }
+                }
+            } else {
+                $results += [PSCustomObject]@{
+                    Module = $moduleName
+                    Status = "Nicht installiert"
+                    Installiert = "---"
+                    Erforderlich = $minVersion
+                    Beschreibung = $description
+                }
+                $missingModules += $moduleInfo
+                $allModulesInstalled = $false
+            }
+        }
+        
+        # Ergebnis anzeigen
+        $resultText = "Prüfergebnis der benötigten Module:`n`n"
+        foreach ($result in $results) {
+            $statusIcon = switch ($result.Status) {
+                "Installiert" { "✅" }
+                "Update erforderlich" { "⚠️" }
+                "Nicht installiert" { "❌" }
+                default { "❓" }
+            }
+            
+            $resultText += "$statusIcon $($result.Module): $($result.Status)"
+            if ($result.Status -ne "Installiert") {
+                $resultText += " (Installiert: $($result.Installiert), Erforderlich: $($result.Erforderlich))"
+            } else {
+                $resultText += " (Version: $($result.Installiert))"
+            }
+            $resultText += " - $($result.Beschreibung)`n"
+        }
+        
+        $resultText += "`n"
+        
+        if ($allModulesInstalled) {
+            $resultText += "Alle erforderlichen Module sind installiert. Sie können Exchange Online verwenden."
+            
+            if ($null -ne $txtStatus) {
+                $txtStatus.Text = "Alle Module erfolgreich installiert."
+                $txtStatus.Foreground = $script:connectedBrush
+            }
+        } else {
+            $resultText += "Es fehlen erforderliche Module. Bitte klicken Sie auf 'Installiere Module', um diese zu installieren."
+            
+            if ($null -ne $txtStatus) {
+                $txtStatus.Text = "Es fehlen erforderliche Module."
+            }
+        }
+        
+        # Ergebnis in einem MessageBox anzeigen
+        [System.Windows.MessageBox]::Show(
+            $resultText,
+            "Modul-Überprüfung",
+            [System.Windows.MessageBoxButton]::OK,
+            [System.Windows.MessageBoxImage]::Information
+        )
+        
+        # Return-Wert (für Skript-Logik)
+        return @{
+            AllInstalled = $allModulesInstalled
+            MissingModules = $missingModules
+            Results = $results
+        }
+    }
+    catch {
+        $errorMsg = $_.Exception.Message
+        Write-Log  "Fehler bei der Überprüfung der Module: $errorMsg" -Type "Error"
+        
+        [System.Windows.MessageBox]::Show(
+            "Fehler bei der Überprüfung der Module: $errorMsg",
+            "Fehler",
+            [System.Windows.MessageBoxButton]::OK,
+            [System.Windows.MessageBoxImage]::Error
+        )
+        
+        if ($null -ne $txtStatus) {
+            $txtStatus.Text = "Fehler bei der Überprüfung der Module."
+        }
+        
+        return @{
+            AllInstalled = $false
+            Error = $errorMsg
+        }
+    }
+}
+
+# Funktion zum Installieren der fehlenden Module
+function Install-Prerequisites {
+    [CmdletBinding()]
+    param()
+    
+    try {
+        Write-Log  "Installiere benötigte PowerShell-Module" -Type "Info"
+        
+        # Status aktualisieren
+        if ($null -ne $txtStatus) {
+            $txtStatus.Text = "Überprüfe und installiere Module..."
+        }
+        
+        # Benötigte Module definieren
+        $requiredModules = @(
+            @{Name = "ExchangeOnlineManagement"; MinVersion = "3.0.0"; Description = "Exchange Online Management"}
+        )
+        
+        # Überprüfe, ob PowerShellGet aktuell ist
+        $psGetVersion = (Get-Module PowerShellGet -ListAvailable | Sort-Object Version -Descending | Select-Object -First 1).Version
+        
+        if ($null -eq $psGetVersion -or $psGetVersion -lt [Version]"2.0.0") {
+            Write-Log  "PowerShellGet-Modul ist veraltet oder nicht installiert, versuche zu aktualisieren" -Type "Warning"
+            
+            # Versuche, PowerShellGet zu aktualisieren
+            # Die Überprüfung auf Administratorrechte und der Neustart-Mechanismus wurden entfernt.
+            # Es wird davon ausgegangen, dass das Skript bei Bedarf mit erhöhten Rechten ausgeführt wird.
+            try {
+                Write-Log "Versuche PowerShellGet zu aktualisieren/installieren. Administratorrechte könnten erforderlich sein." -Type "Info"
+                Install-Module PowerShellGet -Force -AllowClobber -Scope CurrentUser -ErrorAction Stop
+                Write-Log  "PowerShellGet erfolgreich aktualisiert/installiert für den aktuellen Benutzer." -Type "Success"
+            } 
+            catch {
+                Write-Log  "Fehler beim Aktualisieren/Installieren von PowerShellGet für den aktuellen Benutzer: $($_.Exception.Message). Versuche systemweite Installation." -Type "Warning"
+                try {
+                    Install-Module PowerShellGet -Force -AllowClobber -Scope AllUsers -ErrorAction Stop
+                    Write-Log  "PowerShellGet erfolgreich systemweit aktualisiert/installiert." -Type "Success"
+                }
+                catch {
+                    Write-Log  "Fehler beim systemweiten Aktualisieren/Installieren von PowerShellGet: $($_.Exception.Message). Die Modulinstallation könnte fehlschlagen." -Type "Error"
+                    Show-MessageBox -Message "Konnte PowerShellGet nicht aktualisieren. Dies kann zu Problemen bei der Installation anderer Module führen. Bitte stellen Sie sicher, dass PowerShellGet aktuell ist und versuchen Sie es ggf. mit Administratorrechten erneut.`nFehler: $($_.Exception.Message)" -Title "PowerShellGet Fehler" -Icon Warning
+                    # Fortfahren trotz Fehler, da die Hauptmodule möglicherweise trotzdem installiert werden können, wenn PowerShellGet zumindest vorhanden ist.
+                }
+            }
+        }
+        
+        # Installiere jedes Modul
+        $results = @()
+        $allSuccess = $true
+        
+        foreach ($moduleInfo in $requiredModules) {
+            $moduleName = $moduleInfo.Name
+            $minVersion = $moduleInfo.MinVersion
+            
+            Write-Log  "Installiere/Aktualisiere Modul: $moduleName" -Type "Info"
+            
+            try {
+                # Prüfe, ob Modul bereits installiert ist
+                $module = Get-Module -Name $moduleName -ListAvailable -ErrorAction SilentlyContinue
+                
+                if ($null -ne $module) {
+                    $latestVersion = ($module | Sort-Object Version -Descending | Select-Object -First 1).Version
+                    
+                    # Prüfe, ob Update notwendig ist
+                    if ($null -ne $minVersion -and $latestVersion -lt [Version]$minVersion) {
+                        Write-Log  "Aktualisiere Modul $moduleName von $latestVersion auf mindestens $minVersion" -Type "Info"
+                        Install-Module -Name $moduleName -Force -AllowClobber -MinimumVersion $minVersion -Scope CurrentUser
+                        $newVersion = (Get-Module -Name $moduleName -ListAvailable | Sort-Object Version -Descending | Select-Object -First 1).Version
+                        
+                        $results += [PSCustomObject]@{
+                            Module = $moduleName
+                            Status = "Aktualisiert"
+                            AlteVersion = $latestVersion
+                            NeueVersion = $newVersion
+                        }
+                    } else {
+                        Write-Log  "Modul $moduleName ist bereits in ausreichender Version ($latestVersion) installiert" -Type "Info"
+                        
+                        $results += [PSCustomObject]@{
+                            Module = $moduleName
+                            Status = "Bereits aktuell"
+                            AlteVersion = $latestVersion
+                            NeueVersion = $latestVersion
+                        }
+                    }
+                } else {
+                    # Installiere Modul
+                    Write-Log  "Installiere Modul $moduleName" -Type "Info"
+                    Install-Module -Name $moduleName -Force -AllowClobber -Scope CurrentUser
+                    $newVersion = (Get-Module -Name $moduleName -ListAvailable | Sort-Object Version -Descending | Select-Object -First 1).Version
+                    
+                    $results += [PSCustomObject]@{
+                        Module = $moduleName
+                        Status = "Neu installiert"
+                        AlteVersion = "---"
+                        NeueVersion = $newVersion
+                    }
+                }
+            } catch {
+                $errorMsg = $_.Exception.Message
+                Write-Log  "Fehler beim Installieren/Aktualisieren von $moduleName - $errorMsg. Administratorrechte könnten erforderlich sein." -Type "Error"
+                
+                $results += [PSCustomObject]@{
+                    Module = $moduleName
+                    Status = "Fehler"
+                    AlteVersion = "---"
+                    NeueVersion = "---"
+                    Fehler = $errorMsg
+                }
+                
+                $allSuccess = $false
+            }
+        }
+        
+        # Ergebnis anzeigen
+        $resultText = "Ergebnis der Modulinstallation:`n`n"
+        foreach ($result in $results) {
+            $statusIcon = switch ($result.Status) {
+                "Neu installiert" { "✅" }
+                "Aktualisiert" { "✅" }
+                "Bereits aktuell" { "✅" }
+                "Fehler" { "❌" }
+                default { "❓" }
+            }
+            
+            $resultText += "$statusIcon $($result.Module): $($result.Status)"
+            if ($result.Status -eq "Aktualisiert") {
+                $resultText += " (Von Version $($result.AlteVersion) auf $($result.NeueVersion))"
+            } elseif ($result.Status -eq "Neu installiert") {
+                $resultText += " (Version $($result.NeueVersion))"
+            } elseif ($result.Status -eq "Fehler") {
+                $resultText += " - Fehler: $($result.Fehler)"
+            }
+            $resultText += "`n"
+        }
+        
+        $resultText += "`n"
+        
+        if ($allSuccess) {
+            $resultText += "Alle Module wurden erfolgreich installiert oder waren bereits aktuell.`n"
+            $resultText += "Sie können das Tool verwenden."
+            
+            if ($null -ne $txtStatus) {
+                $txtStatus.Text = "Alle Module erfolgreich installiert."
+                $txtStatus.Foreground = $script:connectedBrush
+            }
+        } else {
+            $resultText += "Bei der Installation einiger Module sind Fehler aufgetreten.`n"
+            $resultText += "Wenn Fehler aufgrund fehlender Berechtigungen aufgetreten sind, starten Sie PowerShell bitte mit Administratorrechten und versuchen Sie es erneut."
+            
+            if ($null -ne $txtStatus) {
+                $txtStatus.Text = "Fehler bei der Modulinstallation aufgetreten."
+            }
+        }
+        
+        # Ergebnis in einem MessageBox anzeigen
+        [System.Windows.MessageBox]::Show(
+            $resultText,
+            "Modul-Installation",
+            [System.Windows.MessageBoxButton]::OK,
+            $allSuccess ? [System.Windows.MessageBoxImage]::Information : [System.Windows.MessageBoxImage]::Warning
+        )
+        
+        # Return-Wert (für Skript-Logik)
+        return @{
+            Success = $allSuccess
+            Results = $results
+        }
+    }
+    catch {
+        $errorMsg = $_.Exception.Message
+        Write-Log  "Fehler bei der Modulinstallation: $errorMsg" -Type "Error"
+        
+        [System.Windows.MessageBox]::Show(
+            "Fehler bei der Modulinstallation: $errorMsg`n`nVersuchen Sie, PowerShell als Administrator auszuführen und wiederholen Sie den Vorgang.",
+            "Fehler",
+            [System.Windows.MessageBoxButton]::OK,
+            [System.Windows.MessageBoxImage]::Error
+        )
+        
+        if ($null -ne $txtStatus) {
+            $txtStatus.Text = "Fehler bei der Modulinstallation."
+        }
+        
+        return @{
+            Success = $false
+            Error = $errorMsg
+        }
+    }
+}
+
+function Show-HelpDialog {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Topic
+    )
+
+    try {
+        $helpTitle = "Hilfe: $Topic"
+        $helpMessage = ""
+
+        switch ($Topic) {
+            "Calendar" {
+                $helpMessage = "Hier finden Sie Hilfe zum Verwalten von Kalenderberechtigungen.`n`n"
+                $helpMessage += "Funktionen:`n"
+                $helpMessage += "- Postfach angeben: Geben Sie die E-Mail-Adresse des Postfachs ein, dessen Kalenderberechtigungen Sie verwalten möchten.`n"
+                $helpMessage += "- Anzeigen: Zeigt die aktuellen Kalenderberechtigungen für das angegebene Postfach an.`n"
+                $helpMessage += "- Benutzer und Zugriffsebene auswählen/eingeben: Wählen Sie einen Benutzer aus der Liste oder geben Sie dessen E-Mail-Adresse ein. Wählen Sie die gewünschte Zugriffsebene (z.B. Editor, Reviewer).`n"
+                $helpMessage += "- Hinzufügen: Fügt dem angegebenen Benutzer die ausgewählte Berechtigungsstufe für den Kalender hinzu.`n"
+                $helpMessage += "- Ändern: Modifiziert die vorhandene Berechtigungsstufe des ausgewählten Benutzers auf die neu ausgewählte Zugriffsebene.`n"
+                $helpMessage += "- Entfernen: Löscht die Kalenderberechtigungen des ausgewählten Benutzers.`n"
+                $helpMessage += "- Alle setzen: Ermöglicht das Setzen einer Standardberechtigung (z.B. Verfügbarkeit) für alle Benutzer (außer 'Default' und 'Anonymous'). Bestehende spezifische Berechtigungen bleiben erhalten oder können optional überschrieben werden.`n"
+                $helpMessage += "- Exportieren: Exportiert die aktuell angezeigten Kalenderberechtigungen in eine CSV-Datei.`n`n"
+                $helpMessage += "Hinweis: 'Default' bezieht sich auf alle authentifizierten Benutzer in Ihrer Organisation. 'Anonymous' bezieht sich auf externe, nicht authentifizierte Benutzer."
+            }
+            "Mailbox" {
+                $helpMessage = "Hier finden Sie Hilfe zum Verwalten von Postfachberechtigungen (Vollzugriff), 'Senden als'-Rechten und 'Senden im Auftrag von'-Rechten.`n`n"
+                $helpMessage += "Eingabefelder:`n"
+                $helpMessage += "- Ziel-Postfach: Das Postfach, für das Berechtigungen erteilt oder angezeigt werden sollen.`n"
+                $helpMessage += "- Benutzer-Postfach: Das Postfach des Benutzers, der die Berechtigungen erhalten oder dem sie entzogen werden sollen.`n`n"
+                $helpMessage += "Postfachberechtigungen (Vollzugriff):`n"
+                $helpMessage += "- Hinzufügen: Gewährt dem 'Benutzer-Postfach' Vollzugriff auf das 'Ziel-Postfach'.`n"
+                $helpMessage += "- Entfernen: Entzieht dem 'Benutzer-Postfach' den Vollzugriff auf das 'Ziel-Postfach'.`n"
+                $helpMessage += "- Anzeigen: Listet alle Benutzer auf, die Vollzugriff auf das 'Ziel-Postfach' haben.`n`n"
+                $helpMessage += "'Senden als'-Rechte:`n"
+                $helpMessage += "- Hinzufügen: Erlaubt dem 'Benutzer-Postfach', E-Mails so zu senden, als kämen sie direkt vom 'Ziel-Postfach'.`n"
+                $helpMessage += "- Entfernen: Entzieht dem 'Benutzer-Postfach' die 'Senden als'-Rechte für das 'Ziel-Postfach'.`n"
+                $helpMessage += "- Anzeigen: Listet alle Benutzer auf, die 'Senden als'-Rechte für das 'Ziel-Postfach' haben.`n`n"
+                $helpMessage += "'Senden im Auftrag von'-Rechte:`n"
+                $helpMessage += "- Hinzufügen: Erlaubt dem 'Benutzer-Postfach', E-Mails im Auftrag des 'Ziel-Postfachs' zu senden (Empfänger sehen 'Benutzer A im Auftrag von Benutzer B').`n"
+                $helpMessage += "- Entfernen: Entzieht dem 'Benutzer-Postfach' die 'Senden im Auftrag von'-Rechte für das 'Ziel-Postfach'.`n"
+                $helpMessage += "- Anzeigen: Listet alle Benutzer auf, die 'Senden im Auftrag von'-Rechte für das 'Ziel-Postfach' haben."
+            }
+            "Contacts" {
+                $helpMessage = "Hier finden Sie Hilfe zum Verwalten von externen Kontakten (MailContacts) und E-Mail-aktivierten Benutzern (MailUsers).`n`n"
+                $helpMessage += "Funktionen:`n"
+                $helpMessage += "- Neuer Kontakt:`n"
+                $helpMessage += "  - Name: Der Anzeigename des Kontakts.`n"
+                $helpMessage += "  - E-Mail: Die externe E-Mail-Adresse des Kontakts.`n"
+                $helpMessage += "  - Erstellen: Legt einen neuen externen Kontakt (MailContact) an.`n`n"
+                $helpMessage += "- Anzeigen (MailContacts): Listet alle externen Kontakte in Ihrer Organisation auf.`n"
+                $helpMessage += "- Anzeigen (MailUsers): Listet alle E-Mail-aktivierten Benutzer auf (Benutzer mit Postfächern in Ihrer lokalen Active Directory-Umgebung, die mit Exchange Online synchronisiert werden, aber kein Exchange Online-Postfach haben).`n"
+                $helpMessage += "- Ausgewählten Kontakt/MailUser entfernen: Löscht den in der Liste ausgewählten Kontakt oder MailUser. Eine Bestätigung ist erforderlich.`n"
+                $helpMessage += "- Kontakte exportieren: Exportiert die aktuell in der Liste angezeigten Kontakte oder MailUser in eine CSV-Datei."
+            }
+            "Resources" {
+                $helpMessage = "Hier finden Sie Hilfe zum Verwalten von Ressourceneinstellungen für Raum- und Gerätepostfächer.`n`n"
+                $helpMessage += "Funktionen:`n"
+                $helpMessage += "- Raum-Postfächer anzeigen: Listet alle konfigurierten Raumpostfächer auf.`n"
+                $helpMessage += "- Geräte-Postfächer anzeigen: Listet alle konfigurierten Gerätepostfächer auf.`n"
+                $helpMessage += "- Ausgewählte Ressource bearbeiten: Öffnet einen Dialog zur Anpassung spezifischer Einstellungen für die in der Liste ausgewählte Ressource. Dazu gehören unter anderem:`n"
+                $helpMessage += "  - Anzeigename, Kapazität, Standort`n"
+                $helpMessage += "  - Automatische Annahme/Ablehnung von Besprechungsanfragen`n"
+                $helpMessage += "  - Zulassen von Konflikten und Serienbesprechungen`n"
+                $helpMessage += "  - Buchungsfenster (wie weit im Voraus gebucht werden kann)`n"
+                $helpMessage += "  - Maximale Besprechungsdauer`n"
+                $helpMessage += "  - Verarbeitung von Anfragen außerhalb der Arbeitszeiten`n"
+                $helpMessage += "  - Löschen von Kommentaren, Betreffzeilen oder privaten Kennzeichnungen`n"
+                $helpMessage += "  - Hinzufügen des Organisators zum Betreff."
+            }
+            "Groups" {
+                $helpMessage = "Hier finden Sie Hilfe zum Verwalten von Verteilergruppen und Microsoft 365-Gruppen.`n`n"
+                $helpMessage += "Verteilergruppen:`n"
+                $helpMessage += "- Anzeigen: Listet alle Verteilergruppen auf.`n"
+                $helpMessage += "- Neu: Erstellt eine neue Verteilergruppe.`n"
+                $helpMessage += "  - Name, Alias, Primäre SMTP-Adresse, Typ (Distribution/Security), Beitritts-/Verlassensoptionen.`n"
+                $helpMessage += "- Bearbeiten: Ändert Eigenschaften der ausgewählten Verteilergruppe.`n"
+                $helpMessage += "- Mitglieder verwalten: Hinzufügen/Entfernen von Mitgliedern.`n"
+                $helpMessage += "- Besitzer verwalten: Hinzufügen/Entfernen von Besitzern.`n"
+                $helpMessage += "- Löschen: Entfernt die ausgewählte Verteilergruppe.`n`n"
+                $helpMessage += "Microsoft 365-Gruppen:`n"
+                $helpMessage += "- Anzeigen: Listet alle Microsoft 365-Gruppen auf.`n"
+                $helpMessage += "- Neu: Erstellt eine neue Microsoft 365-Gruppe.`n"
+                $helpMessage += "  - Name, Alias, Beschreibung, Datenschutz (Öffentlich/Privat), Sprache, Besitzer, Mitglieder.`n"
+                $helpMessage += "- Bearbeiten: Ändert Eigenschaften der ausgewählten Microsoft 365-Gruppe.`n"
+                $helpMessage += "- Mitglieder verwalten: Hinzufügen/Entfernen von Mitgliedern.`n"
+                $helpMessage += "- Besitzer verwalten: Hinzufügen/Entfernen von Besitzern.`n"
+                $helpMessage += "- Löschen: Entfernt die ausgewählte Microsoft 365-Gruppe.`n`n"
+                $helpMessage += "Exportieren: Exportiert die angezeigte Liste der Gruppen in eine CSV-Datei."
+            }
+            "General" {
+                 $helpTitle = "Allgemeine Hilfe zu easyEXO"
+                 $helpMessage = "Willkommen bei easyEXO! Dieses Tool wurde entwickelt, um die Verwaltung gängiger Aufgaben in Exchange Online über eine grafische Benutzeroberfläche zu vereinfachen.`n`n"
+                 $helpMessage += "Hauptfunktionen und Tabs:`n"
+                 $helpMessage += "- Verbindung: Bevor Sie Aktionen ausführen können, müssen Sie eine Verbindung zu Ihrem Exchange Online Tenant herstellen. Klicken Sie auf 'Verbinden' und geben Sie Ihre Administrator-Anmeldeinformationen ein.`n"
+                 $helpMessage += "- Postfächer: Verwalten Sie Vollzugriffsberechtigungen, 'Senden als'-Rechte und 'Senden im Auftrag von'-Rechte für Benutzerpostfächer.`n"
+                 $helpMessage += "- Kalender: Verwalten Sie die Freigabeberechtigungen für Benutzerkalender.`n"
+                 $helpMessage += "- Kontakte: Erstellen und verwalten Sie externe Kontakte (MailContacts) und E-Mail-aktivierte Benutzer (MailUsers).`n"
+                 $helpMessage += "- Ressourcen: Zeigen Sie Raum- und Gerätepostfächer an und bearbeiten Sie deren spezifische Buchungseinstellungen.`n"
+                 $helpMessage += "- Gruppen: Verwalten Sie Verteilergruppen und Microsoft 365-Gruppen, deren Mitglieder und Besitzer.`n`n"
+                 $helpMessage += "Bedienung:`n"
+                 $helpMessage += "- Verwenden Sie die jeweiligen Tabs, um auf die spezifischen Verwaltungsfunktionen zuzugreifen.`n"
+                 $helpMessage += "- Statusmeldungen und detaillierte Log-Informationen werden im unteren Bereich der Anwendung angezeigt.`n"
+                 $helpMessage += "- Viele Listen können durch Klicken auf die Spaltenüberschriften sortiert werden.`n"
+                 $helpMessage += "- Exportfunktionen sind oft verfügbar, um Daten als CSV-Datei zu sichern.`n"
+                 $helpMessage += "- Hilfe-Symbole (?) in den Tabs bieten kontextspezifische Unterstützung.`n`n"
+                 $helpMessage += "Stellen Sie sicher, dass die erforderlichen PowerShell-Module (insbesondere 'ExchangeOnlineManagement') installiert sind. Das Tool versucht, diese bei Bedarf zu installieren."
+            }
+            default {
+                $helpMessage = "Kein spezifisches Hilfethema für '$Topic' gefunden.`n`n"
+                $helpMessage += "Verfügbare Hilfethemen sind: General, Mailbox, Calendar, Contacts, Resources, Groups.`n"
+                $helpMessage += "Bitte klicken Sie auf ein Hilfe-Symbol in einem der Tabs, um spezifische Informationen zu erhalten, oder wählen Sie 'General' für einen Überblick."
+                $helpTitle = "Hilfe: Unbekanntes Thema"
+            }
+        }
+
+        [System.Windows.MessageBox]::Show($helpMessage, $helpTitle, [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information) | Out-Null
+    }
+    catch {
+        $errorMsg = $_.Exception.Message
+        # Versuchen, Write-Log aufzurufen, falls es definiert ist
+        try {
+            Write-Log -Message "Fehler im Show-HelpDialog für Topic '$Topic': $errorMsg" -Type "Error"
+        } catch {}
+        [System.Windows.MessageBox]::Show("Fehler beim Anzeigen der Hilfe für '$Topic': $errorMsg", "Fehler", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error) | Out-Null
+    }
+}
+# -------------------------------------------------
+# Abschnitt: Kalenderberechtigungen
+# -------------------------------------------------
+function Get-CalendarPermission {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$MailboxUser
+    )
+    
+    try {
+        # Eingabevalidierung
+        if (-not (Validate-Email -Email $MailboxUser)) {
+            throw "Ungültige E-Mail-Adresse für Postfach."
+        }
+        
+        Write-Log  "Rufe Kalenderberechtigungen ab für: $MailboxUser" -Type "Info"
+        
+        # Prüfe deutsche und englische Kalenderordner
+        $permissions = $null
+        try {
+            # Versuche mit deutschem Pfad
+            $identity = "${MailboxUser}:\Kalender"
+            Write-Log  "Versuche deutschen Kalenderpfad: $identity" -Type "Info"
+            $permissions = Get-MailboxFolderPermission -Identity $identity -ErrorAction Stop
+        } 
+        catch {
+            try {
+                # Versuche mit englischem Pfad
+                $identity = "${MailboxUser}:\Calendar"
+                Write-Log  "Versuche englischen Kalenderpfad: $identity" -Type "Info"
+                $permissions = Get-MailboxFolderPermission -Identity $identity -ErrorAction Stop
+            } 
+            catch {
+                $errorMsg = $_.Exception.Message
+                Write-Log  "Beide Kalenderpfade fehlgeschlagen: $errorMsg" -Type "Error"
+                throw "Kalenderordner konnte nicht gefunden werden. Weder 'Kalender' noch 'Calendar' sind zugänglich."
+            }
+        }
+        
+        Write-Log  "Kalenderberechtigungen abgerufen: $($permissions.Count) Einträge gefunden" -Type "Success"
+        Log-Action "Kalenderberechtigungen für $MailboxUser erfolgreich abgerufen: $($permissions.Count) Einträge."
+        return $permissions
+    } 
+    catch {
+        $errorMsg = $_.Exception.Message
+        Write-Log  "Fehler beim Abrufen der Kalenderberechtigungen: $errorMsg" -Type "Error"
+        Log-Action "Fehler beim Abrufen der Kalenderberechtigungen: $errorMsg"
+        throw $errorMsg
+    }
+}
+
+# Funktion für das Anzeigen aller Kalenderberechtigungen
+function Show-CalendarPermissions {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$MailboxUser
+    )
+    
+    try {
+        if (-not $script:isConnected) {
+            throw "Nicht mit Exchange verbunden. Bitte stellen Sie zuerst eine Verbindung her."
+        }
+        
+        # Prüfe, ob eine gültige E-Mail-Adresse eingegeben wurde
+        if (-not (Validate-Email -Email $MailboxUser)) {
+            throw "Bitte geben Sie eine gültige E-Mail-Adresse ein."
+        }
+        
+        # Status aktualisieren
+        if ($null -ne $script:txtStatus) {
+            $script:txtStatus.Text = "Rufe Kalenderberechtigungen ab..."
+        }
+        
+        # Versuche Kalenderberechtigungen abzurufen
+        $permissions = Get-CalendarPermission -MailboxUser $MailboxUser
+        
+        # Aufbereiten der Berechtigungsdaten für die DataGrid-Anzeige
+        $permissionsForGrid = @()
+        foreach ($permission in $permissions) {
+            # Extrahiere die relevanten Informationen und erstelle ein neues Objekt
+            $permObj = [PSCustomObject]@{
+                User = $permission.User.DisplayName
+                AccessRights = ($permission.AccessRights -join ", ")
+                IsInherited = $permission.IsInherited
+            }
+            $permissionsForGrid += $permObj
+        }
+        
+        # Aktualisiere das DataGrid mit den aufbereiteten Daten
+        if ($null -ne $script:lstCalendarPermissions) {
+            $script:lstCalendarPermissions.Dispatcher.Invoke([Action]{
+                $script:lstCalendarPermissions.ItemsSource = $permissionsForGrid
+            }, "Normal")
+        }
+        
+        # Status aktualisieren
+        if ($null -ne $script:txtStatus) {
+            $script:txtStatus.Text = "Kalenderberechtigungen erfolgreich abgerufen."
+        }
+        
+        return $true
+    }
+    catch {
+        $errorMsg = $_.Exception.Message
+        Write-Log  "Fehler beim Anzeigen der Kalenderberechtigungen: $errorMsg" -Type "Error"
+        
+        if ($null -ne $script:txtStatus) {
+            $script:txtStatus.Text = "Fehler: $errorMsg"
+        }
+        
+        return $false
+    }
+}
+
+# Fix for Set-CalendarDefaultPermissionsAction function
+function Set-CalendarDefaultPermissionsAction {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateSet("Standard", "Anonym", "Beides")]
+        [string]$PermissionType,
+        
+        [Parameter(Mandatory = $true)]
+        [string]$AccessRights,
+        
+        [Parameter(Mandatory = $false)]
+        [switch]$ForAllMailboxes = $false,
+        
+        [Parameter(Mandatory = $false)]
+        [string]$MailboxUser = ""
+    )
+    
+    try {
+        Write-Log  "Setze Standardberechtigungen für Kalender: $PermissionType mit $AccessRights" -Type "Info"
+        
+        if ($ForAllMailboxes) {
+            # Frage den Benutzer ob er das wirklich tun möchte
+            $confirmResult = [System.Windows.MessageBox]::Show(
+                "Möchten Sie wirklich die $PermissionType-Berechtigungen für ALLE Postfächer setzen? Diese Aktion kann bei vielen Postfächern lange dauern.",
+                "Massenänderung bestätigen",
+                [System.Windows.MessageBoxButton]::YesNo,
+                [System.Windows.MessageBoxImage]::Warning)
+                
+            if ($confirmResult -eq [System.Windows.MessageBoxResult]::No) {
+                Write-Log  "Massenänderung vom Benutzer abgebrochen" -Type "Info"
+                if ($null -ne $txtStatus) {
+                    Update-GuiText -TextElement $txtStatus -Message "Operation abgebrochen."
+                }
+                return $false
+            }
+            
+            Log-Action "Starte Setzen von Standardberechtigungen für alle Postfächer: $PermissionType"
+            
+            $successCount = 0
+            $errorCount = 0
+
+            if ($PermissionType -eq "Standard" -or $PermissionType -eq "Beides") {
+                $result = Set-DefaultCalendarPermissionForAll -AccessRights $AccessRights
+                if ($result) { $successCount++ } else { $errorCount++ }
+            }
+            if ($PermissionType -eq "Anonym" -or $PermissionType -eq "Beides") {
+                $result = Set-AnonymousCalendarPermissionForAll -AccessRights $AccessRights
+                if ($result) { $successCount++ } else { $errorCount++ }
+            }
+        }
+        else {         
+            if ([string]::IsNullOrWhiteSpace($MailboxUser) -and 
+                $null -ne $script:txtCalendarMailboxUser -and 
+                -not [string]::IsNullOrWhiteSpace($script:txtCalendarMailboxUser.Text)) {
+                $mailboxUser = $script:txtCalendarMailboxUser.Text.Trim()
+            }
+            
+            if ([string]::IsNullOrWhiteSpace($mailboxUser)) {
+                throw "Keine Postfach-E-Mail-Adresse angegeben"
+            }
+            
+            if ($PermissionType -eq "Standard") {
+                Set-DefaultCalendarPermission -MailboxUser $mailboxUser -AccessRights $AccessRights
+            }
+            elseif ($PermissionType -eq "Anonym") {
+                Set-AnonymousCalendarPermission -MailboxUser $mailboxUser -AccessRights $AccessRights
+            }
+            elseif ($PermissionType -eq "Beides") {
+                Set-DefaultCalendarPermission -MailboxUser $mailboxUser -AccessRights $AccessRights
+                Set-AnonymousCalendarPermission -MailboxUser $mailboxUser -AccessRights $AccessRights
+            }
+        }
+        
+        Write-Log  "Standardberechtigungen für Kalender erfolgreich gesetzt: $PermissionType mit $AccessRights" -Type "Success"
+        if ($null -ne $txtStatus) {
+            Update-GuiText -TextElement $txtStatus -Message "Standardberechtigungen gesetzt: $PermissionType mit $AccessRights" -Color $script:connectedBrush
+        }
+        Log-Action "Standardberechtigungen für Kalender gesetzt: $PermissionType mit $AccessRights"
+        return $true
+    }
+    catch {
+        $errorMsg = $_.Exception.Message
+        Write-Log  "Fehler beim Setzen der Standardberechtigungen für Kalender: $errorMsg" -Type "Error"
+        if ($null -ne $txtStatus) {
+            Update-GuiText -TextElement $txtStatus -Message "Fehler: $errorMsg"
+        }
+        Log-Action "Fehler beim Setzen der Standardberechtigungen für Kalender: $errorMsg"
+        return $false
+    }
+}
+
+function Add-CalendarPermission {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$SourceUser,
+        
+        [Parameter(Mandatory = $true)]
+        [string]$TargetUser,
+        
+        [Parameter(Mandatory = $true)]
+        [string]$Permission
+    )
+    
+    try {
+        # Eingabevalidierung
+        if (-not (Validate-Email -Email $SourceUser)) {
+            throw "Ungültige E-Mail-Adresse für Quellpostfach."
+        }
+        if (-not (Validate-Email -Email $TargetUser)) {
+            throw "Ungültige E-Mail-Adresse für Zielbenutzer."
+        }
+        
+        Write-Log  "Füge Kalenderberechtigung hinzu/aktualisiere: $SourceUser -> $TargetUser ($Permission)" -Type "Info"
+        
+        # Prüfe ob Berechtigung bereits existiert und ermittle den korrekten Kalenderordner
+        $calendarExists = $false
+        $identityDE = "${SourceUser}:\Kalender"
+        $identityEN = "${SourceUser}:\Calendar"
+        $identity = $null
+        
+        # Systematisch nach dem richtigen Kalender suchen
+        try {
+            # Zuerst versuchen wir den deutschen Kalender
+            $existingPermDE = Get-MailboxFolderPermission -Identity $identityDE -User $TargetUser -ErrorAction SilentlyContinue
+            if ($null -ne $existingPermDE) {
+                $calendarExists = $true
+                $identity = $identityDE
+                Write-Log  "Bestehende Berechtigung gefunden (DE): $($existingPermDE.AccessRights)" -Type "Info"
+            }
+            else {
+                # Dann den englischen Kalender probieren
+                $existingPermEN = Get-MailboxFolderPermission -Identity $identityEN -User $TargetUser -ErrorAction SilentlyContinue
+                if ($null -ne $existingPermEN) {
+                    $calendarExists = $true
+                    $identity = $identityEN
+                    Write-Log  "Bestehende Berechtigung gefunden (EN): $($existingPermEN.AccessRights)" -Type "Info"
+                }
+            }
+    }
+    catch {
+            Write-Log  "Fehler bei der Prüfung bestehender Berechtigungen: $($_.Exception.Message)" -Type "Warning"
+        }
+        
+        # Falls noch kein identifizierter Kalender, versuchen wir die Kalender zu prüfen ohne Benutzerberechtigungen
+        if ($null -eq $identity) {
+            try {
+                # Prüfen, ob der deutsche Kalender existiert
+                $deExists = Get-MailboxFolderPermission -Identity $identityDE -ErrorAction SilentlyContinue
+                if ($null -ne $deExists) {
+                    $identity = $identityDE
+                    Write-Log  "Deutscher Kalenderordner gefunden: $identityDE" -Type "Info"
+                }
+                else {
+                    # Prüfen, ob der englische Kalender existiert
+                    $enExists = Get-MailboxFolderPermission -Identity $identityEN -ErrorAction SilentlyContinue
+                    if ($null -ne $enExists) {
+                        $identity = $identityEN
+                        Write-Log  "Englischer Kalenderordner gefunden: $identityEN" -Type "Info"
+                    }
+                }
+            }
+            catch {
+                Write-Log  "Fehler beim Prüfen der Kalenderordner: $($_.Exception.Message)" -Type "Warning"
+            }
+        }
+        
+        # Falls immer noch kein Kalender gefunden, über Statistiken suchen
+        if ($null -eq $identity) {
+            try {
+                $folderStats = Get-MailboxFolderStatistics -Identity $SourceUser -FolderScope Calendar -ErrorAction Stop
+                foreach ($folder in $folderStats) {
+                    if ($folder.FolderType -eq "Calendar" -or $folder.Name -eq "Kalender" -or $folder.Name -eq "Calendar") {
+                        $identity = "$SourceUser`:" + $folder.FolderPath.Replace("/", "\")
+                        Write-Log  "Kalenderordner über FolderStatistics gefunden: $identity" -Type "Info"
+                        break
+                    }
+                }
+            }
+            catch {
+                Write-Log  "Fehler beim Suchen des Kalenderordners über FolderStatistics: $($_.Exception.Message)" -Type "Warning"
+            }
+        }
+        
+        # Wenn immer noch kein Kalender gefunden, Exception werfen
+        if ($null -eq $identity) {
+            throw "Kein Kalenderordner für $SourceUser gefunden. Bitte stellen Sie sicher, dass das Postfach existiert und Sie Zugriff haben."
+        }
+        
+        # Je nachdem ob Berechtigung existiert, update oder add
+        if ($calendarExists) {
+            Write-Log  "Aktualisiere bestehende Berechtigung: $identity ($Permission)" -Type "Info"
+            Set-MailboxFolderPermission -Identity $identity -User $TargetUser -AccessRights $Permission -ErrorAction Stop
+            
+            if ($null -ne $txtStatus) {
+                Update-GuiText -TextElement $txtStatus -Message "Kalenderberechtigung aktualisiert." -Color $script:connectedBrush
+            }
+            
+            Write-Log  "Kalenderberechtigung erfolgreich aktualisiert" -Type "Success"
+            Log-Action "Kalenderberechtigung aktualisiert: $SourceUser -> $TargetUser mit $Permission"
+        }
+        else {
+            Write-Log  "Füge neue Berechtigung hinzu: $identity ($Permission)" -Type "Info"
+            Add-MailboxFolderPermission -Identity $identity -User $TargetUser -AccessRights $Permission -ErrorAction Stop
+            
+            if ($null -ne $txtStatus) {
+                Update-GuiText -TextElement $txtStatus -Message "Kalenderberechtigung hinzugefügt." -Color $script:connectedBrush
+            }
+            
+            Write-Log  "Kalenderberechtigung erfolgreich hinzugefügt" -Type "Success"
+            Log-Action "Kalenderberechtigung hinzugefügt: $SourceUser -> $TargetUser mit $Permission"
+        }
+        
+        return $true
+    }
+    catch {
+        $errorMsg = $_.Exception.Message
+        Write-Log  "Fehler beim Hinzufügen/Aktualisieren der Kalenderberechtigung: $errorMsg" -Type "Error"
+        
+        if ($null -ne $txtStatus) {
+            Update-GuiText -TextElement $txtStatus -Message "Fehler: $errorMsg"
+        }
+        
+        Log-Action "Fehler beim Hinzufügen/Aktualisieren der Kalenderberechtigung: $errorMsg"
+        return $false
+    }
+}
+
+function Remove-CalendarPermission {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$SourceUser,
+        
+        [Parameter(Mandatory = $true)]
+        [string]$TargetUser
+    )
+    
+    try {
+        # Eingabevalidierung
+        if (-not (Validate-Email -Email $SourceUser)) {
+            throw "Ungültige E-Mail-Adresse für Quellpostfach."
+        }
+        if (-not (Validate-Email -Email $TargetUser)) {
+            throw "Ungültige E-Mail-Adresse für Zielbenutzer."
+        }
+        
+        Write-Log  "Entferne Kalenderberechtigung: $SourceUser -> $TargetUser" -Type "Info"
+        
+        # Prüfe deutsche und englische Kalenderordner
+        $removed = $false
+        
+        try {
+            $identityDE = "${SourceUser}:\Kalender"
+            Write-Log  "Prüfe deutsche Kalenderberechtigungen: $identityDE" -Type "Info"
+            
+            # Prüfe ob Berechtigung existiert
+            $existingPerm = Get-MailboxFolderPermission -Identity $identityDE -User $TargetUser -ErrorAction SilentlyContinue
+            
+            if ($existingPerm) {
+                Write-Log  "Gefundene Berechtigung wird entfernt (DE): $($existingPerm.AccessRights)" -Type "Info"
+                Remove-MailboxFolderPermission -Identity $identityDE -User $TargetUser -Confirm:$false -ErrorAction Stop
+                $removed = $true
+                Write-Log  "Berechtigung erfolgreich entfernt (DE)" -Type "Success"
+            }
+            else {
+                Write-Log  "Keine Berechtigung gefunden für deutschen Kalender" -Type "Info"
+            }
+        } 
+        catch {
+            $errorMsg = $_.Exception.Message
+            Write-Log  "Fehler beim Entfernen der deutschen Kalenderberechtigungen: $errorMsg" -Type "Warning"
+            # Bei Fehler einfach weitermachen und englischen Pfad versuchen
+        }
+        
+        if (-not $removed) {
+            try {
+                $identityEN = "${SourceUser}:\Calendar"
+                Write-Log  "Prüfe englische Kalenderberechtigungen: $identityEN" -Type "Info"
+                
+                # Prüfe ob Berechtigung existiert
+                $existingPerm = Get-MailboxFolderPermission -Identity $identityEN -User $TargetUser -ErrorAction SilentlyContinue
+                
+                if ($existingPerm) {
+                    Write-Log  "Gefundene Berechtigung wird entfernt (EN): $($existingPerm.AccessRights)" -Type "Info"
+                    Remove-MailboxFolderPermission -Identity $identityEN -User $TargetUser -Confirm:$false -ErrorAction Stop
+                    $removed = $true
+                    Write-Log  "Berechtigung erfolgreich entfernt (EN)" -Type "Success"
+                }
+                else {
+                    Write-Log  "Keine Berechtigung gefunden für englischen Kalender" -Type "Info"
+                }
+            } 
+            catch {
+                if (-not $removed) {
+                    $errorMsg = $_.Exception.Message
+                    Write-Log  "Fehler beim Entfernen der englischen Kalenderberechtigungen: $errorMsg" -Type "Error"
+                    throw "Fehler beim Entfernen der Kalenderberechtigung: $errorMsg"
+                }
+            }
+        }
+        
+        if ($removed) {
+            if ($null -ne $txtStatus) {
+                Update-GuiText -TextElement $txtStatus -Message "Kalenderberechtigung entfernt." -Color $script:connectedBrush
+            }
+            
+            Log-Action "Kalenderberechtigung entfernt: $SourceUser -> $TargetUser"
+            return $true
+        } 
+        else {
+            Write-Log  "Keine Kalenderberechtigung zum Entfernen gefunden" -Type "Warning"
+            
+            if ($null -ne $txtStatus) {
+                Update-GuiText -TextElement $txtStatus -Message "Keine Kalenderberechtigung gefunden zum Entfernen."
+            }
+            
+            Log-Action "Keine Kalenderberechtigung gefunden zum Entfernen: $SourceUser -> $TargetUser"
+            return $false
+        }
+    } 
+    catch {
+        $errorMsg = $_.Exception.Message
+        Write-Log  "Fehler beim Entfernen der Kalenderberechtigung: $errorMsg" -Type "Error"
+        
+        if ($null -ne $txtStatus) {
+            Update-GuiText -TextElement $txtStatus -Message "Fehler: $errorMsg"
+        }
+        
+        Log-Action "Fehler beim Entfernen der Kalenderberechtigung: $errorMsg"
+        return $false
+    }
+}
+
+# -------------------------------------------------
+# Abschnitt: Postfachberechtigungen
+# -------------------------------------------------
+function Add-MailboxPermissionAction {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$SourceUser,
+        
+        [Parameter(Mandatory = $true)]
+        [string]$TargetUser
+    )
+    
+    try {
+        # Eingabevalidierung
+        if (-not (Validate-Email -Email $SourceUser)) {
+            throw "Ungültige E-Mail-Adresse für Quellpostfach."
+        }
+        if (-not (Validate-Email -Email $TargetUser)) {
+            throw "Ungültige E-Mail-Adresse für Zielbenutzer."
+        }
+        
+        Write-Log  "Füge Postfachberechtigung hinzu: $SourceUser -> $TargetUser (FullAccess)" -Type "Info"
+        
+        # Prüfen, ob die Berechtigung bereits existiert
+        $existingPermissions = Get-MailboxPermission -Identity $SourceUser -User $TargetUser -ErrorAction SilentlyContinue
+        $fullAccessExists = $existingPermissions | Where-Object { $_.AccessRights -like "*FullAccess*" }
+        
+        if ($fullAccessExists) {
+            Write-Log  "Berechtigung existiert bereits, keine Änderung notwendig" -Type "Warning"
+            if ($null -ne $txtStatus) {
+                Update-GuiText -TextElement $txtStatus -Message "Postfachberechtigung bereits vorhanden." -Color $script:connectedBrush
+            }
+            Log-Action "Postfachberechtigung bereits vorhanden: $SourceUser -> $TargetUser"
+            return $true
+        }
+        
+        # Berechtigung hinzufügen
+        Add-MailboxPermission -Identity $SourceUser -User $TargetUser -AccessRights FullAccess -InheritanceType All -AutoMapping $true -ErrorAction Stop
+        
+        Write-Log  "Postfachberechtigung erfolgreich hinzugefügt" -Type "Success"
+        if ($null -ne $txtStatus) {
+            Update-GuiText -TextElement $txtStatus -Message "Postfachberechtigung hinzugefügt." -Color $script:connectedBrush
+        }
+        Log-Action "Postfachberechtigung hinzugefügt: $SourceUser -> $TargetUser (FullAccess)"
+        return $true
+    } 
+    catch {
+        $errorMsg = $_.Exception.Message
+        Write-Log  "Fehler beim Hinzufügen der Postfachberechtigung: $errorMsg" -Type "Error"
+        if ($null -ne $txtStatus) {
+            Update-GuiText -TextElement $txtStatus -Message "Fehler: $errorMsg"
+        }
+        Log-Action "Fehler beim Hinzufügen der Postfachberechtigung: $errorMsg"
+        return $false
+    }
+}
+
+# -------------------------------------------------
+# Grundlegende Logging-Funktionen
+# Simple internal logging function to ensure logging works before the main Log-Action is defined
+function Write-LogEntry {
+    param([string]$Message)
+    $logFolder = "$PSScriptRoot\Logs"
+    if (-not (Test-Path $logFolder)) {
+        New-Item -ItemType Directory -Path $logFolder | Out-Null
+    }
+    $logFile = Join-Path $logFolder "ExchangeTool.log"
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    Add-Content -Path $logFile -Value "$timestamp - $Message"
+}
+
+function Test-PowerShell7AndAdminRights {
+    [CmdletBinding()]
+    param()
+
+    try {
+        $psVersion = $PSVersionTable.PSVersion
+        $isPSCore = $psVersion.Major -ge 7
+        $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+        $scriptPath = $MyInvocation.MyCommand.Path
+        $currentPSEnginePath = (Get-Process -Id $PID).Path # Pfad zur aktuellen powershell.exe oder pwsh.exe
+
+        Write-LogEntry "Aktueller Status: PowerShell Version $($psVersion.ToString()), Läuft als Administrator: $isAdmin"
+
+        # Idealfall: Bereits PS7+ und Admin
+        if ($isPSCore -and $isAdmin) {
+            Write-LogEntry "Optimale Bedingungen (PowerShell 7+ und Administratorrechte) sind erfüllt."
+            return $true
+        }
+
+        # PowerShell 7 Pfad suchen (nur wenn nicht bereits PS7+ und $ps7ExecutablePath noch nicht gesetzt)
+        $ps7ExecutablePath = $null
+        if (-not $isPSCore) {
+            $ps7SearchPaths = @(
+                Join-Path $env:ProgramFiles "PowerShell\7\pwsh.exe"
+                Join-Path $env:ProgramFiles "(x86)\PowerShell\7\pwsh.exe"
+                Join-Path $env:LOCALAPPDATA "Programs\PowerShell\7\pwsh.exe"
+                # Versuche, pwsh.exe aus dem PATH zu finden, das nicht die Windows PowerShell ist
+                (Get-Command pwsh -ErrorAction SilentlyContinue | Where-Object { $_.Source -and $_.Source -notlike "*\System32\WindowsPowerShell\*" -and $_.Source -notlike "*\SysWOW64\WindowsPowerShell\*" } | Select-Object -ExpandProperty Source -First 1)
+            )
+            $ps7ExecutablePath = $ps7SearchPaths | Where-Object { $_ -ne $null -and (Test-Path $_ -PathType Leaf) } | Select-Object -First 1
+            
+            if ($ps7ExecutablePath) {
+                Write-LogEntry "PowerShell 7 gefunden unter: $ps7ExecutablePath"
+            } else {
+                Write-LogEntry "PowerShell 7 wurde auf dem System nicht gefunden."
+            }
+        }
+
+        # Bedingungen für Neustart oder Installation
+        $needsAdminPrivileges = (-not $isAdmin)
+        $needsPS7Upgrade = (-not $isPSCore -and $null -ne $ps7ExecutablePath) # PS7 ist da, aber wir nutzen es nicht
+        $needsPS7Installation = (-not $isPSCore -and $null -eq $ps7ExecutablePath) # PS7 ist nicht da und wir nutzen es nicht
+
+        # Fall 1: PowerShell 7 muss installiert werden
+        if ($needsPS7Installation) {
+            $installMsg = "PowerShell 7 wird für dieses Skript empfohlen, wurde aber nicht gefunden."
+            if ($needsAdminPrivileges) {
+                $installMsg += " Zusätzlich sind Administratorrechte für einige Operationen und die Installation erforderlich."
+            }
+            $installMsg += " Möchten Sie PowerShell 7 jetzt installieren?"
+            
+            $userChoiceInstall = [System.Windows.MessageBox]::Show($installMsg, "PowerShell 7 Installation", [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
+            
+            if ($userChoiceInstall -eq [System.Windows.MessageBoxResult]::No) {
+                Write-LogEntry "Benutzer hat die Installation von PowerShell 7 abgelehnt."
+                [System.Windows.MessageBox]::Show("Ohne PowerShell 7 und/oder Administratorrechte können einige Funktionen des Skripts eingeschränkt sein oder fehlschlagen.", "Hinweis", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning)
+                return $false 
+            }
+
+            Write-LogEntry "Benutzer hat der Installation von PowerShell 7 zugestimmt."
+            $useWinget = $false
+            try {
+                $null = winget --version # Einfacher Test, ob winget existiert und funktioniert
+                if ($LASTEXITCODE -eq 0) { $useWinget = $true }
+            } catch { $useWinget = $false }
+
+            if ($useWinget) {
+                Write-LogEntry "Versuche PowerShell 7 Installation via winget."
+                # Winget benötigt Admin für systemweite Installation. Start-Process mit RunAs für winget selbst.
+                try {
+                    Start-Process -FilePath "winget" -ArgumentList "install Microsoft.PowerShell --accept-package-agreements --accept-source-agreements" -Verb RunAs -Wait
+                    Write-LogEntry "Winget-Installation von PowerShell 7 abgeschlossen (oder versucht)."
+                } catch {
+                     Write-LogEntry "Fehler beim Starten der Winget-Installation als Admin: $($_.Exception.Message)"
+                    [System.Windows.MessageBox]::Show("Fehler beim Starten der Winget-Installation für PowerShell 7: $($_.Exception.Message)`nVersuchen Sie, die Installation manuell als Administrator durchzuführen.", "Installationsfehler", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error)
+                    return $false
+                }
+            } else {
+                Write-LogEntry "Winget nicht verfügbar. Versuche PowerShell 7 Installation via MSI."
+                $installerUrl = "https://github.com/PowerShell/PowerShell/releases/download/v7.4.2/PowerShell-7.4.2-win-x64.msi" # Aktuelle LTS Version
+                $installerPath = Join-Path $env:TEMP "PowerShell-latest-win-x64.msi"
+                try {
+                    Write-LogEntry "Downloade PowerShell 7 MSI von $installerUrl"
+                    Invoke-WebRequest -Uri $installerUrl -OutFile $installerPath -UseBasicParsing
+                    Write-LogEntry "PowerShell 7 MSI heruntergeladen nach $installerPath. Starte Installation."
+                    # MSI Installation benötigt Admin. Start-Process mit RunAs.
+                    Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"$installerPath`" /quiet ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1 ADD_FILE_CONTEXT_MENU_RUNPOWERSHELL=1 ENABLE_PSREMOTING=1 REGISTER_MANIFEST=1" -Verb RunAs -Wait
+                    Write-LogEntry "MSI-Installation von PowerShell 7 abgeschlossen (oder versucht)."
+                } catch {
+                    Write-LogEntry "FEHLER bei MSI Download/Installation: $($_.Exception.Message)"
+                    [System.Windows.MessageBox]::Show("Fehler beim Herunterladen oder Installieren von PowerShell 7 via MSI: $($_.Exception.Message)`nVersuchen Sie, die Installation manuell als Administrator durchzuführen.", "Installationsfehler", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error)
+                    return $false
+                } finally {
+                    if (Test-Path $installerPath) { Remove-Item -Path $installerPath -Force }
+                }
+            }
+            
+            # Pfad nach Installation erneut suchen
+            $ps7SearchPathsAfterInstall = @(
+                Join-Path $env:ProgramFiles "PowerShell\7\pwsh.exe"
+                Join-Path $env:ProgramFiles "(x86)\PowerShell\7\pwsh.exe"
+                Join-Path $env:LOCALAPPDATA "Programs\PowerShell\7\pwsh.exe"
+                (Get-Command pwsh -ErrorAction SilentlyContinue | Where-Object { $_.Source -and $_.Source -notlike "*\System32\WindowsPowerShell\*" -and $_.Source -notlike "*\SysWOW64\WindowsPowerShell\*" } | Select-Object -ExpandProperty Source -First 1)
+            )
+            $ps7ExecutablePath = $ps7SearchPathsAfterInstall | Where-Object { $_ -ne $null -and (Test-Path $_ -PathType Leaf) } | Select-Object -First 1
+
+            if (-not $ps7ExecutablePath) {
+                Write-LogEntry "PowerShell 7 konnte nach der Installation nicht gefunden werden."
+                [System.Windows.MessageBox]::Show("PowerShell 7 wurde installiert, konnte aber nicht automatisch gefunden werden. Bitte starten Sie das Skript manuell mit PowerShell 7 (und ggf. Administratorrechten).", "Installationshinweis", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning)
+                return $false
+            }
+            Write-LogEntry "PowerShell 7 nach Installation gefunden unter: $ps7ExecutablePath"
+            $needsPS7Upgrade = $true # Da wir gerade installiert haben, wollen wir es auch nutzen.
+            $needsPS7Installation = $false # Nicht mehr relevant
+        }
+
+        # Fall 2: Neustart erforderlich (für Admin-Rechte und/oder PS7-Upgrade)
+        # Die Bedingung ($needsAdminPrivileges -or $needsPS7Upgrade) deckt folgende Fälle ab:
+        # 1. PowerShell < 7 ohne Admin-Rechte: $needsAdminPrivileges ist true, $needsPS7Upgrade ist true (falls PS7 gefunden). Neustart mit PS7 und Admin.
+        # 2. PowerShell < 7 mit Admin-Rechten: $needsAdminPrivileges ist false, $needsPS7Upgrade ist true (falls PS7 gefunden). Neustart mit PS7 und Admin.
+        # 3. PowerShell 7 ohne Admin-Rechte: $needsAdminPrivileges ist true, $needsPS7Upgrade ist false. Neustart mit aktueller PS7 und Admin. (Dies erfüllt die Anforderung)
+        if ($needsAdminPrivileges -or $needsPS7Upgrade) {
+            $restartMsgParts = @()
+            $targetExecutableForRestart = $currentPSEnginePath # Standard: aktuelle PS-Engine
+
+            if ($needsPS7Upgrade) { # PS7 ist verfügbar (oder gerade installiert) und wir sind nicht in PS7
+                $restartMsgParts += "PowerShell 7"
+                $targetExecutableForRestart = $ps7ExecutablePath
+            }
+            if ($needsAdminPrivileges) {
+                $restartMsgParts += "Administratorrechten"
+            }
+            
+            $reasonForRestart = $restartMsgParts -join " und "
+            $currentContextDesc = "Sie verwenden derzeit PowerShell $($psVersion.Major).$($psVersion.Minor)"
+            if ($isAdmin) { $currentContextDesc += " mit Administratorrechten." } else { $currentContextDesc += " ohne Administratorrechte."}
+
+            $restartQueryMsg = "$currentContextDesc Für optimale Funktionalität wird ein Neustart mit $reasonForRestart empfohlen."
+            if ($needsPS7Upgrade -and $ps7ExecutablePath) {
+                 $restartQueryMsg += " PowerShell 7 ist unter '$ps7ExecutablePath' verfügbar."
+            }
+            $restartQueryMsg += " Möchten Sie das Skript jetzt neu starten?"
+
+            $userChoiceRestart = [System.Windows.MessageBox]::Show($restartQueryMsg, "Neustart empfohlen", [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
+
+            if ($userChoiceRestart -eq [System.Windows.MessageBoxResult]::Yes) {
+                Write-LogEntry "Benutzer stimmt Neustart zu. Ziel-Executable: $targetExecutableForRestart, Admin-Rechte werden angefordert."
+                $argumentsForRestart = "-File `"$scriptPath`""
+                try {
+                    Start-Process -FilePath $targetExecutableForRestart -ArgumentList $argumentsForRestart -Verb RunAs
+                    Write-LogEntry "Neustart-Prozess wurde initiiert."
+                    exit # Aktuelles Skript beenden, da der neue Prozess gestartet wird
+                } catch {
+                    $errMsg = $_.Exception.Message
+                    Write-LogEntry "FEHLER beim Versuch, das Skript neu zu starten: $errMsg"
+                    [System.Windows.MessageBox]::Show("Fehler beim Versuch, das Skript neu zu starten: $errMsg", "Neustartfehler", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error)
+                    return $false # Neustart ist fehlgeschlagen
+                }
+            } else {
+                Write-LogEntry "Benutzer hat den empfohlenen Neustart abgelehnt."
+                [System.Windows.MessageBox]::Show("Ohne die empfohlenen Einstellungen (PowerShell 7 und/oder Administratorrechte) können einige Funktionen des Skripts eingeschränkt sein oder fehlschlagen.", "Hinweis", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning)
+                return $false 
+            }
+        }
+
+        # Wenn wir hier ankommen, bedeutet das, dass entweder die Bedingungen initial nicht optimal waren
+        # und der Benutzer die Korrekturmaßnahmen (Installation/Neustart) abgelehnt hat.
+        Write-LogEntry "Die optimalen Ausführungsbedingungen wurden nicht erreicht oder vom Benutzer abgelehnt."
+        return $false
+    }
+    catch {
+        $errorMsg = $_.Exception.Message
+        Write-LogEntry "Ein schwerwiegender Fehler ist in der Funktion Test-PowerShell7AndAdminRights aufgetreten: $errorMsg"
+        Write-LogEntry "KRITISCHER FEHLER (Test-PowerShell7AndAdminRights): Ein interner Fehler ist bei der Überprüfung der Ausführungsumgebung aufgetreten: $errorMsg. Das Skript wird möglicherweise nicht korrekt funktionieren."
+        return $false # Im Falle eines unerwarteten Fehlers in der Funktion selbst
+    }
+}
+
+# Check for PowerShell 7 at startup
+Test-PowerShell7AndAdminRights
+# --------------------------------------------------------------
+# Initialisiere Debugging und Logging für das Script
+# --------------------------------------------------------------
+$script:debugMode = $false
+$script:logFilePath = Join-Path -Path "$PSScriptRoot\Logs" -ChildPath "ExchangeTool.log"
+
+# Assembly für WPF-Komponenten laden
+Add-Type -AssemblyName PresentationFramework
+Add-Type -AssemblyName PresentationCore
+Add-Type -AssemblyName WindowsBase
+
+# Definiere Farben für GUI
+$script:connectedBrush = New-Object System.Windows.Media.SolidColorBrush([System.Windows.Media.Colors]::Green)
+$script:disconnectedBrush = New-Object System.Windows.Media.SolidColorBrush([System.Windows.Media.Colors]::Red)
+$script:isConnected = $false
+
+# Globale Variable für gültige Datumsformate pro Kultur für Exchange Online
+$script:ExchangeValidDateFormats = @{
+    "de-DE" = @( # Deutsch (Deutschland)
+        @{ Display = "TT.MM.JJJJ (Standard)"; Value = "dd.MM.yyyy" },
+        @{ Display = "T.M.JJJJ"; Value = "d.M.yyyy" },
+        @{ Display = "TT.MM.JJ"; Value = "dd.MM.yy" },
+        @{ Display = "T.M.JJ"; Value = "d.M.yy" },
+        @{ Display = "JJJJ-MM-TT (ISO)"; Value = "yyyy-MM-dd" }
+    );
+    "de-AT" = @( # Deutsch (Österreich)
+        @{ Display = "TT.MM.JJJJ (Standard)"; Value = "dd.MM.yyyy" },
+        @{ Display = "T.M.JJJJ"; Value = "d.M.yyyy" },
+        @{ Display = "JJJJ-MM-TT (ISO)"; Value = "yyyy-MM-dd" }
+    );
+    "de-CH" = @( # Deutsch (Schweiz)
+        @{ Display = "TT.MM.JJJJ (Standard)"; Value = "dd.MM.yyyy" },
+        @{ Display = "T.M.JJJJ"; Value = "d.M.yyyy" },
+        @{ Display = "JJJJ-MM-TT (ISO)"; Value = "yyyy-MM-dd" }
+    );
+    "en-US" = @( # Englisch (USA)
+        @{ Display = "MM/TT/JJJJ (Standard)"; Value = "MM/dd/yyyy" },
+        @{ Display = "M/T/JJJJ"; Value = "M/d/yyyy" },
+        @{ Display = "MM/TT/JJ"; Value = "MM/dd/yy" },
+        @{ Display = "M/T/JJ"; Value = "M/d/yy" },
+        @{ Display = "JJJJ-MM-TT (ISO)"; Value = "yyyy-MM-dd" }
+    );
+    "en-GB" = @( # Englisch (UK) - Gemäß Ihrer Fehlermeldung
+        @{ Display = "TT/MM/JJJJ (Standard)"; Value = "dd/MM/yyyy" },
+        @{ Display = "TT/MM/JJ"; Value = "dd/MM/yy" },
+        @{ Display = "T/M/JJ"; Value = "d/M/yy" }, # Angepasst an Fehlermeldung (war d/M/yyyy)
+        @{ Display = "T.M.JJ"; Value = "d.M.yy" },   # Hinzugefügt gemäß Fehlermeldung
+        @{ Display = "JJJJ-MM-TT (ISO)"; Value = "yyyy-MM-dd" }
+    );
+    "fr-FR" = @( # Französisch (Frankreich)
+        @{ Display = "TT/MM/JJJJ (Standard)"; Value = "dd/MM/yyyy" },
+        @{ Display = "JJJJ-MM-TT (ISO)"; Value = "yyyy-MM-dd" }
+    );
+    "fr-CA" = @( # Französisch (Kanada) - Oft JJJJ-MM-TT bevorzugt
+        @{ Display = "JJJJ-MM-TT (Standard)"; Value = "yyyy-MM-dd" },
+        @{ Display = "TT/MM/JJJJ"; Value = "dd/MM/yyyy" }
+    );
+    "fr-CH" = @( # Französisch (Schweiz)
+        @{ Display = "TT.MM.JJJJ (Standard)"; Value = "dd.MM.yyyy" }, # Punkte statt Schrägstriche
+        @{ Display = "JJJJ-MM-TT (ISO)"; Value = "yyyy-MM-dd" }
+    );
+    "it-IT" = @( # Italienisch (Italien)
+        @{ Display = "TT/MM/JJJJ (Standard)"; Value = "dd/MM/yyyy" },
+        @{ Display = "JJJJ-MM-TT (ISO)"; Value = "yyyy-MM-dd" }
+    );
+    "it-CH" = @( # Italienisch (Schweiz)
+        @{ Display = "TT.MM.JJJJ (Standard)"; Value = "dd.MM.yyyy" }, # Punkte statt Schrägstriche
+        @{ Display = "JJJJ-MM-TT (ISO)"; Value = "yyyy-MM-dd" }
+    );
+    "pl-PL" = @( # Polnisch (Polen)
+        @{ Display = "TT.MM.JJJJ (Standard)"; Value = "dd.MM.yyyy" }, # Punkte als Trennzeichen
+        @{ Display = "JJJJ-MM-TT (ISO)"; Value = "yyyy-MM-dd" }
+    );
+    "es-ES" = @( # Spanisch (Spanien)
+        @{ Display = "TT/MM/JJJJ (Standard)"; Value = "dd/MM/yyyy" },
+        @{ Display = "JJJJ-MM-TT (ISO)"; Value = "yyyy-MM-dd" }
+    );
+    "es-MX" = @( # Spanisch (Mexiko) - Ähnlich wie Spanien
+        @{ Display = "TT/MM/JJJJ (Standard)"; Value = "dd/MM/yyyy" },
+        @{ Display = "JJJJ-MM-TT (ISO)"; Value = "yyyy-MM-dd" }
+    );
+    "nl-NL" = @( # Niederländisch (Niederlande)
+        @{ Display = "T-M-JJJJ (Standard)"; Value = "d-M-yyyy" },
+        @{ Display = "TT-MM-JJJJ"; Value = "dd-MM-yyyy" },
+        @{ Display = "JJJJ-MM-TT (ISO)"; Value = "yyyy-MM-dd" }
+    );
+    "nl-BE" = @( # Niederländisch (Belgien)
+        @{ Display = "T/M/JJJJ (Standard)"; Value = "d/M/yyyy" }, # Schrägstriche in Belgien
+        @{ Display = "TT/MM/JJJJ"; Value = "dd/MM/yyyy" },
+        @{ Display = "JJJJ-MM-TT (ISO)"; Value = "yyyy-MM-dd" }
+    );
+    # Fallback / Standard, falls eine Kultur nicht spezifisch abgedeckt ist
+    "DEFAULT" = @(
+        @{ Display = "Systemstandard (Keine explizite Auswahl)"; Value = "" }, # Leerer Value für keine Änderung
+        @{ Display = "TT.MM.JJJJ"; Value = "dd.MM.yyyy" },
+        @{ Display = "MM/TT/JJJJ"; Value = "MM/dd/yyyy" },
+        @{ Display = "JJJJ-MM-TT (ISO)"; Value = "yyyy-MM-dd" }
+    )
+}
+# Globale Variable für relevante Zeitformate pro Kultur für Exchange Online
+$script:RelevantTimeFormatsPerCulture = @{
+    "de-DE" = @( # Deutsch (Deutschland)
+        @{ Display = "HH:mm (24h, Standard)"; Value = "HH:mm" },
+        @{ Display = "H:mm (24h)"; Value = "H:mm" }
+    );
+    "de-AT" = @( # Deutsch (Österreich)
+        @{ Display = "HH:mm (24h, Standard)"; Value = "HH:mm" },
+        @{ Display = "H:mm (24h)"; Value = "H:mm" }
+    );
+    "de-CH" = @( # Deutsch (Schweiz) - Oft mit Punkt
+        @{ Display = "HH.mm (24h, Standard)"; Value = "HH.mm" },
+        @{ Display = "H.mm (24h)"; Value = "H.mm" }
+    );
+    "en-US" = @( # Englisch (USA)
+        @{ Display = "h:mm tt (12h AM/PM, Standard)"; Value = "h:mm tt" },
+        @{ Display = "hh:mm tt (12h AM/PM)"; Value = "hh:mm tt" },
+        @{ Display = "H:mm (24h)"; Value = "H:mm" },
+        @{ Display = "HH:mm (24h)"; Value = "HH:mm" }
+    );
+    "en-GB" = @( # Englisch (UK)
+        @{ Display = "HH:mm (24h, Standard)"; Value = "HH:mm" },
+        @{ Display = "H:mm (24h)"; Value = "H:mm" },
+        @{ Display = "h:mm tt (12h AM/PM)"; Value = "h:mm tt" }
+    );
+    "fr-FR" = @( # Französisch (Frankreich)
+        @{ Display = "HH:mm (24h, Standard)"; Value = "HH:mm" },
+        @{ Display = "H:mm (24h)"; Value = "H:mm" }
+    );
+    "fr-CA" = @( # Französisch (Kanada)
+        @{ Display = "HH:mm (24h, Standard)"; Value = "HH:mm" }, # Oft 24h bevorzugt
+        @{ Display = "h:mm tt (12h AM/PM)"; Value = "h:mm tt" }
+    );
+    "fr-CH" = @( # Französisch (Schweiz) - Oft mit Punkt
+        @{ Display = "HH.mm (24h, Standard)"; Value = "HH.mm" },
+        @{ Display = "H.mm (24h)"; Value = "H.mm" }
+    );
+    "it-IT" = @( # Italienisch (Italien)
+        @{ Display = "HH:mm (24h, Standard)"; Value = "HH:mm" },
+        @{ Display = "H:mm (24h)"; Value = "H:mm" }
+    );
+    "it-CH" = @( # Italienisch (Schweiz) - Oft mit Punkt
+        @{ Display = "HH.mm (24h, Standard)"; Value = "HH.mm" },
+        @{ Display = "H.mm (24h)"; Value = "H.mm" }
+    );
+    "pl-PL" = @( # Polnisch (Polen)
+        @{ Display = "HH:mm (24h, Standard)"; Value = "HH:mm" },
+        @{ Display = "H:mm (24h)"; Value = "H:mm" }
+    );
+    "es-ES" = @( # Spanisch (Spanien)
+        @{ Display = "H:mm (24h, Standard)"; Value = "H:mm" }, # Kann auch HH:mm sein
+        @{ Display = "HH:mm (24h)"; Value = "HH:mm" }
+    );
+    "es-MX" = @( # Spanisch (Mexiko)
+        @{ Display = "h:mm tt (12h AM/PM, Standard)"; Value = "h:mm tt" },
+        @{ Display = "HH:mm (24h)"; Value = "HH:mm" }
+    );
+    "nl-NL" = @( # Niederländisch (Niederlande)
+        @{ Display = "H:mm (24h, Standard)"; Value = "H:mm" }, # Oder HH:mm
+        @{ Display = "HH:mm (24h)"; Value = "HH:mm" }
+    );
+    "nl-BE" = @( # Niederländisch (Belgien)
+        @{ Display = "H:mm (24h, Standard)"; Value = "H:mm" }, # Oder HH:mm
+        @{ Display = "HH:mm (24h)"; Value = "HH:mm" }
+    );
+    "DEFAULT" = @( # Allgemeine Fallbacks, wenn keine spezifische Kultur passt
+        @{ Display = "Systemstandard (Keine explizite Auswahl)"; Value = "" },
+        @{ Display = "HH:mm (24h)"; Value = "HH:mm" },
+        @{ Display = "h:mm tt (12h AM/PM)"; Value = "h:mm tt" }
+    )
+}
+# Globale Variable für relevante Zeitzonen-IDs pro Kultur für Exchange Online
+$script:RelevantTimezonesPerCulture = @{
+    "de-DE" = @("W. Europe Standard Time", "Central European Standard Time"); # Berlin, Amsterdam, Paris, Rome
+    "de-AT" = @("W. Europe Standard Time", "Central European Standard Time", "Romance Standard Time"); # Vienna
+    "de-CH" = @("W. Europe Standard Time", "Central European Standard Time", "Romance Standard Time"); # Bern, Zurich
+    "en-US" = @("Pacific Standard Time", "Mountain Standard Time", "Central Standard Time", "Eastern Standard Time", "Alaskan Standard Time", "Hawaiian Standard Time");
+    "en-GB" = @("GMT Standard Time", "Greenwich Standard Time"); # London, Dublin
+    "fr-FR" = @("Romance Standard Time", "Central European Standard Time"); # Paris
+    "fr-CA" = @("Eastern Standard Time", "Central Standard Time", "Mountain Standard Time", "Pacific Standard Time", "Newfoundland Standard Time", "Atlantic Standard Time"); # Canada
+    "fr-CH" = @("W. Europe Standard Time", "Central European Standard Time", "Romance Standard Time"); # Geneva
+    "it-IT" = @("W. Europe Standard Time", "Central European Standard Time", "Romance Standard Time"); # Rome
+    "it-CH" = @("W. Europe Standard Time", "Central European Standard Time", "Romance Standard Time"); # Italian-speaking Switzerland
+    "pl-PL" = @("Central European Standard Time"); # Warsaw
+    "es-ES" = @("Romance Standard Time", "Central European Standard Time"); # Madrid
+    "es-MX" = @("Central Standard Time (Mexico)", "Mountain Standard Time (Mexico)", "Pacific Standard Time (Mexico)"); # Mexico City, Chihuahua, Tijuana
+    "nl-NL" = @("W. Europe Standard Time", "Central European Standard Time", "Romance Standard Time"); # Amsterdam
+    "nl-BE" = @("W. Europe Standard Time", "Central European Standard Time", "Romance Standard Time"); # Brussels
+    # Fallback für nicht explizit gemappte Kulturen - hier könnten alle Zeitzonen geladen werden oder eine Auswahl häufiger
+    "DEFAULT_ALL" = $true # Ein Flag, um alle Zeitzonen zu laden, wenn keine spezifische Kultur passt
+    # Oder eine kleinere Default-Liste:
+    # "DEFAULT" = @("UTC", "GMT Standard Time", "W. Europe Standard Time", "Central European Standard Time", "Eastern Standard Time", "Pacific Standard Time")
+}
+# MessageBox-Funktion
+function Show-MessageBox {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Message,
+        
+        [Parameter(Mandatory = $false)]
+        [string]$Title = "Information",
+        
+        [Parameter(Mandatory = $false)]
+        [ValidateSet("Info", "Warning", "Error", "Question")]
+        [string]$Type = "Info"
+    )
+    
+    try {
+        $icon = switch ($Type) {
+            "Info" { [System.Windows.MessageBoxImage]::Information }
+            "Warning" { [System.Windows.MessageBoxImage]::Warning }
+            "Error" { [System.Windows.MessageBoxImage]::Error }
+            "Question" { [System.Windows.MessageBoxImage]::Question }
+        }
+        
+        $buttons = if ($Type -eq "Question") { 
+            [System.Windows.MessageBoxButton]::YesNo 
+        } else { 
+            [System.Windows.MessageBoxButton]::OK 
+        }
+        
+        $result = [System.Windows.MessageBox]::Show($Message, $Title, $buttons, $icon)
+        
+        # Erfolg loggen
+        Write-LogEntry -Message "$Title - $Type - $Message" -Type "Info"
+        
+        # Ergebnis zurückgeben (wichtig für Ja/Nein-Fragen)
+        return $result
+    }
+    catch {
+        $errorMsg = $_.Exception.Message
+        
+        # Fallback-Ausgabe
+        
+        if ($Type -eq "Question") {
+            return [System.Windows.MessageBoxResult]::No
+        }
+    }
+}
+# Registry-Pfad und Standardwerte für Konfigurationseinstellungen
+$script:registryPath = "HKCU:\Software\easyIT\easyEXO"
+$currentScriptVersion = "0.0.9" # Aktuelle Version des Skripts
+
+try {
+    Write-LogEntry "Prüfe und initialisiere Registry-Konfiguration unter '$($script:registryPath)'."
+
+    # Stelle sicher, dass der Basispfad "HKCU:\Software\easyIT" existiert
+    $parentPath = "HKCU:\Software\easyIT"
+    if (-not (Test-Path -Path $parentPath)) {
+        New-Item -Path "HKCU:\Software" -Name "easyIT" -Force -ErrorAction Stop | Out-Null
+        Write-LogEntry "Registry-Basispfad '$parentPath' wurde erstellt."
+    }
+
+    # Prüfe, ob der Anwendungspfad existiert.
+    $appPathExistedBefore = Test-Path -Path $script:registryPath
+    if (-not $appPathExistedBefore) {
+        # Wenn der Anwendungspfad nicht existiert, erstelle ihn.
+        New-Item -Path $parentPath -Name (Split-Path $script:registryPath -Leaf) -Force -ErrorAction Stop | Out-Null
+        Write-LogEntry "Registry-Anwendungspfad '$($script:registryPath)' wurde erstellt."
+    }
+    
+    $performUpdate = $false
+    
+    if (-not $appPathExistedBefore) {
+        # Wenn der Anwendungspfad gerade erst erstellt wurde, ist ein vollständiges Setzen der Standardwerte erforderlich.
+        Write-LogEntry "Registry-Anwendungspfad war nicht vorhanden. Standardwerte werden initial geschrieben."
+        $performUpdate = $true
+    } else {
+        # Der Pfad existierte bereits. Prüfe die Version.
+        $storedVersion = $null
+        try {
+            # Versuche, den Versionseintrag zu lesen
+            $storedVersionProperty = Get-ItemProperty -Path $script:registryPath -Name "Version" -ErrorAction SilentlyContinue
+            if ($null -ne $storedVersionProperty -and $storedVersionProperty.PSObject.Properties["Version"]) {
+                $storedVersion = $storedVersionProperty.Version
+            }
+        }
+        catch {
+            # Fehler beim Lesen der Version, sicherheitshalber Update durchführen
+            Write-LogEntry "WARNUNG: Fehler beim Lesen der Version aus der Registry unter '$($script:registryPath)': $($_.Exception.Message). Standardwerte werden vorsichtshalber aktualisiert."
+            $performUpdate = $true # Update erzwingen bei Lesefehler
+        }
+
+        if (-not $performUpdate) { # Nur prüfen, wenn nicht schon durch Fehler oben ein Update erzwungen wurde
+            if ($null -eq $storedVersion) {
+                Write-LogEntry "Kein Versionseintrag in der Registry gefunden unter '$($script:registryPath)' oder Wert ist null. Standardwerte werden geschrieben."
+                $performUpdate = $true
+            } elseif ($storedVersion -ne $currentScriptVersion) {
+                Write-LogEntry "Registry-Version ('$storedVersion') unterscheidet sich von Skript-Version ('$currentScriptVersion'). Standardwerte werden aktualisiert."
+                $performUpdate = $true
+            } else {
+                Write-LogEntry "Registry-Version ('$storedVersion') ist aktuell mit Skript-Version ('$currentScriptVersion'). Keine Aktualisierung der Standardwerte erforderlich."
+            }
+        }
+    }
+    
+    if ($performUpdate) {
+        Write-LogEntry "Setze/Aktualisiere Registry-Standardwerte für '$($script:registryPath)'."
+        New-ItemProperty -Path $script:registryPath -Name "Debug" -Value 0 -PropertyType DWORD -Force -ErrorAction Stop | Out-Null
         New-ItemProperty -Path $script:registryPath -Name "AppName" -Value "Exchange Online Verwaltung" -PropertyType String -Force -ErrorAction Stop | Out-Null
         New-ItemProperty -Path $script:registryPath -Name "Version" -Value $currentScriptVersion -PropertyType String -Force -ErrorAction Stop | Out-Null
         New-ItemProperty -Path $script:registryPath -Name "ThemeColor" -Value "#0078D7" -PropertyType String -Force -ErrorAction Stop | Out-Null
