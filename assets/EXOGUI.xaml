@@ -4550,7 +4550,7 @@
                                 </ListView>
                             </GroupBox>
 
-                                                        <!--  Progress Bar  -->
+                            <!--  Progress Bar  -->
                             <ProgressBar
                                 x:Name="pbHealthCheck"
                                 Grid.Row="1"
@@ -4718,7 +4718,7 @@
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="90" />
                                         </Grid.ColumnDefinitions>
 
                                         <TextBlock
@@ -4732,13 +4732,14 @@
                                             x:Name="cmbSharedMailboxSelect"
                                             Grid.Row="0"
                                             Grid.Column="1"
+                                            Width="185"
                                             Height="30"
-                                            Margin="0,5,5,5" />
+                                            Margin="0,5,0,5" />
                                         <Button
                                             x:Name="btnShowSharedMailboxes"
                                             Grid.Row="0"
                                             Grid.Column="2"
-                                            Width="45"
+                                            Width="90"
                                             Height="35"
                                             Margin="0,5,0,5"
                                             Background="#E7F3FF"
@@ -4764,7 +4765,7 @@
                                             x:Name="btnUpdateAutoMapping"
                                             Grid.Row="1"
                                             Grid.Column="2"
-                                            Width="100"
+                                            Width="90"
                                             Height="30"
                                             Margin="0,5,0,5"
                                             Background="#FFF3CD"
@@ -4775,7 +4776,7 @@
                                         <StackPanel
                                             Grid.Row="2"
                                             Grid.ColumnSpan="3"
-                                            Margin="0,5,0,0"
+                                            Margin="0,25,0,0"
                                             HorizontalAlignment="Center"
                                             Orientation="Horizontal">
                                             <Button
@@ -5122,10 +5123,8 @@
                                                 Height="30"
                                                 Margin="0,5,0,0"
                                                 HorizontalAlignment="Center"
-                                                Background="#D4EDDA"
-                                                BorderBrush="#C3E6CB"
-                                                Content="Ressource erstellen"
-                                                Foreground="#155724" />
+                                                Background="#FF4E8434"
+                                                Content="Ressource erstellen" />
                                         </Grid>
                                     </StackPanel>
                                 </GroupBox>
@@ -5168,10 +5167,8 @@
                                              Width="260"
                                              Height="30"
                                              Margin="90,0,0,0"
-                                             Background="#E7F3FF"
-                                             BorderBrush="#B8DAFF"
-                                             Content="Suchen"
-                                             Foreground="#0056B3" />
+                                             Background="#FF40678C"
+                                             Content="Suchen" />
 
                                             <StackPanel
                                                 Grid.Row="2"
@@ -5182,32 +5179,26 @@
 
                                                 <Button
                                                     x:Name="btnRefreshResources"
-                                                    Width="45"
+                                                    Width="110"
                                                     Height="35"
                                                     Margin="0,0,10,0"
-                                                    Background="#CCE5FF"
-                                                    BorderBrush="#B3D7FF"
-                                                    Content="Alle anzeigen"
-                                                    Foreground="#004085" />
+                                                    Background="#FFA4D0F1"
+                                                    Content="Alle anzeigen" Foreground="Black" />
                                                 <Button
                                                     x:Name="btnShowRoomResources"
                                                     Width="110"
                                                     Height="30"
                                                     Margin="0,0,0,0"
-                                                    Background="#D1ECF1"
-                                                    BorderBrush="#BEE5EB"
-                                                    Content="Nur Räume"
-                                                    Foreground="#0C5460" />
+                                                    Background="#FF638BA9"
+                                                    Content="Nur Räume" />
                                                 <Button
                                                     x:Name="btnShowEquipmentResources"
                                                     Width="110"
                                                     Height="30"
                                                     Margin="10,0,0,0"
                                                     HorizontalAlignment="Center"
-                                                    Background="#E2E3E5"
-                                                    BorderBrush="#D6D8DB"
-                                                    Content="Nur Ausstattung"
-                                                Foreground="#495057" />
+                                                    Background="#FF638BA9"
+                                                    Content="Nur Ausstattung" />
                                             </StackPanel>
                                         </Grid>
                                     </StackPanel>
@@ -5218,20 +5209,20 @@
                                     <StackPanel Margin="10">
                                         <Grid>
                                             <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="*" />
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="Auto" />
                                             </Grid.RowDefinitions>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="65" />
+                                                <ColumnDefinition Width="280" />
                                             </Grid.ColumnDefinitions>
 
                                             <TextBlock
                                                 Grid.Row="0"
                                                 Grid.Column="0"
                                                 Width="80"
-                                                Margin="0,5,10,5"
+                                                Margin="0,5,0,5"
                                                 VerticalAlignment="Center"
                                                 Text="Auswählen:" />
                                             <ComboBox
@@ -5239,7 +5230,8 @@
                                                 Grid.Row="0"
                                                 Grid.Column="1"
                                                 Height="30"
-                                                Margin="0,5,0,5"
+                                                Width="200"
+                                                Margin="0,5,25,5"
                                                 IsEditable="True" />
                                             <Button
                                                 x:Name="btnRefreshResourceList"
@@ -5247,7 +5239,7 @@
                                                 Grid.Column="2"
                                                 Width="45"
                                                 Height="35"
-                                                Margin="0,5,0,5"
+                                                Margin="235,5,0,5"
                                                 VerticalAlignment="Center"
                                                 Background="#CCE5FF"
                                                 BorderBrush="#B3D7FF"
@@ -5258,26 +5250,22 @@
                                             <StackPanel
                                                 Grid.Row="1"
                                                 Grid.ColumnSpan="2"
-                                                Margin="0,5,0,0"
+                                                Margin="0,25,0,0"
                                                 HorizontalAlignment="Center"
                                                 Orientation="Horizontal">
                                                 <Button
                                                     x:Name="btnEditResourceSettings"
-                                                    Width="170"
+                                                    Width="165"
                                                     Height="30"
                                                     Margin="0,0,10,0"
-                                                    Background="#FFF3CD"
-                                                    BorderBrush="#FFEAA7"
-                                                    Content="Bearbeiten"
-                                                    Foreground="#856404" />
+                                                    Background="#FF797D26"
+                                                    Content="Bearbeiten" />
                                                 <Button
                                                     x:Name="btnRemoveResource"
-                                                    Width="170"
+                                                    Width="165"
                                                     Height="30"
-                                                    Background="#F8D7DA"
-                                                    BorderBrush="#F5C6CB"
-                                                    Content="Löschen"
-                                                    Foreground="#721C24" />
+                                                    Background="#FF7D3838"
+                                                    Content="Löschen" />
                                             </StackPanel>
                                         </Grid>
                                     </StackPanel>
@@ -5427,14 +5415,10 @@
                                                 x:Name="btnCreateContact"
                                                 Grid.Row="2"
                                                 Grid.ColumnSpan="2"
-                                                Width="220"
-                                                Height="30"
-                                                Margin="130,0,0,0"
-                                                HorizontalAlignment="Center"
-                                                Background="#D4EDDA"
-                                                BorderBrush="#C3E6CB"
+                                                Margin="0,0,0,0"
+                                                Background="#FF4E8434"
                                                 Content="Kontakt erstellen"
-                                                Foreground="#155724" />
+                                                Foreground="White" />
                                         </Grid>
                                     </StackPanel>
                                 </GroupBox>
@@ -5479,19 +5463,15 @@
                                                     Width="170"
                                                     Height="30"
                                                     Margin="0,0,5,0"
-                                                    Background="#E7F3FF"
-                                                    BorderBrush="#B8DAFF"
-                                                    Content="MailContacts anzeigen"
-                                                    Foreground="#0056B3" />
+                                                    Background="#FF40678C"
+                                                    Content="Alle MailContacts anzeigen" />
                                                 <Button
                                                     x:Name="btnShowMailUsers"
                                                     Width="170"
                                                     Height="30"
                                                     Margin="5,0,0,0"
-                                                    Background="#CCE5FF"
-                                                    BorderBrush="#B3D7FF"
-                                                    Content="MailUsers anzeigen"
-                                                    Foreground="#004085" />
+                                                    Background="#FF40678C"
+                                                    Content="Alle MailUsers anzeigen" />
                                             </StackPanel>
 
                                             <Button
@@ -5500,12 +5480,10 @@
                                                 Grid.ColumnSpan="2"
                                                 Width="350"
                                                 Height="30"
-                                                Margin="0,30,0,0"
+                                                Margin="0,10,0,0"
                                                 HorizontalAlignment="Center"
-                                                Background="#F8D7DA"
-                                                BorderBrush="#F5C6CB"
-                                                Content="Ausgewählten Kontakt löschen"
-                                                Foreground="#721C24" />
+                                                Background="#FF7D3838"
+                                                Content="Ausgewählten Kontakt löschen" />
                                         </Grid>
                                     </StackPanel>
                                 </GroupBox>
@@ -5723,10 +5701,8 @@
                                             Height="30"
                                             Margin="0,0,0,10"
                                             HorizontalAlignment="Center"
-                                            Background="#D4EDDA"
-                                            BorderBrush="#C3E6CB"
-                                            Content="Bericht generieren"
-                                            Foreground="#155724" />
+                                            Background="#FF4E8434"
+                                            Content="Bericht generieren" />
 
                                         <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                                             <Button
@@ -5842,10 +5818,9 @@
                                              Height="30"
                                              Margin="115,0,0,0"
                                              HorizontalAlignment="Center"
-                                             Background="#E7F3FF"
-                                             BorderBrush="#B8DAFF"
+                                             Background="#FF40678C"
                                              Content="Einstellungen abrufen"
-                                             Foreground="#0056B3" />
+                                             Foreground="White" />
                                     </Grid>
                                 </GroupBox>
 
@@ -5978,10 +5953,9 @@
                                             Height="30"
                                             Margin="0,15,0,0"
                                             HorizontalAlignment="Center"
-                                            Background="#D4EDDA"
-                                            BorderBrush="#C3E6CB"
+                                            Background="#FF4E8434"
                                             Content="Regionaleinstellungen anwenden"
-                                            Foreground="#155724"
+                                            Foreground="White"
                                             ToolTip="Setzt die ausgewählte Sprache und/oder Zeitzone für die angegebenen Postfächer." />
                                     </Grid>
                                 </GroupBox>
@@ -6101,7 +6075,7 @@
                         Visibility="Collapsed">
                         <Grid Margin="10">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="400" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
@@ -6234,7 +6208,7 @@
                                             Orientation="Horizontal">
                                             <Button
                                                 x:Name="btnCreateRule"
-                                                Width="120"
+                                                Width="170"
                                                 Margin="0,0,10,0"
                                                 Background="#28a745"
                                                 BorderBrush="#28a745"
@@ -6242,7 +6216,7 @@
                                                 Foreground="White" />
                                             <Button
                                                 x:Name="btnTestRule"
-                                                Width="120"
+                                                Width="170"
                                                 Background="#ffc107"
                                                 BorderBrush="#ffc107"
                                                 Content="Test Rule"
@@ -6253,40 +6227,40 @@
 
                                 <!--  Rule Management Buttons  -->
                                 <GroupBox Header="Rule Management">
-                                    <StackPanel Margin="10">
+                                    <StackPanel Margin="30">
                                         <Button
                                             x:Name="btnRefreshRules"
                                             Margin="0,0,0,5"
                                             Padding="10,5"
-                                            Content="Refresh" />
+                                            Content="Refresh" Background="#FF40678C" />
                                         <Button
                                             x:Name="btnEnableRule"
-                                            Margin="0,5,0,5"
+                                            Margin="0,15,0,5"
                                             Padding="10,5"
-                                            Content="Enable" />
+                                            Content="Enable" Background="#FF4E8434" />
                                         <Button
                                             x:Name="btnDisableRule"
                                             Margin="0,5,0,5"
                                             Padding="10,5"
-                                            Content="Disable" />
+                                            Content="Disable" Background="#FF7D3838" />
                                         <Button
                                             x:Name="btnDeleteRule"
-                                            Margin="0,5,0,5"
+                                            Margin="0,25,0,5"
                                             Padding="10,5"
-                                            Background="#dc3545"
+                                            Background="#FFDE3949"
                                             BorderBrush="#dc3545"
                                             Content="Delete"
                                             Foreground="White" />
                                         <Button
                                             x:Name="btnExportRules"
-                                            Margin="0,5,0,5"
+                                            Margin="0,25,0,5"
                                             Padding="10,5"
-                                            Content="Export" />
+                                            Content="Export" Background="#FFE8F4FD" Foreground="Black" />
                                         <Button
                                             x:Name="btnImportRules"
                                             Margin="0,5,0,0"
                                             Padding="10,5"
-                                            Content="Import" />
+                                            Content="Import" Foreground="Black" Background="#FFE8F4FD" />
                                     </StackPanel>
                                 </GroupBox>
                             </StackPanel>
@@ -6352,8 +6326,8 @@
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="222" />
+                                                <ColumnDefinition Width="95" />
                                             </Grid.ColumnDefinitions>
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto" />
@@ -6361,26 +6335,23 @@
                                             <TextBlock
                                                 Grid.Row="0"
                                                 Grid.Column="0"
-                                                Margin="0,5,5,5"
+                                                Margin="0,5,0,5"
                                                 VerticalAlignment="Center"
                                                 Text="Benutzer:" />
                                             <TextBox
                                                 x:Name="cmbInboxRuleUser"
                                                 Grid.Row="0"
                                                 Grid.Column="1"
-                                                Margin="5,5,0,5" />
+                                                Margin="25,5,5,5" />
                                             <Button
                                                 x:Name="btnLoadInboxRules"
                                                 Grid.Row="0"
                                                 Grid.Column="2"
-                                                Width="45"
-                                                Height="35"
-                                                Margin="0,10,0,0"
-                                                Padding="10,5"
+                                                Margin="0,0,0,0"
                                                 HorizontalAlignment="Center"
                                                 Background="#007bff"
                                                 BorderBrush="#007bff"
-                                                Content="🔄"
+                                                Content="Regeln Laden"
                                                 Foreground="White" />
                                         </Grid>
                                     </StackPanel>
@@ -6455,10 +6426,8 @@
                                                 Name="btnCreateInboxRule"
                                                 Grid.Row="4"
                                                 Grid.ColumnSpan="2"
-                                                Width="120"
-                                                HorizontalAlignment="Center"
-                                                Margin="0,10,0,0"
-                                                Background="#28a745"
+                                                Margin="0,20,0,0"
+                                                Background="#FF4E8434"
                                                 BorderBrush="#28a745"
                                                 Content="Regel erstellen"
                                                 Foreground="White" />
@@ -6473,25 +6442,17 @@
                                             x:Name="btnRefreshInboxRules"
                                             Margin="0,0,0,5"
                                             Padding="10,5"
-                                            Content="Aktualisieren" />
+                                            Content="Aktualisieren" Background="#FF40678C" />
                                         <Button
                                             x:Name="btnEnableInboxRule"
-                                            Margin="0,5,0,5"
+                                            Margin="0,25,0,5"
                                             Padding="10,5"
-                                            Content="Aktivieren" />
+                                            Content="Aktivieren" Background="#FF4E8434" />
                                         <Button
                                             x:Name="btnDisableInboxRule"
-                                            Margin="0,5,0,5"
+                                            Margin="0,5,0,25"
                                             Padding="10,5"
-                                            Content="Deaktivieren" />
-                                        <Button
-                                            x:Name="btnDeleteInboxRule"
-                                            Margin="0,5,0,5"
-                                            Padding="10,5"
-                                            Background="#dc3545"
-                                            BorderBrush="#dc3545"
-                                            Content="Löschen"
-                                            Foreground="White" />
+                                            Content="Deaktivieren" Background="#FFAB4949" />
                                         <Button
                                             x:Name="btnMoveRuleUp"
                                             Margin="0,5,0,5"
@@ -6502,6 +6463,14 @@
                                             Margin="0,5,0,0"
                                             Padding="10,5"
                                             Content="Nach unten" />
+                                        <Button
+                                            x:Name="btnDeleteInboxRule"
+                                            Margin="0,25,0,5"
+                                            Padding="10,5"
+                                            Background="#dc3545"
+                                            BorderBrush="#dc3545"
+                                            Content="Löschen"
+                                            Foreground="White" />
                                     </StackPanel>
                                 </GroupBox>
                             </StackPanel>
@@ -6675,16 +6644,6 @@
                                                 Grid.Column="1"
                                                 Margin="5,5,0,5" />
                                         </Grid>
-
-                                        <Button
-                                            x:Name="btnStartTrace"
-                                            Margin="0,15,0,0"
-                                            Padding="12,7"
-                                            HorizontalAlignment="Center"
-                                            Background="#007BFF"
-                                            BorderBrush="#007BFF"
-                                            Content="Suche starten"
-                                            Foreground="White" />
                                     </StackPanel>
                                 </GroupBox>
 
@@ -6692,27 +6651,32 @@
                                 <GroupBox Header="Aktionen">
                                     <StackPanel Margin="10">
                                         <Button
-                                            x:Name="btnExportTrace"
-                                            Margin="0,0,0,5"
+                                            x:Name="btnStartTrace"
+                                            Margin="0,0,0,0"
                                             Padding="10,5"
-                                            Background="#28a745"
-                                            BorderBrush="#28a745"
-                                            Content="Als CSV exportieren"
+
+                                            Background="#FF4E8434"
+                                            Content="Suche starten"
                                             Foreground="White" />
                                         <Button
                                             x:Name="btnDetailedTrace"
-                                            Margin="0,5,0,5"
+                                            Margin="0,10,0,50"
                                             Padding="10,5"
-                                            Background="#17a2b8"
-                                            BorderBrush="#17a2b8"
+                                            Background="#FF6B5AA7"
                                             Content="Detailansicht"
                                             Foreground="White" />
                                         <Button
-                                            x:Name="btnClearTrace"
-                                            Margin="0,5,0,0"
+                                            x:Name="btnExportTrace"
+                                            Margin="0,0,0,5"
                                             Padding="10,5"
-                                            Background="#dc3545"
-                                            BorderBrush="#dc3545"
+                                            Background="#FFE8F4FD"
+                                            Content="Als CSV exportieren"
+                                            Foreground="Black" />
+                                        <Button
+                                            x:Name="btnClearTrace"
+                                            Margin="0,15,0,0"
+                                            Padding="10,5"
+                                            Background="#FFD05050"
                                             Content="Ergebnisse löschen"
                                             Foreground="White" />
                                     </StackPanel>
@@ -6782,54 +6746,28 @@
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <StackPanel Margin="10">
 
-                                <!--  Willkommens-Karte  -->
-                                <GroupBox Header="Willkommen bei easyEXO" Margin="0,0,0,10" Padding="10">
-                                    <TextBlock TextWrapping="Wrap">
-                                        Dieses Tool bietet eine grafische Benutzeroberfläche zur einfachen Verwaltung Ihrer Exchange Online-Umgebung. Es bündelt häufig verwendete PowerShell-Cmdlets in einer intuitiven Oberfläche, um administrative Aufgaben zu beschleunigen.
-                                        <LineBreak /><LineBreak />
-                                        <Run FontWeight="SemiBold">Hinweis:</Run> Dieses Skript ist ein Community-Projekt und steht in keiner Verbindung zu Microsoft. Die Nutzung erfolgt auf eigene Gefahr.
-                                    </TextBlock>
-                                </GroupBox>
-
                                 <!--  Funktionsübersicht-Karte  -->
-                                <GroupBox Header="Funktionsübersicht" Margin="0,0,0,10" Padding="10">
-                                    <TextBlock TextWrapping="Wrap">
-                                        easyEXO deckt eine Vielzahl von Verwaltungsaufgaben ab, die in die folgenden Hauptbereiche unterteilt sind:
-                                        <LineBreak /><LineBreak />
-                                        <Run FontWeight="SemiBold">• Kalender- &amp; Postfachberechtigungen:</Run> Verwalten Sie den Zugriff auf Kalender und Postfächer.
-                                        <LineBreak />
-                                        <Run FontWeight="SemiBold">• Shared Mailboxes &amp; Ressourcen:</Run> Erstellen und konfigurieren Sie freigegebene Postfächer sowie Raum- und Gerätepostfächer.
-                                        <LineBreak />
-                                        <Run FontWeight="SemiBold">• Gruppen &amp; Kontakte:</Run> Verwalten Sie Verteilergruppen, sicherheitsaktivierte Gruppen und externe Kontakte.
-                                        <LineBreak />
-                                        <Run FontWeight="SemiBold">• Transportregeln &amp; Nachrichtenverfolgung:</Run> Erstellen und verwalten Sie E-Mail-Flussregeln und verfolgen Sie den Zustellstatus von Nachrichten.
-                                        <LineBreak />
-                                        <Run FontWeight="SemiBold">• Regionaleinstellungen:</Run> Passen Sie Sprach-, Zeit- und Datumsformate für Postfächer an.
-                                        <LineBreak />
-                                        <Run FontWeight="SemiBold">• Berichte &amp; Audits:</Run> Generieren Sie Berichte über Postfachnutzung, Berechtigungen und führen Sie Audit-Suchen durch.
-                                    </TextBlock>
+                                <GroupBox Header="Willkommen bei easyEXO" Padding="10" Width="1420" Background="#FFF9F9F9" FontSize="14">
+                                    <TextBlock TextWrapping="Wrap"><Run Text="Dieses Tool bietet eine grafische Benutzeroberfläche zur einfachen Verwaltung Ihrer Exchange Online-Umgebung. Es bündelt häufig verwendete PowerShell-Cmdlets in einer intuitiven Oberfläche, um administrative Aufgaben zu beschleunigen." FontSize="12"/><LineBreak /><LineBreak /><Run FontWeight="SemiBold" Text="Hinweis:" FontSize="12" Foreground="#FFB71414"/><Run Text=" Dieses Skript ist ein Community-Projekt und steht in keiner Verbindung zu Microsoft. Die Nutzung erfolgt auf eigene Gefahr." FontSize="12"/></TextBlock>
                                 </GroupBox>
 
-                                <!--  Voraussetzungen-Karte  -->
-                                <GroupBox Header="Voraussetzungen" Margin="0,0,0,10" Padding="10">
-                                    <TextBlock TextWrapping="Wrap">
-                                        Um dieses Tool nutzen zu können, muss das <Run FontWeight="SemiBold">Exchange Online Management PowerShell-Modul</Run> auf Ihrem System installiert sein.
-                                        <LineBreak /><LineBreak />
-                                        Falls noch nicht geschehen, können Sie es mit dem folgenden Befehl in einer administrativen PowerShell-Sitzung installieren:
-                                        <LineBreak />
-                                        <Run FontFamily="Consolas" Foreground="#0056b3">Install-Module -Name ExchangeOnlineManagement -Force</Run>
-                                    </TextBlock>
-                                </GroupBox>
+                                <Grid Margin="0,50,0,50">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="850" />
+                                        <ColumnDefinition Width="570" />
+                                    </Grid.ColumnDefinitions>
 
-                                <!--  Bedienungshinweis-Karte  -->
-                                <GroupBox Header="Bedienungshinweise" Margin="0,0,0,10" Padding="10">
-                                    <TextBlock TextWrapping="Wrap">
-                                        1. <Run FontWeight="SemiBold">Verbindung herstellen:</Run> Klicken Sie im Hauptfenster auf "Verbinden", um eine sichere Verbindung zu Ihrer Exchange Online-Instanz herzustellen.
-                                        <LineBreak />
-                                        2. <Run FontWeight="SemiBold">Tab auswählen:</Run> Navigieren Sie über die Reiter zu dem gewünschten Verwaltungsbereich.
-                                        <LineBreak />
-                                        3. <Run FontWeight="SemiBold">Aktionen durchführen:</Run> Nutzen Sie die Schaltflächen und Eingabefelder, um die gewünschten Aktionen auszuführen. Ergebnisse und Statusmeldungen werden in den Ausgabebereichen angezeigt.
-                                    </TextBlock>
+                                    <GroupBox Grid.Column="0" Header="Funktionsübersicht" Margin="0,0,5,0" Padding="10">
+                                        <TextBlock TextWrapping="Wrap"><Run Text="easyEXO deckt eine Vielzahl von Verwaltungsaufgaben ab, die in die folgenden Hauptbereiche unterteilt sind:"/><LineBreak /><LineBreak /><Run FontWeight="SemiBold" Text="• Kalender- &amp; Postfachberechtigungen:"/><Run Text=" Verwalten Sie den Zugriff auf Kalender und Postfächer."/><LineBreak /><Run FontWeight="SemiBold" Text="• Shared Mailboxes &amp; Ressourcen:"/><Run Text=" Erstellen und konfigurieren Sie freigegebene Postfächer sowie Raum- und Gerätepostfächer."/><LineBreak /><Run FontWeight="SemiBold" Text="• Gruppen &amp; Kontakte:"/><Run Text=" Verwalten Sie Verteilergruppen, sicherheitsaktivierte Gruppen und externe Kontakte."/><LineBreak /><Run FontWeight="SemiBold" Text="• Transportregeln &amp; Nachrichtenverfolgung:"/><Run Text=" Erstellen und verwalten Sie E-Mail-Flussregeln und verfolgen Sie den Zustellstatus von Nachrichten."/><LineBreak /><Run FontWeight="SemiBold" Text="• Regionaleinstellungen:"/><Run Text=" Passen Sie Sprach-, Zeit- und Datumsformate für Postfächer an."/><LineBreak /><Run FontWeight="SemiBold" Text="• Berichte &amp; Audits:"/><Run Text=" Generieren Sie Berichte über Postfachnutzung, Berechtigungen und führen Sie Audit-Suchen durch."/></TextBlock>
+                                    </GroupBox>
+
+                                    <GroupBox Grid.Column="1" Header="Bedienungshinweise" Margin="5,0,0,0" Padding="10">
+                                        <TextBlock TextWrapping="Wrap"><Run Text="1. "/><Run FontWeight="SemiBold" Text="Verbindung herstellen:"/><LineBreak /><Run Text="* Klicken Sie im Hauptfenster auf &quot;Verbinden&quot;, um eine Verbindung zu EXO herzustellen."/><LineBreak /><LineBreak /><Run Text="2. "/><Run FontWeight="SemiBold" Text="Tab auswählen:"/><LineBreak /><Run Text="* Navigieren Sie über die Reiter zu dem gewünschten Verwaltungsbereich."/><LineBreak /><LineBreak /><Run Text="3. "/><Run FontWeight="SemiBold" Text="Aktionen durchführen:"/><LineBreak /><Run Text="* Nutzen Sie die entsprechenden Schaltflächen und Eingabefelder, um die gewünschten Aktionen auszuführen. Tooltips werden bei den Buttons durch längeres draufzeigen mit der Maus angezeigt."/></TextBlock>
+                                    </GroupBox>
+                                </Grid>
+
+                                <GroupBox Header="Voraussetzungen" Margin="0,0,0,10" Padding="10" Width="1422">
+                                    <TextBlock TextWrapping="Wrap"><Run Text="Um dieses Tool nutzen zu können, muss das "/><Run FontWeight="SemiBold" Text="Exchange Online Management PowerShell-Modul"/><Run Text=" auf Ihrem System installiert sein."/><LineBreak /><LineBreak /><Run Text="Falls noch nicht geschehen, können Sie es mit dem folgenden Befehl in einer administrativen PowerShell-Sitzung installieren:"/><LineBreak /><Run FontFamily="Consolas" Foreground="#0056b3" Text="Install-Module -Name ExchangeOnlineManagement -Force"/></TextBlock>
                                 </GroupBox>
 
                             </StackPanel>
@@ -6858,7 +6796,7 @@
                                 Margin="0,0,10,0">
 
                                 <!--  Quick Setup  -->
-                                <GroupBox Header="Schnelle Einrichtung der automatischen Antwort">
+                                <GroupBox Header="Einrichtung - automatische Antwort">
                                     <StackPanel Margin="10">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -6921,11 +6859,11 @@
                                                 Name="txtAutoReplyMessage"
                                                 Grid.Row="3"
                                                 Grid.Column="1"
-                                                Height="80"
+                                                Height="250"
                                                 Margin="5,5,0,5"
                                                 AcceptsReturn="True"
-                                                Text="Ich bin vom {StartDate} bis zum {EndDate} außer Haus und habe keinen Zugriff auf E-Mails."
-                                                TextWrapping="Wrap" />
+                                                Text="Ich bin vom {StartDate} bis zum {EndDate} außer Haus ..."
+                                                TextWrapping="Wrap" VerticalAlignment="Top" />
 
                                             <StackPanel
                                                 Grid.Row="4"
@@ -6935,7 +6873,7 @@
                                                 Orientation="Horizontal">
                                                 <Button
                                                     Name="btnSetAutoReply"
-                                                    Width="150"
+                                                    Width="295"
                                                     Margin="0,0,10,0"
                                                     Background="#28a745"
                                                     BorderBrush="#28a745"
@@ -6943,7 +6881,7 @@
                                                     Foreground="White" />
                                                 <Button
                                                     Name="btnDisableAutoReply"
-                                                    Width="150"
+                                                    Width="295"
                                                     Background="#dc3545"
                                                     BorderBrush="#dc3545"
                                                     Content="Automatische Antwort deaktivieren"
@@ -6960,12 +6898,12 @@
                                             x:Name="btnRefreshAutoReply"
                                             Margin="0,0,0,5"
                                             Padding="10,5"
-                                            Content="Status aktualisieren" />
+                                            Content="Status aktualisieren" Background="#FF40678C" />
                                         <Button
                                             x:Name="btnBulkAutoReply"
                                             Margin="0,5,0,5"
                                             Padding="10,5"
-                                            Content="Masseneinrichtung" />
+                                            Content="Masseneinrichtung" Background="#FF6B5AA7" />
                                         <Button
                                             x:Name="btnExportAutoReply"
                                             Margin="0,5,0,0"
