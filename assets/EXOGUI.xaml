@@ -51,6 +51,35 @@
             </Setter>
         </Style>
 
+        <!--  Modern Card Style  -->
+        <Style x:Key="ModernCard" TargetType="Border">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#E0E0E0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="20" />
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect 
+                        Color="#E0E0E0" 
+                        Direction="270" 
+                        ShadowDepth="2" 
+                        BlurRadius="8" 
+                        Opacity="0.3"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  Header2 Style  -->
+        <Style x:Key="Header2" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="#1C1C1C" />
+            <Setter Property="Margin" Value="0,0,0,10" />
+        </Style>
+
+
         <!--  Navigation Button Style  -->
         <Style x:Key="NavButton" TargetType="Button">
             <Setter Property="Background" Value="#4A90E2" />
@@ -593,7 +622,7 @@
                         Foreground="White" />
 
                     <GroupBox
-                        Margin="8,10,8,25"
+                        Margin="8,0,8,25"
                         Padding="8"
                         Background="#FF738AA0"
                         BorderBrush="#FFAEC4DA"
@@ -609,8 +638,14 @@
                                 Text="Nicht verbunden" />
                         </StackPanel>
                     </GroupBox>
-
                     <!--  Navigation Header  -->
+
+                    <Button
+                        x:Name="btnDashboard"
+                        Margin="0,10,0,20"
+                        Background="#FF738AA0"
+                        Content="Dashboard" Width="203"/>
+
                     <!--  Grundlegende Verwaltung  -->
                     <Expander
                         Background="#FF738AA0"
@@ -776,11 +811,6 @@
                                 HorizontalAlignment="Left"
                                 Background="#FF738AA0"
                                 Content="* Multi-Forest Management" />
-                            <Button
-                                x:Name="btnNavPublicFolderMig"
-                                HorizontalAlignment="Left"
-                                Background="#FF738AA0"
-                                Content="* Public Folder Migration" />
                         </StackPanel>
                     </Expander>
 
@@ -3108,15 +3138,6 @@
                                                 HorizontalAlignment="Center"
                                                 Orientation="Horizontal">
                                                 <Button
-                                                    x:Name="btnShowGroupMembers"
-                                                    Width="170"
-                                                    Height="30"
-                                                    Margin="0,0,10,0"
-                                                    Background="#CCE5FF"
-                                                    BorderBrush="#B3D7FF"
-                                                    Content="Mitglieder anzeigen"
-                                                    Foreground="#004085" />
-                                                <Button
                                                     x:Name="btnUpdateGroupSettings"
                                                     Width="170"
                                                     Height="30"
@@ -4479,79 +4500,84 @@
                         <Grid Margin="10">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
-                            <TextBlock
-                                Margin="0,0,0,15"
-                                FontSize="18"
-                                FontWeight="SemiBold"
-                                Text="Exchange Health Check" />
-
+                            <!--  Ausgaben  -->
                             <GroupBox
+                                Grid.Row="0"
+                                Header="Prüfergebnisse">
+                                <ListView
+                                    x:Name="lvHealthCheckResults"
+                                    Margin="10"
+                                    Height="550">
+                                    <ListView.View>
+                                        <GridView>
+                                            <GridViewColumn
+                                                Width="200"
+                                                DisplayMemberBinding="{Binding CheckName}"
+                                                Header="Prüfung" />
+                                            <GridViewColumn Width="100" Header="Status">
+                                                <GridViewColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock FontWeight="Bold" Text="{Binding Status}">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Status}" Value="OK">
+                                                                            <Setter Property="Foreground" Value="Green" />
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Status}" Value="Fehler">
+                                                                            <Setter Property="Foreground" Value="Red" />
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Status}" Value="Warnung">
+                                                                            <Setter Property="Foreground" Value="Orange" />
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                    </DataTemplate>
+                                                </GridViewColumn.CellTemplate>
+                                            </GridViewColumn>
+                                            <GridViewColumn
+                                                Width="400"
+                                                DisplayMemberBinding="{Binding Details}"
+                                                Header="Details" />
+                                        </GridView>
+                                    </ListView.View>
+                                </ListView>
+                            </GroupBox>
+
+                                                        <!--  Progress Bar  -->
+                            <ProgressBar
+                                x:Name="pbHealthCheck"
                                 Grid.Row="1"
+                                Height="10"
                                 Margin="0,0,0,10"
-                                Background="#ffffff"
-                                Header="Dienst- &amp; Konnektivitätsprüfung">
-                                <Grid Margin="10">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="*" />
-                                    </Grid.RowDefinitions>
+                                IsIndeterminate="False" />
+
+                            <!--  Dienst- & Konnektivitätsprüfung  -->
+                            <GroupBox 
+                                Grid.Row="2"
+                                Header="Dienst- &amp; Konnektivitätsprüfung"
+                                Margin="0,10,0,0">
+                                <StackPanel Margin="10">
+                                    <TextBlock
+                                        Margin="0,0,0,10"
+                                        Text="Führt eine Grundlegende Prüfung der Exchange Online Dienste und Konnektivität durch."
+                                        TextWrapping="Wrap" />
+
                                     <Button
                                         x:Name="btnRunHealthCheck"
                                         Width="200"
                                         HorizontalAlignment="Left"
+                                        Background="#4CAF50"
+                                        BorderBrush="#4CAF50"
+                                        Foreground="White"
                                         Content="Health Check durchführen" />
-                                    <ProgressBar
-                                        x:Name="pbHealthCheck"
-                                        Grid.Row="1"
-                                        Height="10"
-                                        Margin="0,10,0,10"
-                                        IsIndeterminate="False" />
-                                    <ListView
-                                        x:Name="lvHealthCheckResults"
-                                        Grid.Row="2"
-                                        MaxHeight="300">
-                                        <ListView.View>
-                                            <GridView>
-                                                <GridViewColumn
-                                                    Width="200"
-                                                    DisplayMemberBinding="{Binding CheckName}"
-                                                    Header="Prüfung" />
-                                                <GridViewColumn Width="100" Header="Status">
-                                                    <GridViewColumn.CellTemplate>
-                                                        <DataTemplate>
-                                                            <TextBlock FontWeight="Bold" Text="{Binding Status}">
-                                                                <TextBlock.Style>
-                                                                    <Style TargetType="TextBlock">
-                                                                        <Style.Triggers>
-                                                                            <DataTrigger Binding="{Binding Status}" Value="OK">
-                                                                                <Setter Property="Foreground" Value="Green" />
-                                                                            </DataTrigger>
-                                                                            <DataTrigger Binding="{Binding Status}" Value="Fehler">
-                                                                                <Setter Property="Foreground" Value="Red" />
-                                                                            </DataTrigger>
-                                                                            <DataTrigger Binding="{Binding Status}" Value="Warnung">
-                                                                                <Setter Property="Foreground" Value="Orange" />
-                                                                            </DataTrigger>
-                                                                        </Style.Triggers>
-                                                                    </Style>
-                                                                </TextBlock.Style>
-                                                            </TextBlock>
-                                                        </DataTemplate>
-                                                    </GridViewColumn.CellTemplate>
-                                                </GridViewColumn>
-                                                <GridViewColumn
-                                                    Width="400"
-                                                    DisplayMemberBinding="{Binding Details}"
-                                                    Header="Details" />
-                                            </GridView>
-                                        </ListView.View>
-                                    </ListView>
-                                </Grid>
+                                </StackPanel>
                             </GroupBox>
                         </Grid>
                     </TabItem>
@@ -4712,12 +4738,12 @@
                                             x:Name="btnShowSharedMailboxes"
                                             Grid.Row="0"
                                             Grid.Column="2"
-                                            Width="100"
-                                            Height="30"
+                                            Width="45"
+                                            Height="35"
                                             Margin="0,5,0,5"
                                             Background="#E7F3FF"
                                             BorderBrush="#B8DAFF"
-                                            Content="Alle anzeigen"
+                                            Content="🔄"
                                             Foreground="#0056B3" />
 
                                         <TextBlock
@@ -5156,8 +5182,8 @@
 
                                                 <Button
                                                     x:Name="btnRefreshResources"
-                                                    Width="110"
-                                                    Height="30"
+                                                    Width="45"
+                                                    Height="35"
                                                     Margin="0,0,10,0"
                                                     Background="#CCE5FF"
                                                     BorderBrush="#B3D7FF"
@@ -5215,6 +5241,19 @@
                                                 Height="30"
                                                 Margin="0,5,0,5"
                                                 IsEditable="True" />
+                                            <Button
+                                                x:Name="btnRefreshResourceList"
+                                                Grid.Row="0"
+                                                Grid.Column="2"
+                                                Width="45"
+                                                Height="35"
+                                                Margin="0,5,0,5"
+                                                VerticalAlignment="Center"
+                                                Background="#CCE5FF"
+                                                BorderBrush="#B3D7FF"
+                                                Content="🔄"
+                                                Foreground="#004085"
+                                                ToolTip="Ressourcenliste aktualisieren" />
 
                                             <StackPanel
                                                 Grid.Row="1"
@@ -5780,14 +5819,14 @@
                                             <ColumnDefinition Width="*" />
                                         </Grid.ColumnDefinitions>
 
-                                            <TextBlock
+                                        <TextBlock
                                              Grid.Row="0"
                                              Grid.Column="0"
                                              Width="105"
                                              Margin="0,5,10,5"
                                              VerticalAlignment="Center"
                                              Text="Postfach:" />
-                                            <TextBox
+                                        <TextBox
                                              x:Name="txtGetRegionMailbox"
                                              Grid.Row="0"
                                              Grid.Column="1"
@@ -5795,7 +5834,7 @@
                                              Margin="0,5,0,10"
                                              ToolTip="E-Mail-Adresse des Postfachs, dessen Einstellungen abgerufen werden sollen." />
 
-                                            <Button
+                                        <Button
                                              x:Name="btnGetRegionSettings"
                                              Grid.Row="1"
                                              Grid.ColumnSpan="2"
@@ -5842,7 +5881,7 @@
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="*" />
                                         </Grid.ColumnDefinitions>
-                                        
+
                                         <TextBlock
                                             Grid.Row="0"
                                             Grid.Column="0"
@@ -6029,16 +6068,16 @@
                                         <RowDefinition Height="*" />
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
-                                    <TextBox
-                                        x:Name="txtRegionResult"
-                                        Grid.Row="0"
-                                        Margin="8,8,8,0"
-                                        Background="Transparent"
-                                        BorderThickness="0"
-                                        FontFamily="Consolas"
-                                        IsReadOnly="True"
-                                        TextWrapping="Wrap"
-                                        VerticalScrollBarVisibility="Auto" />
+                                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                                        <TextBox
+                                            x:Name="txtRegionResult"
+                                            Margin="8,8,8,0"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            FontFamily="Consolas"
+                                            IsReadOnly="True"
+                                            TextWrapping="Wrap" />
+                                    </ScrollViewer>
                                     <Button
                                         x:Name="btnExportRegionSettings"
                                         Grid.Row="1"
@@ -6060,216 +6099,229 @@
                         x:Name="tabMailFlowRules"
                         Header="Transport Rules"
                         Visibility="Collapsed">
-                        <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <StackPanel Margin="10">
-                                <GroupBox Header="Transport Rules Management">
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="*" />
-                                            <RowDefinition Height="Auto" />
-                                        </Grid.RowDefinitions>
+                        <Grid Margin="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
 
-                                        <!--  Rule Creation Section  -->
-                                        <Expander
-                                            Grid.Row="0"
-                                            Margin="5"
-                                            Header="Create New Rule">
-                                            <Grid Margin="10">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="120" />
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="120" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                </Grid.RowDefinitions>
+                            <!--  Linke Spalte - Verwaltung  -->
+                            <StackPanel
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="0"
+                                Margin="0,0,10,0">
 
-                                                <TextBlock
-                                                    Grid.Row="0"
-                                                    Grid.Column="0"
-                                                    VerticalAlignment="Center"
-                                                    Text="Rule Name:" />
-                                                <TextBox
-                                                    Name="txtRuleName"
-                                                    Grid.Row="0"
-                                                    Grid.Column="1"
-                                                    Grid.ColumnSpan="3"
-                                                    Margin="5,2" />
+                                <!--  Rule Creation Section  -->
+                                <GroupBox Header="Create New Rule">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
 
-                                                <TextBlock
-                                                    Grid.Row="1"
-                                                    Grid.Column="0"
-                                                    VerticalAlignment="Center"
-                                                    Text="Condition:" />
-                                                <ComboBox
-                                                    Name="cmbCondition"
-                                                    Grid.Row="1"
-                                                    Grid.Column="1"
-                                                    Margin="5,2">
-                                                    <ComboBoxItem Content="Sender is..." Tag="From" />
-                                                    <ComboBoxItem Content="Recipient is..." Tag="SentTo" />
-                                                    <ComboBoxItem Content="Subject contains..." Tag="SubjectContainsWords" />
-                                                    <ComboBoxItem Content="Body contains..." Tag="BodyContainsWords" />
-                                                    <ComboBoxItem Content="Sender is external..." Tag="FromScope" />
-                                                    <ComboBoxItem Content="Message size over..." Tag="MessageSizeOver" />
-                                                    <ComboBoxItem Content="Sender address contains..." Tag="FromAddressContainsWords" />
-                                                </ComboBox>
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Rule Name:" />
+                                            <TextBox
+                                                x:Name="txtRuleName"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5" />
 
-                                                <TextBlock
-                                                    Grid.Row="1"
-                                                    Grid.Column="2"
-                                                    VerticalAlignment="Center"
-                                                    Text="Value:" />
-                                                <TextBox
-                                                    Name="txtConditionValue"
-                                                    Grid.Row="1"
-                                                    Grid.Column="3"
-                                                    Margin="5,2" />
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Condition:" />
+                                            <ComboBox
+                                                x:Name="cmbCondition"
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5">
+                                                <ComboBoxItem Content="Sender is..." Tag="From" />
+                                                <ComboBoxItem Content="Recipient is..." Tag="SentTo" />
+                                                <ComboBoxItem Content="Subject contains..." Tag="SubjectContainsWords" />
+                                                <ComboBoxItem Content="Body contains..." Tag="BodyContainsWords" />
+                                                <ComboBoxItem Content="Sender is external..." Tag="FromScope" />
+                                                <ComboBoxItem Content="Message size over..." Tag="MessageSizeOver" />
+                                                <ComboBoxItem Content="Sender address contains..." Tag="FromAddressContainsWords" />
+                                            </ComboBox>
 
-                                                <TextBlock
-                                                    Grid.Row="2"
-                                                    Grid.Column="0"
-                                                    VerticalAlignment="Center"
-                                                    Text="Action:" />
-                                                <ComboBox
-                                                    Name="cmbAction"
-                                                    Grid.Row="2"
-                                                    Grid.Column="1"
-                                                    Margin="5,2">
-                                                    <ComboBoxItem Content="Prepend subject..." Tag="PrependSubject" />
-                                                    <ComboBoxItem Content="Redirect to..." Tag="RedirectMessageTo" />
-                                                    <ComboBoxItem Content="Copy to..." Tag="BlindCopyTo" />
-                                                    <ComboBoxItem Content="Reject message..." Tag="RejectMessageEnhancedStatusCode" />
-                                                    <ComboBoxItem Content="Delete message" Tag="DeleteMessage" />
-                                                    <ComboBoxItem Content="Quarantine..." Tag="Quarantine" />
-                                                </ComboBox>
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Value:" />
+                                            <TextBox
+                                                x:Name="txtConditionValue"
+                                                Grid.Row="2"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5" />
 
-                                                <TextBlock
-                                                    Grid.Row="2"
-                                                    Grid.Column="2"
-                                                    VerticalAlignment="Center"
-                                                    Text="Action Value:" />
-                                                <TextBox
-                                                    Name="txtActionValue"
-                                                    Grid.Row="2"
-                                                    Grid.Column="3"
-                                                    Margin="5,2" />
+                                            <TextBlock
+                                                Grid.Row="3"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Action:" />
+                                            <ComboBox
+                                                x:Name="cmbAction"
+                                                Grid.Row="3"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5">
+                                                <ComboBoxItem Content="Prepend subject..." Tag="PrependSubject" />
+                                                <ComboBoxItem Content="Redirect to..." Tag="RedirectMessageTo" />
+                                                <ComboBoxItem Content="Copy to..." Tag="BlindCopyTo" />
+                                                <ComboBoxItem Content="Reject message..." Tag="RejectMessageEnhancedStatusCode" />
+                                                <ComboBoxItem Content="Delete message" Tag="DeleteMessage" />
+                                                <ComboBoxItem Content="Quarantine..." Tag="Quarantine" />
+                                            </ComboBox>
 
-                                                <TextBlock
-                                                    Grid.Row="3"
-                                                    Grid.Column="0"
-                                                    VerticalAlignment="Center"
-                                                    Text="Mode:" />
-                                                <ComboBox
-                                                    Name="cmbRuleMode"
-                                                    Grid.Row="3"
-                                                    Grid.Column="1"
-                                                    Margin="5,2">
-                                                    <ComboBoxItem Content="Enforce" Tag="Enforce" />
-                                                    <ComboBoxItem
-                                                        Content="Test with Policy Tips"
-                                                        IsSelected="True"
-                                                        Tag="Test" />
-                                                    <ComboBoxItem Content="Test without Policy Tips" Tag="AuditAndNotify" />
-                                                </ComboBox>
+                                            <TextBlock
+                                                Grid.Row="4"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Action Value:" />
+                                            <TextBox
+                                                x:Name="txtActionValue"
+                                                Grid.Row="4"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5" />
 
-                                                <StackPanel
-                                                    Grid.Row="4"
-                                                    Grid.Column="1"
-                                                    Grid.ColumnSpan="3"
-                                                    Margin="5,10,0,0"
-                                                    Orientation="Horizontal">
-                                                    <Button
-                                                        Name="btnCreateRule"
-                                                        Margin="0,0,10,0"
-                                                        Padding="15,5"
-                                                        Background="#28a745"
-                                                        Content="Create Rule"
-                                                        Foreground="White" />
-                                                    <Button
-                                                        Name="btnTestRule"
-                                                        Padding="15,5"
-                                                        Background="#ffc107"
-                                                        Content="Test Rule"
-                                                        Foreground="Black" />
-                                                </StackPanel>
-                                            </Grid>
-                                        </Expander>
+                                            <TextBlock
+                                                Grid.Row="5"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Mode:" />
+                                            <ComboBox
+                                                x:Name="cmbRuleMode"
+                                                Grid.Row="5"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5">
+                                                <ComboBoxItem Content="Enforce" Tag="Enforce" />
+                                                <ComboBoxItem
+                                                    Content="Test with Policy Tips"
+                                                    IsSelected="True"
+                                                    Tag="Test" />
+                                                <ComboBoxItem Content="Test without Policy Tips" Tag="AuditAndNotify" />
+                                            </ComboBox>
+                                        </Grid>
 
-                                        <!--  Existing Rules List  -->
-                                        <DataGrid
-                                            Name="dgMailFlowRules"
-                                            Grid.Row="1"
-                                            MinHeight="300"
-                                            Margin="5">
-                                            <DataGrid.Columns>
-                                                <DataGridTextColumn
-                                                    Width="200"
-                                                    Binding="{Binding Name}"
-                                                    Header="Name" />
-                                                <DataGridTextColumn
-                                                    Width="80"
-                                                    Binding="{Binding State}"
-                                                    Header="State" />
-                                                <DataGridTextColumn
-                                                    Width="80"
-                                                    Binding="{Binding Priority}"
-                                                    Header="Priority" />
-                                                <DataGridTextColumn
-                                                    Width="*"
-                                                    Binding="{Binding Conditions}"
-                                                    Header="Conditions" />
-                                            </DataGrid.Columns>
-                                        </DataGrid>
-
-                                        <!--  Rule Management Buttons  -->
                                         <StackPanel
-                                            Grid.Row="2"
-                                            Margin="5"
+                                            Margin="0,10,0,0"
+                                            HorizontalAlignment="Center"
                                             Orientation="Horizontal">
                                             <Button
-                                                Name="btnRefreshRules"
-                                                Margin="0,0,5,0"
-                                                Padding="10,5"
-                                                Content="Refresh" />
-                                            <Button
-                                                Name="btnEnableRule"
-                                                Margin="5,0"
-                                                Padding="10,5"
-                                                Content="Enable" />
-                                            <Button
-                                                Name="btnDisableRule"
-                                                Margin="5,0"
-                                                Padding="10,5"
-                                                Content="Disable" />
-                                            <Button
-                                                Name="btnDeleteRule"
-                                                Margin="5,0"
-                                                Padding="10,5"
-                                                Background="#dc3545"
-                                                Content="Delete"
+                                                x:Name="btnCreateRule"
+                                                Width="120"
+                                                Margin="0,0,10,0"
+                                                Background="#28a745"
+                                                BorderBrush="#28a745"
+                                                Content="Create Rule"
                                                 Foreground="White" />
                                             <Button
-                                                Name="btnExportRules"
-                                                Margin="5,0"
-                                                Padding="10,5"
-                                                Content="Export" />
-                                            <Button
-                                                Name="btnImportRules"
-                                                Margin="5,0"
-                                                Padding="10,5"
-                                                Content="Import" />
+                                                x:Name="btnTestRule"
+                                                Width="120"
+                                                Background="#ffc107"
+                                                BorderBrush="#ffc107"
+                                                Content="Test Rule"
+                                                Foreground="Black" />
                                         </StackPanel>
-                                    </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Rule Management Buttons  -->
+                                <GroupBox Header="Rule Management">
+                                    <StackPanel Margin="10">
+                                        <Button
+                                            x:Name="btnRefreshRules"
+                                            Margin="0,0,0,5"
+                                            Padding="10,5"
+                                            Content="Refresh" />
+                                        <Button
+                                            x:Name="btnEnableRule"
+                                            Margin="0,5,0,5"
+                                            Padding="10,5"
+                                            Content="Enable" />
+                                        <Button
+                                            x:Name="btnDisableRule"
+                                            Margin="0,5,0,5"
+                                            Padding="10,5"
+                                            Content="Disable" />
+                                        <Button
+                                            x:Name="btnDeleteRule"
+                                            Margin="0,5,0,5"
+                                            Padding="10,5"
+                                            Background="#dc3545"
+                                            BorderBrush="#dc3545"
+                                            Content="Delete"
+                                            Foreground="White" />
+                                        <Button
+                                            x:Name="btnExportRules"
+                                            Margin="0,5,0,5"
+                                            Padding="10,5"
+                                            Content="Export" />
+                                        <Button
+                                            x:Name="btnImportRules"
+                                            Margin="0,5,0,0"
+                                            Padding="10,5"
+                                            Content="Import" />
+                                    </StackPanel>
                                 </GroupBox>
                             </StackPanel>
-                        </ScrollViewer>
+
+                            <!--  Rechte Spalte - Ausgaben  -->
+                            <GroupBox
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                Header="Existing Rules">
+                                <DataGrid
+                                    Name="dgMailFlowRules"
+                                    AutoGenerateColumns="False"
+                                    IsReadOnly="True"
+                                    >
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn
+                                            Width="Auto"
+                                            Binding="{Binding Name}"
+                                            Header="Name" />
+                                        <DataGridTextColumn
+                                            Width="Auto"
+                                            Binding="{Binding State}"
+                                            Header="State" />
+                                        <DataGridTextColumn
+                                            Width="Auto"
+                                            Binding="{Binding Priority}"
+                                            Header="Priority" />
+                                        <DataGridTextColumn
+                                            Width="*"
+                                            Binding="{Binding Conditions}"
+                                            Header="Conditions" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </GroupBox>
+                        </Grid>
                     </TabItem>
 
                     <!--  Inbox Rules Tab  -->
@@ -6277,189 +6329,213 @@
                         x:Name="tabInboxRules"
                         Header="Inbox Rules"
                         Visibility="Collapsed">
-                        <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <StackPanel Margin="10">
-                                <GroupBox Header="User Inbox Rules Management">
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="*" />
-                                            <RowDefinition Height="Auto" />
-                                        </Grid.RowDefinitions>
+                        <Grid Margin="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="420" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
 
-                                        <!--  User Selection  -->
-                                        <Grid Grid.Row="0" Margin="5">
+                            <!--  Linke Spalte - Verwaltung  -->
+                            <StackPanel
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="0"
+                                Margin="0,0,10,0">
+
+                                <!--  User Selection  -->
+                                <GroupBox Header="Benutzer auswählen">
+                                    <StackPanel Margin="10">
+                                        <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
                                             </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
                                             <TextBlock
+                                                Grid.Row="0"
                                                 Grid.Column="0"
-                                                Margin="0,0,10,0"
+                                                Margin="0,5,5,5"
                                                 VerticalAlignment="Center"
-                                                Text="User:" />
-                                            <ComboBox
-                                                Name="cmbInboxRuleUser"
+                                                Text="Benutzer:" />
+                                            <TextBox
+                                                x:Name="cmbInboxRuleUser"
+                                                Grid.Row="0"
                                                 Grid.Column="1"
-                                                Margin="0,0,10,0" />
+                                                Margin="5,5,0,5" />
                                             <Button
-                                                Name="btnLoadInboxRules"
+                                                x:Name="btnLoadInboxRules"
+                                                Grid.Row="0"
                                                 Grid.Column="2"
+                                                Width="45"
+                                                Height="35"
+                                                Margin="0,10,0,0"
                                                 Padding="10,5"
-                                                Content="Load Rules" />
-                                        </Grid>
-
-                                        <!--  Quick Rule Creation  -->
-                                        <Expander
-                                            Grid.Row="1"
-                                            Margin="5"
-                                            Header="Quick Rule Creation">
-                                            <Grid Margin="10">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                </Grid.ColumnDefinitions>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                </Grid.RowDefinitions>
-
-                                                <TextBlock
-                                                    Grid.Row="0"
-                                                    Grid.Column="0"
-                                                    Margin="0,0,10,0"
-                                                    VerticalAlignment="Center"
-                                                    Text="Rule Name:" />
-                                                <TextBox
-                                                    Name="txtInboxRuleName"
-                                                    Grid.Row="0"
-                                                    Grid.Column="1"
-                                                    Margin="0,2,10,2" />
-
-                                                <TextBlock
-                                                    Grid.Row="1"
-                                                    Grid.Column="0"
-                                                    Margin="0,0,10,0"
-                                                    VerticalAlignment="Center"
-                                                    Text="From Address:" />
-                                                <TextBox
-                                                    Name="txtFromAddress"
-                                                    Grid.Row="1"
-                                                    Grid.Column="1"
-                                                    Margin="0,2,10,2" />
-
-                                                <TextBlock
-                                                    Grid.Row="2"
-                                                    Grid.Column="0"
-                                                    Margin="0,0,10,0"
-                                                    VerticalAlignment="Center"
-                                                    Text="To Folder:" />
-                                                <ComboBox
-                                                    Name="cmbTargetFolder"
-                                                    Grid.Row="2"
-                                                    Grid.Column="1"
-                                                    Margin="0,2,10,2">
-                                                    <ComboBoxItem Content="Inbox\VIP" />
-                                                    <ComboBoxItem Content="Inbox\Newsletter" />
-                                                    <ComboBoxItem Content="Inbox\Automatic" />
-                                                    <ComboBoxItem Content="Junk Email" />
-                                                    <ComboBoxItem Content="Deleted Items" />
-                                                </ComboBox>
-
-                                                <CheckBox
-                                                    Name="chkMarkAsRead"
-                                                    Grid.Row="3"
-                                                    Grid.Column="1"
-                                                    Margin="0,5"
-                                                    Content="Mark as read" />
-
-                                                <Button
-                                                    Name="btnCreateInboxRule"
-                                                    Grid.Row="0"
-                                                    Grid.RowSpan="4"
-                                                    Grid.Column="2"
-                                                    Width="80"
-                                                    VerticalAlignment="Center"
-                                                    Background="#28a745"
-                                                    Content="Create Rule"
-                                                    Foreground="White" />
-                                            </Grid>
-                                        </Expander>
-
-                                        <!--  Existing Inbox Rules  -->
-                                        <DataGrid
-                                            Name="dgInboxRules"
-                                            Grid.Row="2"
-                                            MinHeight="250"
-                                            Margin="5">
-                                            <DataGrid.Columns>
-                                                <DataGridTextColumn
-                                                    Width="150"
-                                                    Binding="{Binding Name}"
-                                                    Header="Name" />
-                                                <DataGridCheckBoxColumn
-                                                    Width="60"
-                                                    Binding="{Binding Enabled}"
-                                                    Header="Active" />
-                                                <DataGridTextColumn
-                                                    Width="*"
-                                                    Binding="{Binding Conditions}"
-                                                    Header="Conditions" />
-                                                <DataGridTextColumn
-                                                    Width="*"
-                                                    Binding="{Binding Actions}"
-                                                    Header="Actions" />
-                                            </DataGrid.Columns>
-                                        </DataGrid>
-
-                                        <!--  Inbox Rule Management  -->
-                                        <StackPanel
-                                            Grid.Row="3"
-                                            Margin="5"
-                                            Orientation="Horizontal">
-                                            <Button
-                                                Name="btnRefreshInboxRules"
-                                                Margin="0,0,5,0"
-                                                Padding="10,5"
-                                                Content="Refresh" />
-                                            <Button
-                                                Name="btnEnableInboxRule"
-                                                Margin="5,0"
-                                                Padding="10,5"
-                                                Content="Enable" />
-                                            <Button
-                                                Name="btnDisableInboxRule"
-                                                Margin="5,0"
-                                                Padding="10,5"
-                                                Content="Disable" />
-                                            <Button
-                                                Name="btnDeleteInboxRule"
-                                                Margin="5,0"
-                                                Padding="10,5"
-                                                Background="#dc3545"
-                                                Content="Delete"
+                                                HorizontalAlignment="Center"
+                                                Background="#007bff"
+                                                BorderBrush="#007bff"
+                                                Content="🔄"
                                                 Foreground="White" />
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Quick Rule Creation  -->
+                                <GroupBox Header="Schnellregel erstellen">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Regelname:" />
+                                            <TextBox
+                                                x:Name="txtInboxRuleName"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Von Adresse:" />
+                                            <TextBox
+                                                x:Name="txtFromAddress"
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Zielordner:" />
+                                            <ComboBox
+                                                x:Name="cmbTargetFolder"
+                                                Grid.Row="2"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5">
+                                                <ComboBoxItem Content="Posteingang\VIP" />
+                                                <ComboBoxItem Content="Posteingang\Newsletter" />
+                                                <ComboBoxItem Content="Posteingang\Automatisch" />
+                                                <ComboBoxItem Content="Junk-E-Mail" />
+                                                <ComboBoxItem Content="Gelöschte Elemente" />
+                                            </ComboBox>
+
+                                            <CheckBox
+                                                Name="chkMarkAsRead"
+                                                Grid.Row="3"
+                                                Grid.Column="1"
+                                                Margin="5,5"
+                                                Content="Als gelesen markieren" />
+
                                             <Button
-                                                Name="btnMoveRuleUp"
-                                                Margin="5,0"
-                                                Padding="10,5"
-                                                Content="Move Up" />
-                                            <Button
-                                                Name="btnMoveRuleDown"
-                                                Margin="5,0"
-                                                Padding="10,5"
-                                                Content="Move Down" />
-                                        </StackPanel>
-                                    </Grid>
+                                                Name="btnCreateInboxRule"
+                                                Grid.Row="4"
+                                                Grid.ColumnSpan="2"
+                                                Width="120"
+                                                HorizontalAlignment="Center"
+                                                Margin="0,10,0,0"
+                                                Background="#28a745"
+                                                BorderBrush="#28a745"
+                                                Content="Regel erstellen"
+                                                Foreground="White" />
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Inbox Rule Management  -->
+                                <GroupBox Header="Regelverwaltung">
+                                    <StackPanel Margin="10">
+                                        <Button
+                                            x:Name="btnRefreshInboxRules"
+                                            Margin="0,0,0,5"
+                                            Padding="10,5"
+                                            Content="Aktualisieren" />
+                                        <Button
+                                            x:Name="btnEnableInboxRule"
+                                            Margin="0,5,0,5"
+                                            Padding="10,5"
+                                            Content="Aktivieren" />
+                                        <Button
+                                            x:Name="btnDisableInboxRule"
+                                            Margin="0,5,0,5"
+                                            Padding="10,5"
+                                            Content="Deaktivieren" />
+                                        <Button
+                                            x:Name="btnDeleteInboxRule"
+                                            Margin="0,5,0,5"
+                                            Padding="10,5"
+                                            Background="#dc3545"
+                                            BorderBrush="#dc3545"
+                                            Content="Löschen"
+                                            Foreground="White" />
+                                        <Button
+                                            x:Name="btnMoveRuleUp"
+                                            Margin="0,5,0,5"
+                                            Padding="10,5"
+                                            Content="Nach oben" />
+                                        <Button
+                                            x:Name="btnMoveRuleDown"
+                                            Margin="0,5,0,0"
+                                            Padding="10,5"
+                                            Content="Nach unten" />
+                                    </StackPanel>
                                 </GroupBox>
                             </StackPanel>
-                        </ScrollViewer>
+
+                            <!--  Rechte Spalte - Ausgaben  -->
+                            <GroupBox
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                Header="Vorhandene Regeln">
+                                <DataGrid
+                                    Name="dgInboxRules"
+                                    AutoGenerateColumns="False"
+                                    IsReadOnly="True">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn
+                                            Width="Auto"
+                                            Binding="{Binding Name}"
+                                            Header="Name" />
+                                        <DataGridCheckBoxColumn
+                                            Width="Auto"
+                                            Binding="{Binding Enabled}"
+                                            Header="Aktiv" />
+                                        <DataGridTextColumn
+                                            Width="*"
+                                            Binding="{Binding Conditions}"
+                                            Header="Bedingungen" />
+                                        <DataGridTextColumn
+                                            Width="*"
+                                            Binding="{Binding Actions}"
+                                            Header="Aktionen" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </GroupBox>
+                        </Grid>
                     </TabItem>
 
                     <!--  Message Trace Tab  -->
@@ -6467,370 +6543,472 @@
                         x:Name="tabMessageTrace"
                         Header="Message Trace"
                         Visibility="Collapsed">
+                        <Grid Margin="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" MinWidth="400" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <!--  Linke Spalte - Verwaltung  -->
+                            <StackPanel
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                Margin="0,0,10,0">
+
+                                <!--  Search Parameters  -->
+                                <GroupBox Header="Suchparameter">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Absender:" />
+                                            <TextBox
+                                                x:Name="txtTraceSender"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Empfänger:" />
+                                            <TextBox
+                                                x:Name="txtTraceRecipient"
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Betreff:" />
+                                            <TextBox
+                                                x:Name="txtTraceSubject"
+                                                Grid.Row="2"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="3"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Nachrichten-ID:" />
+                                            <TextBox
+                                                x:Name="txtTraceMessageId"
+                                                Grid.Row="3"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="4"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Status:" />
+                                            <ComboBox
+                                                x:Name="cmbTraceStatus"
+                                                Grid.Row="4"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5">
+                                                <ComboBoxItem Content="Alle" IsSelected="True" />
+                                                <ComboBoxItem Content="Zugestellt" />
+                                                <ComboBoxItem Content="Fehlgeschlagen" />
+                                                <ComboBoxItem Content="Ausstehend" />
+                                                <ComboBoxItem Content="Unter Quarantäne" />
+                                            </ComboBox>
+                                        </Grid>
+
+                                        <Grid Margin="0,10,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Startdatum:" />
+                                            <DatePicker
+                                                x:Name="dpTraceStart"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Enddatum:" />
+                                            <DatePicker
+                                                x:Name="dpTraceEnd"
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5" />
+                                        </Grid>
+
+                                        <Button
+                                            x:Name="btnStartTrace"
+                                            Margin="0,15,0,0"
+                                            Padding="12,7"
+                                            HorizontalAlignment="Center"
+                                            Background="#007BFF"
+                                            BorderBrush="#007BFF"
+                                            Content="Suche starten"
+                                            Foreground="White" />
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Aktionen  -->
+                                <GroupBox Header="Aktionen">
+                                    <StackPanel Margin="10">
+                                        <Button
+                                            x:Name="btnExportTrace"
+                                            Margin="0,0,0,5"
+                                            Padding="10,5"
+                                            Background="#28a745"
+                                            BorderBrush="#28a745"
+                                            Content="Als CSV exportieren"
+                                            Foreground="White" />
+                                        <Button
+                                            x:Name="btnDetailedTrace"
+                                            Margin="0,5,0,5"
+                                            Padding="10,5"
+                                            Background="#17a2b8"
+                                            BorderBrush="#17a2b8"
+                                            Content="Detailansicht"
+                                            Foreground="White" />
+                                        <Button
+                                            x:Name="btnClearTrace"
+                                            Margin="0,5,0,0"
+                                            Padding="10,5"
+                                            Background="#dc3545"
+                                            BorderBrush="#dc3545"
+                                            Content="Ergebnisse löschen"
+                                            Foreground="White" />
+                                    </StackPanel>
+                                </GroupBox>
+                            </StackPanel>
+
+                            <!--  Rechte Spalte - Ausgaben  -->
+                            <GroupBox
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                Header="Suchergebnisse">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <DataGrid
+                                        Name="dgMessageTrace"
+                                        Grid.Row="0"
+                                        AutoGenerateColumns="False"
+                                        IsReadOnly="True">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn
+                                                Width="130"
+                                                Binding="{Binding Received}"
+                                                Header="Empfangen" />
+                                            <DataGridTextColumn
+                                                Width="200"
+                                                Binding="{Binding SenderAddress}"
+                                                Header="Absender" />
+                                            <DataGridTextColumn
+                                                Width="200"
+                                                Binding="{Binding RecipientAddress}"
+                                                Header="Empfänger" />
+                                            <DataGridTextColumn
+                                                Width="*"
+                                                Binding="{Binding Subject}"
+                                                Header="Betreff" />
+                                            <DataGridTextColumn
+                                                Width="100"
+                                                Binding="{Binding Status}"
+                                                Header="Status" />
+                                            <DataGridTextColumn
+                                                Width="80"
+                                                Binding="{Binding Size}"
+                                                Header="Größe (KB)" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+
+                                    <TextBlock
+                                        x:Name="txtTraceCount"
+                                        Grid.Row="1"
+                                        Margin="10,5,10,10"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Text="Ergebnisse: 0" />
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
+                    </TabItem>
+
+                    <!--  Dashboard Tab  -->
+                    <TabItem
+                        x:Name="tabDashboard"
+                        Header="Dashboard">
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <StackPanel Margin="10">
-                                <GroupBox Header="Advanced Message Tracking">
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="*" />
-                                            <RowDefinition Height="Auto" />
-                                        </Grid.RowDefinitions>
 
-                                        <!--  Search Parameters  -->
-                                        <Expander
-                                            Grid.Row="0"
-                                            Margin="5"
-                                            Header="Search Parameters"
-                                            IsExpanded="True">
-                                            <Grid Margin="10">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                </Grid.RowDefinitions>
-
-                                                <TextBlock
-                                                    Grid.Row="0"
-                                                    Grid.Column="0"
-                                                    Margin="0,0,10,0"
-                                                    VerticalAlignment="Center"
-                                                    Text="Sender:" />
-                                                <TextBox
-                                                    Name="txtTraceSender"
-                                                    Grid.Row="0"
-                                                    Grid.Column="1"
-                                                    Margin="0,2,10,2" />
-
-                                                <TextBlock
-                                                    Grid.Row="0"
-                                                    Grid.Column="2"
-                                                    Margin="0,0,10,0"
-                                                    VerticalAlignment="Center"
-                                                    Text="Recipient:" />
-                                                <TextBox
-                                                    Name="txtTraceRecipient"
-                                                    Grid.Row="0"
-                                                    Grid.Column="3"
-                                                    Margin="0,2" />
-
-                                                <TextBlock
-                                                    Grid.Row="1"
-                                                    Grid.Column="0"
-                                                    Margin="0,0,10,0"
-                                                    VerticalAlignment="Center"
-                                                    Text="Subject:" />
-                                                <TextBox
-                                                    Name="txtTraceSubject"
-                                                    Grid.Row="1"
-                                                    Grid.Column="1"
-                                                    Margin="0,2,10,2" />
-
-                                                <TextBlock
-                                                    Grid.Row="1"
-                                                    Grid.Column="2"
-                                                    Margin="0,0,10,0"
-                                                    VerticalAlignment="Center"
-                                                    Text="Message ID:" />
-                                                <TextBox
-                                                    Name="txtTraceMessageId"
-                                                    Grid.Row="1"
-                                                    Grid.Column="3"
-                                                    Margin="0,2" />
-
-                                                <TextBlock
-                                                    Grid.Row="2"
-                                                    Grid.Column="0"
-                                                    Margin="0,0,10,0"
-                                                    VerticalAlignment="Center"
-                                                    Text="Start Date:" />
-                                                <DatePicker
-                                                    Name="dpTraceStart"
-                                                    Grid.Row="2"
-                                                    Grid.Column="1"
-                                                    Margin="0,2,10,2" />
-
-                                                <TextBlock
-                                                    Grid.Row="2"
-                                                    Grid.Column="2"
-                                                    Margin="0,0,10,0"
-                                                    VerticalAlignment="Center"
-                                                    Text="End Date:" />
-                                                <DatePicker
-                                                    Name="dpTraceEnd"
-                                                    Grid.Row="2"
-                                                    Grid.Column="3"
-                                                    Margin="0,2" />
-
-                                                <TextBlock
-                                                    Grid.Row="3"
-                                                    Grid.Column="0"
-                                                    Margin="0,0,10,0"
-                                                    VerticalAlignment="Center"
-                                                    Text="Status:" />
-                                                <ComboBox
-                                                    Name="cmbTraceStatus"
-                                                    Grid.Row="3"
-                                                    Grid.Column="1"
-                                                    Margin="0,2,10,2">
-                                                    <ComboBoxItem Content="All" IsSelected="True" />
-                                                    <ComboBoxItem Content="Delivered" />
-                                                    <ComboBoxItem Content="Failed" />
-                                                    <ComboBoxItem Content="Pending" />
-                                                    <ComboBoxItem Content="Quarantined" />
-                                                </ComboBox>
-
-                                                <Button
-                                                    Name="btnStartTrace"
-                                                    Grid.Row="3"
-                                                    Grid.Column="3"
-                                                    Width="120"
-                                                    Padding="10,5"
-                                                    HorizontalAlignment="Left"
-                                                    Background="#007bff"
-                                                    Content="Start Search"
-                                                    Foreground="White" />
-                                            </Grid>
-                                        </Expander>
-
-                                        <!--  Results  -->
-                                        <DataGrid
-                                            Name="dgMessageTrace"
-                                            Grid.Row="1"
-                                            MinHeight="300"
-                                            Margin="5">
-                                            <DataGrid.Columns>
-                                                <DataGridTextColumn
-                                                    Width="130"
-                                                    Binding="{Binding Received}"
-                                                    Header="Received" />
-                                                <DataGridTextColumn
-                                                    Width="200"
-                                                    Binding="{Binding SenderAddress}"
-                                                    Header="Sender" />
-                                                <DataGridTextColumn
-                                                    Width="200"
-                                                    Binding="{Binding RecipientAddress}"
-                                                    Header="Recipient" />
-                                                <DataGridTextColumn
-                                                    Width="*"
-                                                    Binding="{Binding Subject}"
-                                                    Header="Subject" />
-                                                <DataGridTextColumn
-                                                    Width="100"
-                                                    Binding="{Binding Status}"
-                                                    Header="Status" />
-                                                <DataGridTextColumn
-                                                    Width="80"
-                                                    Binding="{Binding Size}"
-                                                    Header="Size (KB)" />
-                                            </DataGrid.Columns>
-                                        </DataGrid>
-
-                                        <!--  Export Options  -->
-                                        <StackPanel
-                                            Grid.Row="2"
-                                            Margin="5"
-                                            Orientation="Horizontal">
-                                            <Button
-                                                Name="btnExportTrace"
-                                                Margin="0,0,5,0"
-                                                Padding="10,5"
-                                                Content="Export CSV" />
-                                            <Button
-                                                Name="btnDetailedTrace"
-                                                Margin="5,0"
-                                                Padding="10,5"
-                                                Content="Detailed View" />
-                                            <Button
-                                                Name="btnClearTrace"
-                                                Margin="5,0"
-                                                Padding="10,5"
-                                                Content="Clear Results" />
-                                            <TextBlock
-                                                Name="txtTraceCount"
-                                                Margin="20,0,0,0"
-                                                VerticalAlignment="Center"
-                                                Text="Results: 0" />
-                                        </StackPanel>
-                                    </Grid>
+                                <!--  Willkommens-Karte  -->
+                                <GroupBox Header="Willkommen bei easyEXO" Margin="0,0,0,10" Padding="10">
+                                    <TextBlock TextWrapping="Wrap">
+                                        Dieses Tool bietet eine grafische Benutzeroberfläche zur einfachen Verwaltung Ihrer Exchange Online-Umgebung. Es bündelt häufig verwendete PowerShell-Cmdlets in einer intuitiven Oberfläche, um administrative Aufgaben zu beschleunigen.
+                                        <LineBreak /><LineBreak />
+                                        <Run FontWeight="SemiBold">Hinweis:</Run> Dieses Skript ist ein Community-Projekt und steht in keiner Verbindung zu Microsoft. Die Nutzung erfolgt auf eigene Gefahr.
+                                    </TextBlock>
                                 </GroupBox>
+
+                                <!--  Funktionsübersicht-Karte  -->
+                                <GroupBox Header="Funktionsübersicht" Margin="0,0,0,10" Padding="10">
+                                    <TextBlock TextWrapping="Wrap">
+                                        easyEXO deckt eine Vielzahl von Verwaltungsaufgaben ab, die in die folgenden Hauptbereiche unterteilt sind:
+                                        <LineBreak /><LineBreak />
+                                        <Run FontWeight="SemiBold">• Kalender- &amp; Postfachberechtigungen:</Run> Verwalten Sie den Zugriff auf Kalender und Postfächer.
+                                        <LineBreak />
+                                        <Run FontWeight="SemiBold">• Shared Mailboxes &amp; Ressourcen:</Run> Erstellen und konfigurieren Sie freigegebene Postfächer sowie Raum- und Gerätepostfächer.
+                                        <LineBreak />
+                                        <Run FontWeight="SemiBold">• Gruppen &amp; Kontakte:</Run> Verwalten Sie Verteilergruppen, sicherheitsaktivierte Gruppen und externe Kontakte.
+                                        <LineBreak />
+                                        <Run FontWeight="SemiBold">• Transportregeln &amp; Nachrichtenverfolgung:</Run> Erstellen und verwalten Sie E-Mail-Flussregeln und verfolgen Sie den Zustellstatus von Nachrichten.
+                                        <LineBreak />
+                                        <Run FontWeight="SemiBold">• Regionaleinstellungen:</Run> Passen Sie Sprach-, Zeit- und Datumsformate für Postfächer an.
+                                        <LineBreak />
+                                        <Run FontWeight="SemiBold">• Berichte &amp; Audits:</Run> Generieren Sie Berichte über Postfachnutzung, Berechtigungen und führen Sie Audit-Suchen durch.
+                                    </TextBlock>
+                                </GroupBox>
+
+                                <!--  Voraussetzungen-Karte  -->
+                                <GroupBox Header="Voraussetzungen" Margin="0,0,0,10" Padding="10">
+                                    <TextBlock TextWrapping="Wrap">
+                                        Um dieses Tool nutzen zu können, muss das <Run FontWeight="SemiBold">Exchange Online Management PowerShell-Modul</Run> auf Ihrem System installiert sein.
+                                        <LineBreak /><LineBreak />
+                                        Falls noch nicht geschehen, können Sie es mit dem folgenden Befehl in einer administrativen PowerShell-Sitzung installieren:
+                                        <LineBreak />
+                                        <Run FontFamily="Consolas" Foreground="#0056b3">Install-Module -Name ExchangeOnlineManagement -Force</Run>
+                                    </TextBlock>
+                                </GroupBox>
+
+                                <!--  Bedienungshinweis-Karte  -->
+                                <GroupBox Header="Bedienungshinweise" Margin="0,0,0,10" Padding="10">
+                                    <TextBlock TextWrapping="Wrap">
+                                        1. <Run FontWeight="SemiBold">Verbindung herstellen:</Run> Klicken Sie im Hauptfenster auf "Verbinden", um eine sichere Verbindung zu Ihrer Exchange Online-Instanz herzustellen.
+                                        <LineBreak />
+                                        2. <Run FontWeight="SemiBold">Tab auswählen:</Run> Navigieren Sie über die Reiter zu dem gewünschten Verwaltungsbereich.
+                                        <LineBreak />
+                                        3. <Run FontWeight="SemiBold">Aktionen durchführen:</Run> Nutzen Sie die Schaltflächen und Eingabefelder, um die gewünschten Aktionen auszuführen. Ergebnisse und Statusmeldungen werden in den Ausgabebereichen angezeigt.
+                                    </TextBlock>
+                                </GroupBox>
+
                             </StackPanel>
                         </ScrollViewer>
                     </TabItem>
+
 
                     <!--  Auto Reply Tab  -->
                     <TabItem
                         x:Name="tabAutoReply"
                         Header="Auto Reply Management"
                         Visibility="Collapsed">
-                        <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <StackPanel Margin="10">
-                                <GroupBox Header="Out of Office Management">
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="*" />
-                                        </Grid.RowDefinitions>
+                        <Grid Margin="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" MinWidth="420" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
 
-                                        <!--  Quick Setup  -->
-                                        <Expander
-                                            Grid.Row="0"
-                                            Margin="5"
-                                            Header="Quick Auto Reply Setup">
-                                            <Grid Margin="10">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                </Grid.ColumnDefinitions>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                </Grid.RowDefinitions>
+                            <!--  Linke Spalte - Verwaltung  -->
+                            <StackPanel
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                Margin="0,0,10,0">
 
-                                                <TextBlock
-                                                    Grid.Row="0"
-                                                    Grid.Column="0"
+                                <!--  Quick Setup  -->
+                                <GroupBox Header="Schnelle Einrichtung der automatischen Antwort">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Benutzer:" />
+                                            <TextBox
+                                                Name="txtAutoReplyUser"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Startdatum:" />
+                                            <DatePicker
+                                                Name="dpAutoReplyStart"
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="5,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Enddatum:" />
+                                            <DatePicker
+                                                Name="dpAutoReplyEnd"
+                                                Grid.Row="2"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="5,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="3"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Top"
+                                                Text="Nachricht:" />
+                                            <TextBox
+                                                Name="txtAutoReplyMessage"
+                                                Grid.Row="3"
+                                                Grid.Column="1"
+                                                Height="80"
+                                                Margin="5,5,0,5"
+                                                AcceptsReturn="True"
+                                                Text="Ich bin vom {StartDate} bis zum {EndDate} außer Haus und habe keinen Zugriff auf E-Mails."
+                                                TextWrapping="Wrap" />
+
+                                            <StackPanel
+                                                Grid.Row="4"
+                                                Grid.ColumnSpan="2"
+                                                Margin="0,10,0,0"
+                                                HorizontalAlignment="Center"
+                                                Orientation="Horizontal">
+                                                <Button
+                                                    Name="btnSetAutoReply"
+                                                    Width="150"
                                                     Margin="0,0,10,0"
-                                                    VerticalAlignment="Center"
-                                                    Text="User:" />
-                                                <ComboBox
-                                                    Name="cmbAutoReplyUser"
-                                                    Grid.Row="0"
-                                                    Grid.Column="1"
-                                                    Margin="0,2,10,2" />
+                                                    Background="#28a745"
+                                                    BorderBrush="#28a745"
+                                                    Content="Automatische Antwort aktivieren"
+                                                    Foreground="White" />
+                                                <Button
+                                                    Name="btnDisableAutoReply"
+                                                    Width="150"
+                                                    Background="#dc3545"
+                                                    BorderBrush="#dc3545"
+                                                    Content="Automatische Antwort deaktivieren"
+                                                    Foreground="White" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
 
-                                                <TextBlock
-                                                    Grid.Row="1"
-                                                    Grid.Column="0"
-                                                    Margin="0,0,10,0"
-                                                    VerticalAlignment="Center"
-                                                    Text="Start Date:" />
-                                                <DatePicker
-                                                    Name="dpAutoReplyStart"
-                                                    Grid.Row="1"
-                                                    Grid.Column="1"
-                                                    Margin="0,2,10,2" />
-
-                                                <TextBlock
-                                                    Grid.Row="2"
-                                                    Grid.Column="0"
-                                                    Margin="0,0,10,0"
-                                                    VerticalAlignment="Center"
-                                                    Text="End Date:" />
-                                                <DatePicker
-                                                    Name="dpAutoReplyEnd"
-                                                    Grid.Row="2"
-                                                    Grid.Column="1"
-                                                    Margin="0,2,10,2" />
-
-                                                <TextBlock
-                                                    Grid.Row="3"
-                                                    Grid.Column="0"
-                                                    Margin="0,8,10,0"
-                                                    VerticalAlignment="Top"
-                                                    Text="Message:" />
-                                                <TextBox
-                                                    Name="txtAutoReplyMessage"
-                                                    Grid.Row="3"
-                                                    Grid.Column="1"
-                                                    Height="80"
-                                                    Margin="0,5,10,5"
-                                                    AcceptsReturn="True"
-                                                    Text="I am out of office from {StartDate} to {EndDate} and have no access to emails."
-                                                    TextWrapping="Wrap" />
-
-                                                <StackPanel
-                                                    Grid.Row="4"
-                                                    Grid.Column="1"
-                                                    Margin="0,10,0,0"
-                                                    Orientation="Horizontal">
-                                                    <Button
-                                                        Name="btnSetAutoReply"
-                                                        Margin="0,0,10,0"
-                                                        Padding="15,5"
-                                                        Background="#28a745"
-                                                        Content="Enable Auto Reply"
-                                                        Foreground="White" />
-                                                    <Button
-                                                        Name="btnDisableAutoReply"
-                                                        Padding="15,5"
-                                                        Background="#dc3545"
-                                                        Content="Disable Auto Reply"
-                                                        Foreground="White" />
-                                                </StackPanel>
-                                            </Grid>
-                                        </Expander>
-
-                                        <!--  Current Auto-Reply Status  -->
-                                        <GroupBox
-                                            Grid.Row="1"
-                                            Margin="5"
-                                            Header="Current Auto Reply Status">
-                                            <DataGrid Name="dgAutoReplyStatus" Height="150">
-                                                <DataGrid.Columns>
-                                                    <DataGridTextColumn
-                                                        Width="150"
-                                                        Binding="{Binding DisplayName}"
-                                                        Header="User" />
-                                                    <DataGridCheckBoxColumn
-                                                        Width="60"
-                                                        Binding="{Binding AutoReplyState}"
-                                                        Header="Active" />
-                                                    <DataGridTextColumn
-                                                        Width="100"
-                                                        Binding="{Binding StartTime}"
-                                                        Header="Start" />
-                                                    <DataGridTextColumn
-                                                        Width="100"
-                                                        Binding="{Binding EndTime}"
-                                                        Header="End" />
-                                                    <DataGridTextColumn
-                                                        Width="*"
-                                                        Binding="{Binding InternalMessage}"
-                                                        Header="Message" />
-                                                </DataGrid.Columns>
-                                            </DataGrid>
-                                        </GroupBox>
-
-                                        <!--  Management Buttons  -->
-                                        <StackPanel
-                                            Grid.Row="2"
-                                            Margin="5"
-                                            VerticalAlignment="Top"
-                                            Orientation="Horizontal">
-                                            <Button
-                                                Name="btnRefreshAutoReply"
-                                                Margin="0,0,5,0"
-                                                Padding="10,5"
-                                                Content="Refresh Status" />
-                                            <Button
-                                                Name="btnBulkAutoReply"
-                                                Margin="5,0"
-                                                Padding="10,5"
-                                                Content="Bulk Setup" />
-                                            <Button
-                                                Name="btnExportAutoReply"
-                                                Margin="5,0"
-                                                Padding="10,5"
-                                                Content="Export Status" />
-                                        </StackPanel>
-                                    </Grid>
+                                <!--  Management Buttons  -->
+                                <GroupBox Header="Regelverwaltung">
+                                    <StackPanel Margin="10">
+                                        <Button
+                                            x:Name="btnRefreshAutoReply"
+                                            Margin="0,0,0,5"
+                                            Padding="10,5"
+                                            Content="Status aktualisieren" />
+                                        <Button
+                                            x:Name="btnBulkAutoReply"
+                                            Margin="0,5,0,5"
+                                            Padding="10,5"
+                                            Content="Masseneinrichtung" />
+                                        <Button
+                                            x:Name="btnExportAutoReply"
+                                            Margin="0,5,0,0"
+                                            Padding="10,5"
+                                            Content="Status exportieren" />
+                                    </StackPanel>
                                 </GroupBox>
                             </StackPanel>
-                        </ScrollViewer>
+
+                            <!--  Rechte Spalte - Ausgaben  -->
+                            <GroupBox
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                Header="Aktueller Status der automatischen Antwort">
+                                <DataGrid
+                                    Name="dgAutoReplyStatus"
+                                    AutoGenerateColumns="False"
+                                    IsReadOnly="True">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn
+                                            Width="Auto"
+                                            Binding="{Binding DisplayName}"
+                                            Header="Benutzer" />
+                                        <DataGridCheckBoxColumn
+                                            Width="Auto"
+                                            Binding="{Binding AutoReplyState}"
+                                            Header="Aktiv" />
+                                        <DataGridTextColumn
+                                            Width="Auto"
+                                            Binding="{Binding StartTime}"
+                                            Header="Start" />
+                                        <DataGridTextColumn
+                                            Width="Auto"
+                                            Binding="{Binding EndTime}"
+                                            Header="Ende" />
+                                        <DataGridTextColumn
+                                            Width="*"
+                                            Binding="{Binding InternalMessage}"
+                                            Header="Nachricht" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </GroupBox>
+                        </Grid>
                     </TabItem>
                 </TabControl>
             </Border>
