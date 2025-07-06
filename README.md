@@ -1,6 +1,7 @@
 # easyEXO PowerShell GUI (Version 0.0.11)
 
-Dieses Repository enthält das PowerShell Script **easyEXO_V0.0.11.ps1** zur Verwaltung und Konfiguration von Exchange Online. easyEXO bietet eine übersichtliche Benutzeroberfläche mit vielfältigen Tabs und Funktionen.
+Dieses Repository enthält das PowerShell Script **easyEXO_V0.0.11.ps1** zur Verwaltung und Konfiguration von Exchange Online. 
+easyEXO bietet eine übersichtliche Benutzeroberfläche mit vielfältigen Tabs und Funktionen.
 
 ## 📚 Inhalt / Table of Contents
 
