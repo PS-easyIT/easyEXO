@@ -498,6 +498,7 @@ try {
         New-ItemProperty -Path $script:registryPath -Name "AppName" -Value "Exchange Online Verwaltung" -PropertyType String -Force -ErrorAction Stop | Out-Null
         New-ItemProperty -Path $script:registryPath -Name "Version" -Value $currentScriptVersion -PropertyType String -Force -ErrorAction Stop | Out-Null
         New-ItemProperty -Path $script:registryPath -Name "ThemeColor" -Value "#0078D7" -PropertyType String -Force -ErrorAction Stop | Out-Null
+        New-ItemProperty -Path $script:registryPath -Name "DefaultUser" -Value "" -PropertyType String -Force -ErrorAction Stop | Out-Null
         New-ItemProperty -Path $script:registryPath -Name "LogPath" -Value "$PSScriptRoot\Logs" -PropertyType String -Force -ErrorAction Stop | Out-Null
         New-ItemProperty -Path $script:registryPath -Name "HeaderLogoURL" -Value "https://psscripts.de" -PropertyType String -Force -ErrorAction Stop | Out-Null
         Write-LogEntry "Registry-Standardwerte für '$($script:registryPath)' erfolgreich gesetzt/aktualisiert."
@@ -542,6 +543,11 @@ function Get-RegistryConfig {
             # ThemeColor
             if ($null -ne $regValues.ThemeColor) {
                 $config["General"]["ThemeColor"] = $regValues.ThemeColor
+            }
+            
+            # DefaultUser
+            if ($null -ne $regValues.DefaultUser) {
+                $config["General"]["DefaultUser"] = $regValues.DefaultUser
             }
             
             # LogPath
@@ -943,67 +949,82 @@ function Connect-OwnExchangeOnline {
         # Modul laden
         Import-Module ExchangeOnlineManagement -ErrorAction Stop
         
-        # WPF-Fenster für die Benutzereingabe erstellen
-        $inputXaml = @"
-        <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                Title="Exchange Online Anmeldung" Height="150" Width="400" WindowStartupLocation="CenterScreen">
-            <Grid Margin="10">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <Label Grid.Row="0" Content="EXO Administrativer Logins:"/>
-                <TextBox Grid.Row="1" Name="txtEmail" Margin="0,5"/>
-                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
-                    <Button Name="btnOK" Content="OK" Width="75" Margin="0,0,5,0"/>
-                    <Button Name="btnCancel" Content="Abbrechen" Width="75"/>
-                </StackPanel>
-            </Grid>
-        </Window>
-"@
-        
-        $xmlDoc = New-Object System.Xml.XmlDocument
-        $xmlDoc.LoadXml($inputXaml)
-        $reader = New-Object System.Xml.XmlNodeReader $xmlDoc
-        $window = [Windows.Markup.XamlReader]::Load($reader)
-        
-        $txtEmail = $window.FindName("txtEmail")
-        $btnOK = $window.FindName("btnOK")
-        $btnCancel = $window.FindName("btnCancel")
-        
         # Variable für die E-Mail-Adresse im Skript-Bereich definieren
         $script:userPrincipalName = $null
         
-        $btnOK.Add_Click({
-            if (-not [string]::IsNullOrWhiteSpace($txtEmail.Text)) {
-                $script:userPrincipalName = $txtEmail.Text
-                $window.DialogResult = $true
-                $window.Close()
+        # Prüfen ob ein Standard-Benutzer in den Settings gespeichert ist
+        $defaultUser = $null
+        if ($null -ne $script:config -and $script:config.ContainsKey("General") -and $script:config["General"].ContainsKey("DefaultUser")) {
+            $defaultUser = $script:config["General"]["DefaultUser"]
+            if (-not [string]::IsNullOrWhiteSpace($defaultUser)) {
+                Write-Log "Standard-Benutzer aus Settings gefunden: $defaultUser" -Type "Info"
+                $script:userPrincipalName = $defaultUser
             }
-        })
-        
-        $btnCancel.Add_Click({
-            $window.DialogResult = $false
-            $window.Close()
-        })
-        
-        $result = $window.ShowDialog()
-        
-        if (-not $result) {
-            $errorMsg = "Anmeldung abgebrochen."
-            Write-Log $errorMsg -Type "Warning"
-            Show-MessageBox -Message $errorMsg -Title "Abgebrochen" -Type "Warning"
-            return $false
         }
         
-        # Überprüfen, ob die E-Mail-Adresse erfolgreich gespeichert wurde
+        # Nur wenn kein Standard-Benutzer vorhanden ist, Dialog anzeigen
         if ([string]::IsNullOrWhiteSpace($script:userPrincipalName)) {
-            $errorMsg = "Keine E-Mail-Adresse eingegeben oder erkannt. Verbindung abgebrochen."
-            Write-Log $errorMsg -Type "Warning"
-            Show-MessageBox -Message $errorMsg -Title "Abgebrochen" -Type "Warning"
-            return $false
+            Write-Log "Kein Standard-Benutzer gefunden, zeige Anmeldedialog..." -Type "Info"
+            
+            # WPF-Fenster für die Benutzereingabe erstellen
+            $inputXaml = @"
+            <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    Title="Exchange Online Anmeldung" Height="150" Width="400" WindowStartupLocation="CenterScreen">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Label Grid.Row="0" Content="EXO Administrativer Logins:"/>
+                    <TextBox Grid.Row="1" Name="txtEmail" Margin="0,5"/>
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                        <Button Name="btnOK" Content="OK" Width="75" Margin="0,0,5,0"/>
+                        <Button Name="btnCancel" Content="Abbrechen" Width="75"/>
+                    </StackPanel>
+                </Grid>
+            </Window>
+"@
+            
+            $xmlDoc = New-Object System.Xml.XmlDocument
+            $xmlDoc.LoadXml($inputXaml)
+            $reader = New-Object System.Xml.XmlNodeReader $xmlDoc
+            $window = [Windows.Markup.XamlReader]::Load($reader)
+            
+            $txtEmail = $window.FindName("txtEmail")
+            $btnOK = $window.FindName("btnOK")
+            $btnCancel = $window.FindName("btnCancel")
+            
+            $btnOK.Add_Click({
+                if (-not [string]::IsNullOrWhiteSpace($txtEmail.Text)) {
+                    $script:userPrincipalName = $txtEmail.Text
+                    $window.DialogResult = $true
+                    $window.Close()
+                }
+            })
+            
+            $btnCancel.Add_Click({
+                $window.DialogResult = $false
+                $window.Close()
+            })
+            
+            $result = $window.ShowDialog()
+            
+            if (-not $result) {
+                $errorMsg = "Anmeldung abgebrochen."
+                Write-Log $errorMsg -Type "Warning"
+                Show-MessageBox -Message $errorMsg -Title "Abgebrochen" -Type "Warning"
+                return $false
+            }
+            
+            # Überprüfen, ob die E-Mail-Adresse erfolgreich gespeichert wurde
+            if ([string]::IsNullOrWhiteSpace($script:userPrincipalName)) {
+                $errorMsg = "Keine E-Mail-Adresse eingegeben oder erkannt. Verbindung abgebrochen."
+                Write-Log $errorMsg -Type "Warning"
+                Show-MessageBox -Message $errorMsg -Title "Abgebrochen" -Type "Warning"
+                return $false
+            }
         }
 
         # Verbindungsparameter für V3
@@ -2698,125 +2719,371 @@ function Test-EWSThrottlingPolicy {
 # Abschnitt: Exchange Online Troubleshooting Diagnostics
 # -------------------------------------------------
 
-# Aktualisierte Diagnostics-Datenstruktur
+# Erweiterte Diagnostics-Datenstruktur für umfassende Exchange Online Fehlerbehebung
 $script:exchangeDiagnostics = @(
     @{
-        Name = "Migration EWS Throttling Policy"
-        Description = "Informationen über EWS-Throttling-Einstellungen für Mailbox-Migrationen (auch für Drittanbieter-Tools relevant)."
+        Name = "Migrations-EWS-Drosselungsrichtlinie"
+        Description = "Informationen über EWS-Drosselungseinstellungen für Postfachmigrationen (auch für Drittanbieter-Tools relevant)."
         PowerShellCheck = "Get-ExchangeThrottlingInfo -InfoType 'EWSPolicy'"
         AdminCenterLink = "https://admin.exchange.microsoft.com/#/settings/services"
-        Tooltip = "Öffnen Sie die Exchange Admin Center-Einstellungen"
+        Tooltip = "Exchange Admin Center-Einstellungen öffnen"
     },
     @{
-        Name = "Exchange Online Accepted Domain diagnostics"
-        Description = "Prüfen Sie, ob eine Domain korrekt als akzeptierte Domain in Exchange Online konfiguriert ist."
+        Name = "Exchange Online Akzeptierte Domänen-Diagnose"
+        Description = "Prüfen Sie, ob eine Domäne korrekt als akzeptierte Domäne in Exchange Online konfiguriert ist."
         PowerShellCheck = "Get-AcceptedDomain"
         AdminCenterLink = "https://admin.exchange.microsoft.com/#/accepted-domains"
-        Tooltip = "Überprüfen Sie die Konfiguration akzeptierter Domains"
+        Tooltip = "Konfiguration akzeptierter Domänen überprüfen"
     },
     @{
-        Name = "Test a user's Exchange Online RBAC permissions"
+        Name = "RBAC-Berechtigungsprüfung für Benutzer"
         Description = "Überprüfen Sie, ob ein Benutzer die erforderlichen RBAC-Rollen besitzt, um bestimmte Exchange Online-Cmdlets auszuführen."
         PowerShellCheck = "Get-ManagementRoleAssignment –RoleAssignee '[USER]'"
         AdminCenterLink = "https://admin.exchange.microsoft.com/#/permissions"
-        Tooltip = "Öffnen Sie die RBAC-Einstellungen zur Verwaltung von Benutzerberechtigungen"
+        Tooltip = "RBAC-Einstellungen zur Verwaltung von Benutzerberechtigungen öffnen"
         RequiresUser = $true
     },
     @{
-        Name = "Compare EXO RBAC Permissions for Two Users"
+        Name = "RBAC-Berechtigungsvergleich für zwei Benutzer"
         Description = "Vergleichen Sie die RBAC-Rollen zweier Benutzer, um Unterschiede zu identifizieren, wenn ein Benutzer Cmdlet-Fehler erhält."
         PowerShellCheck = "Compare-Object (Get-ManagementRoleAssignment –RoleAssignee '[USER1]') (Get-ManagementRoleAssignment –RoleAssignee '[USER2]')"
         AdminCenterLink = "https://admin.exchange.microsoft.com/#/permissions"
-        Tooltip = "Überprüfen und vergleichen Sie RBAC-Zuweisungen zur Fehlerbehebung"
+        Tooltip = "RBAC-Zuweisungen zur Fehlerbehebung überprüfen und vergleichen"
         RequiresTwoUsers = $true
     },
     @{
-        Name = "Recipient failure"
+        Name = "Empfänger-Fehlerdiagnose"
         Description = "Überprüfen Sie den Status und die Konfiguration eines Exchange Online-Empfängers, um Bereitstellungs- oder Synchronisierungsprobleme zu beheben."
-        PowerShellCheck = "Get-EXORecipient –Identity '[USER]'"
+        PowerShellCheck = "Get-Recipient –Identity '[USER]'"
         AdminCenterLink = "https://admin.exchange.microsoft.com/#/recipients"
-        Tooltip = "Überprüfen Sie die Empfängerkonfiguration und den Bereitstellungsstatus"
+        Tooltip = "Empfängerkonfiguration und Bereitstellungsstatus überprüfen"
         RequiresUser = $true
     },
     @{
-        Name = "Exchange Organization Object check"
+        Name = "Exchange-Organisationsobjekt-Prüfung"
         Description = "Diagnostizieren Sie Probleme mit dem Exchange Online-Organisationsobjekt, wie Mandantenbereitstellung oder RBAC-Fehlkonfigurationen."
         PowerShellCheck = "Get-OrganizationConfig | Format-List"
         AdminCenterLink = "https://admin.exchange.microsoft.com/#/organization"
-        Tooltip = "Überprüfen Sie die Organisationskonfigurationseinstellungen"
+        Tooltip = "Organisationskonfigurationseinstellungen überprüfen"
     },
     @{
-        Name = "Mailbox or message size"
+        Name = "Postfach- und Nachrichtengröße"
         Description = "Überprüfen Sie die Postfachgröße und Nachrichtengröße (einschließlich Anhänge), um Speicherprobleme zu identifizieren."
-        PowerShellCheck = "Get-EXOMailboxStatistics –Identity '[USER]' | Select-Object DisplayName, TotalItemSize, ItemCount"
+        PowerShellCheck = "Get-MailboxStatistics –Identity '[USER]' | Select-Object DisplayName, TotalItemSize, ItemCount"
         AdminCenterLink = "https://admin.exchange.microsoft.com/#/mailboxes"
-        Tooltip = "Überprüfen Sie Postfachgröße und Speicherstatistiken"
+        Tooltip = "Postfachgröße und Speicherstatistiken überprüfen"
         RequiresUser = $true
     },
     @{
-        Name = "Deleted mailbox diagnostics"
+        Name = "Diagnose gelöschter Postfächer"
         Description = "Überprüfen Sie den Status kürzlich gelöschter (soft-deleted) Postfächer zur Wiederherstellung oder Bereinigung."
         PowerShellCheck = "Get-Mailbox –SoftDeletedMailbox"
         AdminCenterLink = "https://admin.exchange.microsoft.com/#/deletedmailboxes"
-        Tooltip = "Verwalten Sie gelöschte Postfächer"
+        Tooltip = "Gelöschte Postfächer verwalten"
     },
     @{
-        Name = "Exchange Remote PowerShell throttling information"
-        Description = "Bewerten Sie Remote PowerShell Throttling-Einstellungen, um Verbindungsprobleme zu minimieren."
+        Name = "Exchange Remote PowerShell Drosselungsinformationen"
+        Description = "Bewerten Sie Remote PowerShell Drosselungseinstellungen, um Verbindungsprobleme zu minimieren. Hinweis: RPS wird ab Juli 2023 eingestellt - verwenden Sie REST-API-Cmdlets."
         PowerShellCheck = "Get-ExchangeThrottlingInfo -InfoType 'PowerShell'"
         AdminCenterLink = "https://admin.exchange.microsoft.com/#/settings"
-        Tooltip = "Überprüfen Sie Remote PowerShell Throttling-Einstellungen"
+        Tooltip = "Remote PowerShell Drosselungseinstellungen überprüfen"
     },
     @{
-        Name = "Email delivery troubleshooter"
+        Name = "E-Mail-Zustellungs-Problemlöser"
         Description = "Diagnostizieren Sie E-Mail-Zustellungsprobleme durch Nachverfolgung von Nachrichtenpfaden und Identifizierung von Fehlern."
         PowerShellCheck = "Get-MessageTrace –StartDate (Get-Date).AddDays(-7) –EndDate (Get-Date)"
         AdminCenterLink = "https://admin.exchange.microsoft.com/#/mailflow"
-        Tooltip = "Überprüfen Sie Mail-Flow und Zustellungsprobleme"
+        Tooltip = "Mail-Flow und Zustellungsprobleme überprüfen"
     },
     @{
-        Name = "Archive mailbox diagnostics"
+        Name = "Archiv-Postfach-Diagnose"
         Description = "Überprüfen Sie die Konfiguration und den Status von Archiv-Postfächern, um sicherzustellen, dass die Archivierung aktiviert ist und funktioniert."
-        PowerShellCheck = "Get-EXOMailbox –Identity '[USER]' | Select-Object DisplayName, ArchiveStatus"
+        PowerShellCheck = "Get-Mailbox –Identity '[USER]' | Select-Object DisplayName, ArchiveStatus"
         AdminCenterLink = "https://admin.exchange.microsoft.com/#/archivemailboxes"
-        Tooltip = "Überprüfen Sie die Konfiguration des Archivpostfachs"
+        Tooltip = "Konfiguration des Archivpostfachs überprüfen"
         RequiresUser = $true
     },
     @{
-        Name = "Retention policy diagnostics for a user mailbox"
+        Name = "Aufbewahrungsrichtlinien-Diagnose für Benutzerpostfach"
         Description = "Überprüfen Sie die Aufbewahrungsrichtlinieneinstellungen (einschließlich Tags und Richtlinien) für ein Benutzerpostfach, um die Einhaltung der organisatorischen Richtlinien zu gewährleisten."
-        PowerShellCheck = "Get-EXOMailbox –Identity '[USER]' | Select-Object DisplayName, RetentionPolicy; Get-RetentionPolicy"
+        PowerShellCheck = "Get-Mailbox –Identity '[USER]' | Select-Object DisplayName, RetentionPolicy; Get-RetentionPolicy"
         AdminCenterLink = "https://admin.exchange.microsoft.com/#/compliance"
-        Tooltip = "Überprüfen Sie die Einstellungen der Aufbewahrungsrichtlinie"
+        Tooltip = "Einstellungen der Aufbewahrungsrichtlinie überprüfen"
         RequiresUser = $true
     },
     @{
-        Name = "DomainKeys Identified Mail (DKIM) diagnostics"
+        Name = "DKIM-Diagnose (DomainKeys Identified Mail)"
         Description = "Überprüfen Sie, ob die DKIM-Signierung korrekt konfiguriert ist und die richtigen DNS-Einträge veröffentlicht wurden."
         PowerShellCheck = "Get-DkimSigningConfig"
         AdminCenterLink = "https://admin.exchange.microsoft.com/#/dkim"
-        Tooltip = "Verwalten Sie DKIM-Einstellungen und überprüfen Sie die DNS-Konfiguration"
+        Tooltip = "DKIM-Einstellungen verwalten und DNS-Konfiguration überprüfen"
     },
     @{
-        Name = "Proxy address conflict diagnostics"
+        Name = "Proxy-Adress-Konfliktdiagnose"
         Description = "Identifizieren Sie den Exchange-Empfänger, der eine bestimmte Proxy-Adresse (E-Mail-Adresse) verwendet, die Konflikte verursacht, z.B. Fehler bei der Postfacherstellung."
         PowerShellCheck = "Get-Recipient –Filter {EmailAddresses -like '[EMAIL]'}"
         AdminCenterLink = "https://admin.exchange.microsoft.com/#/recipients"
-        Tooltip = "Identifizieren und beheben Sie Proxy-Adresskonflikte"
+        Tooltip = "Proxy-Adresskonflikte identifizieren und beheben"
         RequiresEmail = $true
     },
     @{
-        Name = "Mailbox safe/blocked sender list diagnostics"
+        Name = "Diagnose für sichere/blockierte Absenderlisten"
         Description = "Überprüfen Sie sichere Absender und blockierte Absender/Domains in den Junk-E-Mail-Einstellungen eines Postfachs, um potenzielle Zustellungsprobleme zu beheben."
         PowerShellCheck = "Get-MailboxJunkEmailConfiguration –Identity '[USER]' | Select-Object SafeSenders, BlockedSenders"
         AdminCenterLink = "https://admin.exchange.microsoft.com/#/mailboxes"
-        Tooltip = "Überprüfen Sie Listen sicherer und blockierter Absender"
+        Tooltip = "Listen sicherer und blockierter Absender überprüfen"
         RequiresUser = $true
+    },
+    @{
+        Name = "Gruppenpostfach-Diagnose"
+        Description = "Überprüfen Sie die Konfiguration und Berechtigungen von Microsoft 365-Gruppen und deren Postfächern."
+        PowerShellCheck = "Get-UnifiedGroup -Identity '[USER]' | Format-List"
+        AdminCenterLink = "https://admin.exchange.microsoft.com/#/groups"
+        Tooltip = "Gruppenpostfach-Konfiguration überprüfen"
+        RequiresUser = $true
+    },
+    @{
+        Name = "Verteilerlisten-Diagnose"
+        Description = "Überprüfen Sie die Konfiguration, Mitgliedschaft und Zustellungseinstellungen von Verteilerlisten."
+        PowerShellCheck = "Get-DistributionGroup -Identity '[USER]' | Format-List; Get-DistributionGroupMember -Identity '[USER]'"
+        AdminCenterLink = "https://admin.exchange.microsoft.com/#/distributiongroups"
+        Tooltip = "Verteilerlisten-Konfiguration überprüfen"
+        RequiresUser = $true
+    },
+    @{
+        Name = "Freigegebenes Postfach-Berechtigungsdiagnose"
+        Description = "Überprüfen Sie die Berechtigungen und Zugriffseinstellungen für freigegebene Postfächer."
+        PowerShellCheck = "Get-Mailbox -Identity '[USER]' -RecipientTypeDetails SharedMailbox | Format-List; Get-MailboxPermission -Identity '[USER]'"
+        AdminCenterLink = "https://admin.exchange.microsoft.com/#/sharedmailboxes"
+        Tooltip = "Berechtigungen für freigegebene Postfächer überprüfen"
+        RequiresUser = $true
+    },
+    @{
+        Name = "Transportregel-Diagnose"
+        Description = "Überprüfen Sie die konfigurierten Transportregeln und deren Auswirkungen auf den E-Mail-Fluss."
+        PowerShellCheck = "Get-TransportRule | Format-Table Name,State,Priority,Description -AutoSize"
+        AdminCenterLink = "https://admin.exchange.microsoft.com/#/transportrules"
+        Tooltip = "Transportregeln überprüfen"
+    },
+    @{
+        Name = "Postfachberechtigungen-Übersicht"
+        Description = "Zeigt eine Übersicht aller Berechtigungen für ein bestimmtes Postfach an."
+        PowerShellCheck = "Get-MailboxPermission -Identity '[USER]'; Get-RecipientPermission -Identity '[USER]'; Get-MailboxFolderPermission -Identity '[USER]:\Kalender'"
+        AdminCenterLink = "https://admin.exchange.microsoft.com/#/mailboxes"
+        Tooltip = "Postfachberechtigungen überprüfen"
+        RequiresUser = $true
+    },
+    @{
+        Name = "Postfach-Audit-Konfiguration"
+        Description = "Überprüfen Sie die Audit-Einstellungen für ein Postfach, um sicherzustellen, dass wichtige Aktionen protokolliert werden."
+        PowerShellCheck = "Get-Mailbox -Identity '[USER]' | Select-Object DisplayName, AuditEnabled, AuditAdmin, AuditDelegate, AuditOwner, AuditLogAgeLimit"
+        AdminCenterLink = "https://admin.exchange.microsoft.com/#/mailboxes"
+        Tooltip = "Postfach-Audit-Einstellungen überprüfen"
+        RequiresUser = $true
+    },
+    @{
+        Name = "Postfach-Quota-Diagnose"
+        Description = "Überprüfen Sie die Speicherquota-Einstellungen und -Nutzung für ein Postfach, um Speicherprobleme zu identifizieren."
+        PowerShellCheck = "Get-Mailbox -Identity '[USER]' | Select-Object DisplayName, ProhibitSendQuota, ProhibitSendReceiveQuota, IssueWarningQuota; Get-MailboxStatistics -Identity '[USER]' | Select-Object TotalItemSize"
+        AdminCenterLink = "https://admin.exchange.microsoft.com/#/mailboxes"
+        Tooltip = "Postfach-Quota-Einstellungen überprüfen"
+        RequiresUser = $true
+    },
+    @{
+        Name = "Kalenderberechtigungen-Diagnose"
+        Description = "Überprüfen Sie die Berechtigungen für den Kalender eines Benutzers, um Zugriffsprobleme zu beheben."
+        PowerShellCheck = "Get-MailboxFolderPermission -Identity '[USER]:\Kalender'; Get-MailboxFolderPermission -Identity '[USER]:\Calendar'"
+        AdminCenterLink = "https://admin.exchange.microsoft.com/#/mailboxes"
+        Tooltip = "Kalenderberechtigungen überprüfen"
+        RequiresUser = $true
+    },
+    @{
+        Name = "Automatische Antworten-Diagnose"
+        Description = "Überprüfen Sie die Konfiguration der automatischen Antworten (Out-of-Office) für einen Benutzer."
+        PowerShellCheck = "Get-MailboxAutoReplyConfiguration -Identity '[USER]'"
+        AdminCenterLink = "https://admin.exchange.microsoft.com/#/mailboxes"
+        Tooltip = "Automatische Antworten-Einstellungen überprüfen"
+        RequiresUser = $true
+    },
+    @{
+        Name = "E-Mail-Weiterleitung-Diagnose"
+        Description = "Überprüfen Sie die E-Mail-Weiterleitungseinstellungen für ein Postfach, um unerwünschte Weiterleitungen zu identifizieren."
+        PowerShellCheck = "Get-Mailbox -Identity '[USER]' | Select-Object DisplayName, ForwardingAddress, ForwardingSmtpAddress, DeliverToMailboxAndForward"
+        AdminCenterLink = "https://admin.exchange.microsoft.com/#/mailboxes"
+        Tooltip = "E-Mail-Weiterleitungseinstellungen überprüfen"
+        RequiresUser = $true
+    },
+    @{
+        Name = "Posteingangsregeln-Diagnose"
+        Description = "Überprüfen Sie die Posteingangsregeln eines Benutzers, die E-Mail-Zustellungsprobleme verursachen könnten."
+        PowerShellCheck = "Get-InboxRule -Mailbox '[USER]' | Format-Table Name, Enabled, Priority, Description -AutoSize"
+        AdminCenterLink = "https://admin.exchange.microsoft.com/#/mailboxes"
+        Tooltip = "Posteingangsregeln überprüfen"
+        RequiresUser = $true
+    },
+    @{
+        Name = "Mobile Geräte-Diagnose"
+        Description = "Überprüfen Sie die mit einem Postfach verbundenen mobilen Geräte und deren Synchronisationsstatus."
+        PowerShellCheck = "Get-MobileDevice -Mailbox '[USER]' | Format-Table DeviceId, DeviceType, LastSyncAttemptTime, DeviceAccessState -AutoSize"
+        AdminCenterLink = "https://admin.exchange.microsoft.com/#/mobiledevices"
+        Tooltip = "Mobile Geräte-Synchronisation überprüfen"
+        RequiresUser = $true
+    },
+    @{
+        Name = "Anti-Spam-Richtlinien-Diagnose"
+        Description = "Überprüfen Sie die Anti-Spam-Richtlinien und deren Anwendung auf bestimmte Benutzer oder Domänen."
+        PowerShellCheck = "Get-HostedContentFilterPolicy; Get-HostedContentFilterRule"
+        AdminCenterLink = "https://security.microsoft.com/antispam"
+        Tooltip = "Anti-Spam-Richtlinien im Security Center überprüfen"
+    },
+    @{
+        Name = "Anti-Malware-Richtlinien-Diagnose"
+        Description = "Überprüfen Sie die Anti-Malware-Richtlinien und deren Konfiguration für den Schutz vor schädlichen Anhängen."
+        PowerShellCheck = "Get-MalwareFilterPolicy; Get-MalwareFilterRule"
+        AdminCenterLink = "https://security.microsoft.com/antimalware"
+        Tooltip = "Anti-Malware-Richtlinien im Security Center überprüfen"
+    },
+    @{
+        Name = "Safe Attachments-Diagnose"
+        Description = "Überprüfen Sie die Safe Attachments-Richtlinien für den Schutz vor schädlichen Anhängen."
+        PowerShellCheck = "Get-SafeAttachmentPolicy; Get-SafeAttachmentRule"
+        AdminCenterLink = "https://security.microsoft.com/safeattachmentv2"
+        Tooltip = "Safe Attachments-Richtlinien im Security Center überprüfen"
+    },
+    @{
+        Name = "Safe Links-Diagnose"
+        Description = "Überprüfen Sie die Safe Links-Richtlinien für den Schutz vor schädlichen URLs in E-Mails."
+        PowerShellCheck = "Get-SafeLinksPolicy; Get-SafeLinksRule"
+        AdminCenterLink = "https://security.microsoft.com/safelinksv2"
+        Tooltip = "Safe Links-Richtlinien im Security Center überprüfen"
+    },
+    @{
+        Name = "Quarantäne-Diagnose"
+        Description = "Überprüfen Sie die in Quarantäne befindlichen Nachrichten für einen bestimmten Benutzer oder die gesamte Organisation."
+        PowerShellCheck = "Get-QuarantineMessage -RecipientAddress '[USER]' | Format-Table ReceivedTime, SenderAddress, Subject, QuarantineTypes -AutoSize"
+        AdminCenterLink = "https://security.microsoft.com/quarantine"
+        Tooltip = "Quarantäne-Nachrichten im Security Center überprüfen"
+        RequiresUser = $true
+    },
+    @{
+        Name = "Verbindungsfilter-Diagnose"
+        Description = "Überprüfen Sie die Verbindungsfilter-Richtlinien, die IP-Adressen und Domänen blockieren oder zulassen."
+        PowerShellCheck = "Get-HostedConnectionFilterPolicy"
+        AdminCenterLink = "https://security.microsoft.com/connectionfilter"
+        Tooltip = "Verbindungsfilter-Richtlinien im Security Center überprüfen"
+    },
+    @{
+        Name = "Tenant Allow/Block List-Diagnose"
+        Description = "Überprüfen Sie die mandantenweiten Zulassungs- und Blockierungslisten für URLs, Dateien und Absender."
+        PowerShellCheck = "Get-TenantAllowBlockListItems"
+        AdminCenterLink = "https://security.microsoft.com/tenantAllowBlockList"
+        Tooltip = "Tenant Allow/Block List im Security Center überprüfen"
+    },
+    @{
+        Name = "Nachrichtenfluss-Regeln-Diagnose"
+        Description = "Detaillierte Analyse der Nachrichtenfluss-Regeln (Transportregeln) und deren Auswirkungen auf E-Mails."
+        PowerShellCheck = "Get-TransportRule | Format-List Name, State, Priority, Conditions, Actions, Exceptions"
+        AdminCenterLink = "https://admin.exchange.microsoft.com/#/transportrules"
+        Tooltip = "Nachrichtenfluss-Regeln detailliert überprüfen"
+    },
+    @{
+        Name = "Connector-Diagnose"
+        Description = "Überprüfen Sie die eingehenden und ausgehenden Connectors für den E-Mail-Fluss mit externen Systemen."
+        PowerShellCheck = "Get-InboundConnector | Format-List Name, Enabled, ConnectorType, SenderDomains; Get-OutboundConnector | Format-List Name, Enabled, ConnectorType, RecipientDomains"
+        AdminCenterLink = "https://admin.exchange.microsoft.com/#/connectors"
+        Tooltip = "E-Mail-Connectors überprüfen"
+    },
+    @{
+        Name = "Ressourcenpostfach-Diagnose"
+        Description = "Überprüfen Sie die Konfiguration von Ressourcenpostfächern (Räume und Ausstattung) und deren Buchungsrichtlinien."
+        PowerShellCheck = "Get-Mailbox -Identity '[USER]' -RecipientTypeDetails RoomMailbox,EquipmentMailbox | Format-List; Get-CalendarProcessing -Identity '[USER]'"
+        AdminCenterLink = "https://admin.exchange.microsoft.com/#/resources"
+        Tooltip = "Ressourcenpostfach-Konfiguration überprüfen"
+        RequiresUser = $true
+    },
+    @{
+        Name = "Öffentliche Ordner-Diagnose"
+        Description = "Überprüfen Sie die Konfiguration und Berechtigungen von öffentlichen Ordnern in Exchange Online."
+        PowerShellCheck = "Get-PublicFolder -Recurse | Format-Table Name, FolderPath, FolderSize -AutoSize"
+        AdminCenterLink = "https://admin.exchange.microsoft.com/#/publicfolders"
+        Tooltip = "Öffentliche Ordner-Konfiguration überprüfen"
+    },
+    @{
+        Name = "Litigation Hold-Diagnose"
+        Description = "Überprüfen Sie den Litigation Hold-Status für Postfächer zur Compliance und rechtlichen Aufbewahrung."
+        PowerShellCheck = "Get-Mailbox -Identity '[USER]' | Select-Object DisplayName, LitigationHoldEnabled, LitigationHoldDate, LitigationHoldOwner, LitigationHoldDuration"
+        AdminCenterLink = "https://compliance.microsoft.com/informationgovernance"
+        Tooltip = "Litigation Hold-Einstellungen im Compliance Center überprüfen"
+        RequiresUser = $true
+    },
+    @{
+        Name = "In-Place Hold-Diagnose"
+        Description = "Überprüfen Sie In-Place Hold-Richtlinien und deren Anwendung auf Postfächer."
+        PowerShellCheck = "Get-MailboxSearch | Format-Table Name, Status, SourceMailboxes, InPlaceHoldEnabled -AutoSize"
+        AdminCenterLink = "https://compliance.microsoft.com/informationgovernance"
+        Tooltip = "In-Place Hold-Richtlinien im Compliance Center überprüfen"
+    },
+    @{
+        Name = "Journaling-Diagnose"
+        Description = "Überprüfen Sie die Journaling-Konfiguration für die Compliance-Archivierung von E-Mails."
+        PowerShellCheck = "Get-JournalRule | Format-Table Name, Enabled, JournalEmailAddress, Scope -AutoSize"
+        AdminCenterLink = "https://admin.exchange.microsoft.com/#/journaling"
+        Tooltip = "Journaling-Regeln überprüfen"
+    },
+    @{
+        Name = "Data Loss Prevention (DLP)-Diagnose"
+        Description = "Überprüfen Sie DLP-Richtlinien und deren Anwendung zum Schutz sensibler Daten."
+        PowerShellCheck = "Get-DlpPolicy | Format-Table Name, State, Mode -AutoSize; Get-DlpPolicyTemplate | Format-Table Name, Description -AutoSize"
+        AdminCenterLink = "https://compliance.microsoft.com/datalossprevention"
+        Tooltip = "DLP-Richtlinien im Compliance Center überprüfen"
+    },
+    @{
+        Name = "Sensitivity Labels-Diagnose"
+        Description = "Überprüfen Sie die Konfiguration von Vertraulichkeitsbezeichnungen für E-Mails und Dokumente."
+        PowerShellCheck = "Get-Label | Format-Table Name, DisplayName, Priority -AutoSize"
+        AdminCenterLink = "https://compliance.microsoft.com/informationprotection"
+        Tooltip = "Vertraulichkeitsbezeichnungen im Compliance Center überprüfen"
+    },
+    @{
+        Name = "Exchange Online PowerShell-Modul-Diagnose"
+        Description = "Überprüfen Sie die installierte Version des Exchange Online PowerShell-Moduls und prüfen Sie auf Updates. Wichtig: RPS wird ab Juli 2023 eingestellt."
+        PowerShellCheck = "Get-InstalledModule ExchangeOnlineManagement | Select-Object Name, Version; Get-Module ExchangeOnlineManagement -ListAvailable | Select-Object Name, Version"
+        AdminCenterLink = "https://docs.microsoft.com/powershell/exchange/exchange-online-powershell-v2"
+        Tooltip = "Exchange Online PowerShell-Dokumentation öffnen"
+    },
+    @{
+        Name = "Hybrid-Konfiguration-Diagnose"
+        Description = "Überprüfen Sie die Hybrid-Konfiguration zwischen lokaler Exchange-Umgebung und Exchange Online."
+        PowerShellCheck = "Get-HybridConfiguration | Format-List"
+        AdminCenterLink = "https://admin.exchange.microsoft.com/#/hybrid"
+        Tooltip = "Hybrid-Konfiguration überprüfen"
+    },
+    @{
+        Name = "Migration-Batch-Diagnose"
+        Description = "Überprüfen Sie den Status laufender oder abgeschlossener Postfach-Migrationen."
+        PowerShellCheck = "Get-MigrationBatch | Format-Table Identity, Status, TotalCount, SyncedCount, FinalizedCount -AutoSize"
+        AdminCenterLink = "https://admin.exchange.microsoft.com/#/migration"
+        Tooltip = "Migration-Batches überprüfen"
+    },
+    @{
+        Name = "Benutzer-Migration-Status-Diagnose"
+        Description = "Überprüfen Sie den detaillierten Migrationsstatus für einen bestimmten Benutzer."
+        PowerShellCheck = "Get-MigrationUser -Identity '[USER]' | Format-List"
+        AdminCenterLink = "https://admin.exchange.microsoft.com/#/migration"
+        Tooltip = "Benutzer-Migrationsstatus überprüfen"
+        RequiresUser = $true
+    },
+    @{
+        Name = "Exchange Online Service Health-Diagnose"
+        Description = "Überprüfen Sie den aktuellen Service Health-Status von Exchange Online und bekannte Probleme."
+        PowerShellCheck = "# Service Health wird über das Admin Center oder Microsoft 365 Service Health Dashboard abgerufen"
+        AdminCenterLink = "https://admin.microsoft.com/adminportal/home#/servicehealth"
+        Tooltip = "Service Health Dashboard öffnen"
     }
 )
 
-# Verbesserte Run-ExchangeDiagnostic Funktion mit noch robusterer Fehlerbehandlung
-function Run-ExchangeDiagnostic {
+# Verbesserte Start-ExchangeDiagnostic Funktion mit noch robusterer Fehlerbehandlung und RPS-Kompatibilität
+function Start-ExchangeDiagnostic {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -2868,6 +3135,18 @@ function Run-ExchangeDiagnostic {
                 throw "Diese Diagnose erfordert eine E-Mail-Adresse."
             }
             $command = $command -replace '\[EMAIL\]', $Email
+        }
+        
+        # Spezielle Behandlung für Service Health
+        if ($command -like "*Service Health*") {
+            $result = "Service Health-Informationen sind über das Microsoft 365 Admin Center verfügbar.`n"
+            $result += "Öffnen Sie das Service Health Dashboard über den bereitgestellten Link.`n"
+            $result += "Dort finden Sie aktuelle Informationen über:`n"
+            $result += "- Service-Unterbrechungen`n"
+            $result += "- Geplante Wartungsarbeiten`n"
+            $result += "- Service-Advisories`n"
+            $result += "- Incident-Historie`n"
+            return $result
         }
         
         # Befehl ausführen
@@ -2944,6 +3223,15 @@ function Run-ExchangeDiagnostic {
             $result = $result.Substring(0, 30000) + "`n`n... (Output gekürzt - zu viele Daten)`n"
         }
         
+        # Zusätzliche Hinweise für RPS-bezogene Diagnosen
+        if ($diagnostic.Name -like "*PowerShell*" -or $diagnostic.Name -like "*Remote*") {
+            $result += "`n`n=== WICHTIGER HINWEIS ===`n"
+            $result += "Remote PowerShell (RPS) wurde bereits im Juli 2023 in Exchange Online eingestellt.`n"
+            $result += "Stellen Sie sicher, dass Sie das neueste Exchange Online PowerShell V3-Modul verwenden.`n"
+            $result += "Weitere Informationen: https://learn.microsoft.com/en-us/powershell/exchange/exchange-online-powershell-v2?view=exchange-ps`n"
+            $result += "Verwenden Sie Connect-ExchangeOnline ohne den -UseRPSSession Parameter.`n"
+        }
+        
         return $result
     }
     catch {
@@ -2962,8 +3250,10 @@ function Run-ExchangeDiagnostic {
             $result += "Dies könnte folgende Gründe haben:`n"
             $result += "1. Das verwendete Cmdlet ist in modernen Exchange Online PowerShell-Verbindungen nicht mehr verfügbar.`n"
             $result += "2. Sie benötigen möglicherweise zusätzliche Berechtigungen.`n"
-            $result += "3. Die Exchange Online Verbindung wurde getrennt oder ist eingeschränkt.`n`n"
-            $result += "Empfehlung: Versuchen Sie die Verbindung zu trennen und neu herzustellen oder verwenden Sie die Exchange Admin Center-Website für diese Aufgabe."
+            $result += "3. Die Exchange Online Verbindung wurde getrennt oder ist eingeschränkt.`n"
+            $result += "4. RPS (Remote PowerShell) wird ab Juli 2023 eingestellt - verwenden Sie REST-API-Cmdlets.`n`n"
+            $result += "Empfehlung: Aktualisieren Sie auf Exchange Online PowerShell V3 und verwenden Sie Connect-ExchangeOnline ohne -UseRPSSession.`n"
+            $result += "Weitere Informationen: https://m365scripts.com/news/rps-remote-powershell-retirement-in-exchange-online/"
         }
         elseif ($errorMsg -like "*Benutzer nicht gefunden*" -or $errorMsg -like "*user not found*") {
             $result += "Der angegebene Benutzer konnte nicht gefunden werden. Mögliche Ursachen:`n"
@@ -2984,12 +3274,17 @@ function Run-ExchangeDiagnostic {
             $result += "2. Die Abfrage könnte zu umfangreich sein, versuchen Sie einen spezifischeren Filter.`n"
             $result += "3. Exchange Online kann bei hoher Last gedrosselt werden, versuchen Sie es später erneut.`n"
         }
+        elseif ($errorMsg -like "*throttling*" -or $errorMsg -like "*Drosselung*") {
+            $result += "Die Anfrage wurde aufgrund von Throttling-Limits abgelehnt. Lösungsansätze:`n"
+            $result += "1. Warten Sie einige Minuten und versuchen Sie es erneut.`n"
+            $result += "2. Reduzieren Sie die Anzahl gleichzeitiger PowerShell-Verbindungen.`n"
+            $result += "3. Verwenden Sie REST-API-basierte Cmdlets anstelle von RPS.`n"
+            $result += "4. Implementieren Sie eine Backoff-Strategie in Ihren Skripten.`n"
+        }
         
         return $result
     }
 }
-
-# Fortsetzung des Codes - Vervollständigung der fehlenden Funktionen
 
 function Get-MailboxAuditConfigForUser {
     [CmdletBinding()]
@@ -5294,47 +5589,46 @@ function Get-MailFlowRulesAction {
         # Daten für die Anzeige aufbereiten
         $rulesForGrid = @()
         foreach ($rule in $transportRules) {
+            $conditions = [System.Collections.Generic.List[string]]::new()
+            $actions = [System.Collections.Generic.List[string]]::new()
+            
+            # Bedingungen sammeln
+            if ($rule.FromAddressContainsWords) {
+                $conditions.Add("Absender enthält: $($rule.FromAddressContainsWords -join ', ')")
+            }
+            if ($rule.SubjectContainsWords) {
+                $conditions.Add("Betreff enthält: $($rule.SubjectContainsWords -join ', ')")
+            }
+            if ($rule.RecipientDomainIs) {
+                $conditions.Add("Empfänger-Domain: $($rule.RecipientDomainIs -join ', ')")
+            }
+            if ($rule.SenderDomainIs) {
+                $conditions.Add("Absender-Domain: $($rule.SenderDomainIs -join ', ')")
+            }
+            
+            # Aktionen sammeln
+            if ($rule.RedirectMessageTo) {
+                $actions.Add("Weiterleiten an: $($rule.RedirectMessageTo -join ', ')")
+            }
+            if ($rule.BlindCopyTo) {
+                $actions.Add("BCC an: $($rule.BlindCopyTo -join ', ')")
+            }
+            if ($rule.RejectMessageReasonText) {
+                $actions.Add("Ablehnen: $($rule.RejectMessageReasonText)")
+            }
+            if ($rule.DeleteMessage) {
+                $actions.Add("Nachricht löschen")
+            }
+            
             $ruleObj = [PSCustomObject]@{
                 Name = $rule.Name
                 State = $rule.State
                 Mode = $rule.Mode
                 Priority = $rule.Priority
                 Description = $rule.Description
-                Conditions = @()
-                Actions = @()
+                Conditions = $conditions -join '; '
+                Actions = $actions -join '; '
             }
-            
-            # Bedingungen sammeln
-            if ($rule.FromAddressContainsWords) {
-                $ruleObj.Conditions += "Absender enthält: $($rule.FromAddressContainsWords -join ', ')"
-            }
-            if ($rule.SubjectContainsWords) {
-                $ruleObj.Conditions += "Betreff enthält: $($rule.SubjectContainsWords -join ', ')"
-            }
-            if ($rule.RecipientDomainIs) {
-                $ruleObj.Conditions += "Empfänger-Domain: $($rule.RecipientDomainIs -join ', ')"
-            }
-            if ($rule.SenderDomainIs) {
-                $ruleObj.Conditions += "Absender-Domain: $($rule.SenderDomainIs -join ', ')"
-            }
-            
-            # Aktionen sammeln
-            if ($rule.RedirectMessageTo) {
-                $ruleObj.Actions += "Weiterleiten an: $($rule.RedirectMessageTo -join ', ')"
-            }
-            if ($rule.BlindCopyTo) {
-                $ruleObj.Actions += "BCC an: $($rule.BlindCopyTo -join ', ')"
-            }
-            if ($rule.RejectMessageReasonText) {
-                $ruleObj.Actions += "Ablehnen: $($rule.RejectMessageReasonText)"
-            }
-            if ($rule.DeleteMessage) {
-                $ruleObj.Actions += "Nachricht löschen"
-            }
-            
-            # Arrays zu Strings konvertieren für Anzeige
-            $ruleObj | Add-Member -NotePropertyName "ConditionsDisplay" -NotePropertyValue ($ruleObj.Conditions -join '; ')
-            $ruleObj | Add-Member -NotePropertyName "ActionsDisplay" -NotePropertyValue ($ruleObj.Actions -join '; ')
             
             $rulesForGrid += $ruleObj
         }
@@ -5387,8 +5681,13 @@ function Set-MailFlowRuleStateAction {
             throw "Nicht mit Exchange Online verbunden."
         }
         
-        # Transport Rule Status ändern
-        Set-TransportRule -Identity $RuleName -State $state -ErrorAction Stop
+        # Transport Rule Status ändern - verwende Enable/Disable anstatt Set mit -State
+        if ($Enabled) {
+            Enable-TransportRule -Identity $RuleName -ErrorAction Stop
+        }
+        else {
+            Disable-TransportRule -Identity $RuleName -ErrorAction Stop
+        }
         
         $statusMsg = if ($Enabled) { "aktiviert" } else { "deaktiviert" }
         Write-Log "Transport Rule '$RuleName' erfolgreich $statusMsg" -Type "Success"
@@ -5684,10 +5983,10 @@ function Initialize-MailFlowRuleModeComboBox {
     try {
         $ComboBox.Items.Clear()
         
-        # Verfügbare Modi definieren
+        # Verfügbare Modi definieren - nur gültige Werte für Exchange Online
         $modes = @(
-            @{ Display = "Test (ohne Aktion ausführen)"; Value = "Test" },
-            @{ Display = "Test mit Policy Tips"; Value = "TestWithPolicyTips" },
+            @{ Display = "Audit (Nur protokollieren)"; Value = "Audit" },
+            @{ Display = "Audit und Benachrichtigen"; Value = "AuditAndNotify" },
             @{ Display = "Enforce (Regel aktiv)"; Value = "Enforce" }
         )
         
@@ -5698,15 +5997,608 @@ function Initialize-MailFlowRuleModeComboBox {
             $ComboBox.Items.Add($item)
         }
         
-        # Standardmäßig "Test with Policy Tips" auswählen
-        if ($ComboBox.Items.Count -gt 1) {
-            $ComboBox.SelectedIndex = 1
+        # Standardmäßig "Audit" auswählen
+        if ($ComboBox.Items.Count -gt 0) {
+            $ComboBox.SelectedIndex = 0
         }
         
         Write-Log "Mail Flow Modi ComboBox initialisiert" -Type "Debug"
     }
     catch {
         Write-Log "Fehler beim Initialisieren der Modi ComboBox: $($_.Exception.Message)" -Type "Error"
+    }
+}
+
+# -------------------------------------------------
+# Abschnitt: Cross-Premises-Funktionen
+# -------------------------------------------------
+
+# Lädt und zeigt Mail-Connectors an
+function Get-MailConnectors {
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Log "Lade Mail-Connectors..." -Type "Info"
+        
+        # Prüfe Exchange Online Verbindung
+        if (-not $script:isConnected) {
+            Write-Log "Keine Exchange Online Verbindung verfügbar" -Type "Error"
+            [System.Windows.MessageBox]::Show("Bitte stellen Sie zuerst eine Verbindung zu Exchange Online her.", "Verbindung erforderlich", "OK", "Warning")
+            return
+        }
+
+        # DataGrid für Connectors finden
+        $dgConnectors = $script:Form.FindName("dgConnectors")
+        
+        if ($null -eq $dgConnectors) {
+            Write-Log "DataGrid für Connectors nicht gefunden" -Type "Warning"
+            return
+        }
+
+        # Connectors abrufen
+        $connectors = Get-InboundConnector -ErrorAction SilentlyContinue
+        $outboundConnectors = Get-OutboundConnector -ErrorAction SilentlyContinue
+        
+        # Alle Connectors zusammenfassen
+        $allConnectors = @()
+        
+        if ($connectors) {
+            foreach ($connector in $connectors) {
+                $allConnectors += [PSCustomObject]@{
+                    Name = $connector.Name
+                    Type = "Inbound"
+                    Enabled = $connector.Enabled
+                    SenderDomains = ($connector.SenderDomains -join ", ")
+                    TlsSenderCertificateName = $connector.TlsSenderCertificateName
+                }
+            }
+        }
+        
+        if ($outboundConnectors) {
+            foreach ($connector in $outboundConnectors) {
+                $allConnectors += [PSCustomObject]@{
+                    Name = $connector.Name
+                    Type = "Outbound"
+                    Enabled = $connector.Enabled
+                    RecipientDomains = ($connector.RecipientDomains -join ", ")
+                    SmartHosts = ($connector.SmartHosts -join ", ")
+                }
+            }
+        }
+
+        $dgConnectors.ItemsSource = $allConnectors
+        Write-Log "Mail-Connectors erfolgreich geladen ($($allConnectors.Count) Connectors)" -Type "Success"
+        Update-StatusBar -Message "Mail-Connectors geladen"
+    }
+    catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Laden der Mail-Connectors."
+        Write-Log $errorMsg -Type "Error"
+        [System.Windows.MessageBox]::Show($errorMsg, "Fehler", "OK", "Error")
+        Update-StatusBar -Message "Fehler beim Laden der Mail-Connectors"
+    }
+}
+
+# Ändert den Status eines Connectors
+function Set-ConnectorStatus {
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Log "Ändere Connector-Status..." -Type "Info"
+        
+        # Prüfe Exchange Online Verbindung
+        if (-not $script:isConnected) {
+            Write-Log "Keine Exchange Online Verbindung verfügbar" -Type "Error"
+            [System.Windows.MessageBox]::Show("Bitte stellen Sie zuerst eine Verbindung zu Exchange Online her.", "Verbindung erforderlich", "OK", "Warning")
+            return
+        }
+
+        # DataGrid für Connectors finden
+        $dgConnectors = $script:Form.FindName("dgConnectors")
+        
+        if ($null -eq $dgConnectors -or $null -eq $dgConnectors.SelectedItem) {
+            [System.Windows.MessageBox]::Show("Bitte wählen Sie einen Connector aus der Liste aus.", "Kein Connector ausgewählt", "OK", "Warning")
+            return
+        }
+
+        $selectedConnector = $dgConnectors.SelectedItem
+        $newStatus = -not $selectedConnector.Enabled
+        
+        # Bestätigung anfordern
+        $statusText = if ($newStatus) { "aktivieren" } else { "deaktivieren" }
+        $result = [System.Windows.MessageBox]::Show("Möchten Sie den Connector '$($selectedConnector.Name)' wirklich $statusText?", "Status ändern", "YesNo", "Question")
+        
+        if ($result -eq "Yes") {
+            if ($selectedConnector.Type -eq "Inbound") {
+                Set-InboundConnector -Identity $selectedConnector.Name -Enabled $newStatus
+            } else {
+                Set-OutboundConnector -Identity $selectedConnector.Name -Enabled $newStatus
+            }
+            
+            Write-Log "Connector-Status erfolgreich geändert: $($selectedConnector.Name) -> $newStatus" -Type "Success"
+            [System.Windows.MessageBox]::Show("Connector-Status wurde erfolgreich geändert.", "Status geändert", "OK", "Information")
+            
+            # Liste aktualisieren
+            Get-MailConnectors
+        }
+
+        Update-StatusBar -Message "Connector-Status-Änderung abgeschlossen"
+    }
+    catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Ändern des Connector-Status."
+        Write-Log $errorMsg -Type "Error"
+        [System.Windows.MessageBox]::Show($errorMsg, "Fehler", "OK", "Error")
+        Update-StatusBar -Message "Fehler beim Ändern des Connector-Status"
+    }
+}
+
+# Lädt und zeigt akzeptierte Domänen an
+function Get-AcceptedDomainsList {
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Log "Lade akzeptierte Domänen..." -Type "Info"
+        
+        # Prüfe Exchange Online Verbindung
+        if (-not $script:isConnected) {
+            Write-Log "Keine Exchange Online Verbindung verfügbar" -Type "Error"
+            [System.Windows.MessageBox]::Show("Bitte stellen Sie zuerst eine Verbindung zu Exchange Online her.", "Verbindung erforderlich", "OK", "Warning")
+            return
+        }
+
+        # DataGrid für Accepted Domains finden
+        $dgAcceptedDomains = $script:Form.FindName("dgAcceptedDomains")
+        
+        if ($null -eq $dgAcceptedDomains) {
+            Write-Log "DataGrid für akzeptierte Domänen nicht gefunden" -Type "Warning"
+            return
+        }
+
+        # Akzeptierte Domänen abrufen
+        $acceptedDomains = Get-AcceptedDomain -ErrorAction Stop
+        
+        # Daten für die Anzeige aufbereiten
+        $domainsForGrid = foreach ($domain in $acceptedDomains) {
+            [PSCustomObject]@{
+                Name = $domain.Name
+                DomainName = $domain.DomainName
+                DomainType = $domain.DomainType
+                Default = $domain.Default
+                InitialDomain = $domain.InitialDomain
+                AuthenticationType = $domain.AuthenticationType
+            }
+        }
+
+        $dgAcceptedDomains.ItemsSource = $domainsForGrid
+        Write-Log "Akzeptierte Domänen erfolgreich geladen ($($domainsForGrid.Count) Domänen)" -Type "Success"
+        Update-StatusBar -Message "Akzeptierte Domänen geladen"
+    }
+    catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Laden der akzeptierten Domänen."
+        Write-Log $errorMsg -Type "Error"
+        [System.Windows.MessageBox]::Show($errorMsg, "Fehler", "OK", "Error")
+        Update-StatusBar -Message "Fehler beim Laden der akzeptierten Domänen"
+    }
+}
+
+# Lädt und zeigt Remote-Domänen an
+function Get-RemoteDomainsList {
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Log "Lade Remote-Domänen..." -Type "Info"
+        
+        # Prüfe Exchange Online Verbindung
+        if (-not $script:isConnected) {
+            Write-Log "Keine Exchange Online Verbindung verfügbar" -Type "Error"
+            [System.Windows.MessageBox]::Show("Bitte stellen Sie zuerst eine Verbindung zu Exchange Online her.", "Verbindung erforderlich", "OK", "Warning")
+            return
+        }
+
+        # DataGrid für Remote Domains finden
+        $dgRemoteDomains = $script:Form.FindName("dgRemoteDomains")
+        
+        if ($null -eq $dgRemoteDomains) {
+            Write-Log "DataGrid für Remote-Domänen nicht gefunden" -Type "Warning"
+            return
+        }
+
+        # Remote-Domänen abrufen
+        $remoteDomains = Get-RemoteDomain -ErrorAction Stop
+        
+        # Daten für die Anzeige aufbereiten - als Array statt einzelne PSCustomObjects
+        $domainsForGrid = @()
+        foreach ($domain in $remoteDomains) {
+            $domainsForGrid += [PSCustomObject]@{
+                Name = $domain.Name
+                DomainName = $domain.DomainName
+                AllowedOOFType = $domain.AllowedOOFType
+                AutoReplyEnabled = $domain.AutoReplyEnabled
+                AutoForwardEnabled = $domain.AutoForwardEnabled
+                DeliveryReportEnabled = $domain.DeliveryReportEnabled
+                NDREnabled = $domain.NDREnabled
+                CharacterSet = $domain.CharacterSet
+            }
+        }
+
+        # ItemsSource als Array zuweisen um IEnumerable-Konvertierungsfehler zu vermeiden
+        $dgRemoteDomains.ItemsSource = $domainsForGrid
+        Write-Log "Remote-Domänen erfolgreich geladen ($($domainsForGrid.Count) Domänen)" -Type "Success"
+        Update-StatusBar -Message "Remote-Domänen geladen"
+    }
+    catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Laden der Remote-Domänen."
+        Write-Log $errorMsg -Type "Error"
+        [System.Windows.MessageBox]::Show($errorMsg, "Fehler", "OK", "Error")
+        Update-StatusBar -Message "Fehler beim Laden der Remote-Domänen"
+    }
+}
+
+# Funktion zum Hinzufügen eines neuen Connectors
+function Add-NewConnector {
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Log "Öffne Dialog zum Hinzufügen eines neuen Connectors" -Type "Info"
+        
+        # Prüfe Exchange Online Verbindung
+        if (-not $script:isConnected) {
+            Write-Log "Keine Exchange Online Verbindung verfügbar" -Type "Error"
+            [System.Windows.MessageBox]::Show("Bitte stellen Sie zuerst eine Verbindung zu Exchange Online her.", "Verbindung erforderlich", "OK", "Warning")
+            return
+        }
+
+        # XAML für das Connector-Dialog-Fenster
+        $xamlConnectorDialog = @"
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Neuen Connector hinzufügen" Height="600" Width="800"
+        WindowStartupLocation="CenterOwner" ResizeMode="CanResize">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header -->
+        <TextBlock Grid.Row="0" Text="Neuen Mail-Connector erstellen" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
+        
+        <!-- Main Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- Connector-Typ -->
+                <GroupBox Header="Connector-Typ" Margin="0,0,0,10">
+                    <StackPanel Margin="10">
+                        <RadioButton x:Name="rbInbound" Content="Inbound Connector (Eingehend)" IsChecked="True" Margin="0,5"/>
+                        <RadioButton x:Name="rbOutbound" Content="Outbound Connector (Ausgehend)" Margin="0,5"/>
+                    </StackPanel>
+                </GroupBox>
+                
+                <!-- Grundeinstellungen -->
+                <GroupBox Header="Grundeinstellungen" Margin="0,0,0,10">
+                    <Grid Margin="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <Label Grid.Row="0" Grid.Column="0" Content="Name:" VerticalAlignment="Center"/>
+                        <TextBox x:Name="txtConnectorName" Grid.Row="0" Grid.Column="1" Margin="5"/>
+                        
+                        <Label Grid.Row="1" Grid.Column="0" Content="Beschreibung:" VerticalAlignment="Top"/>
+                        <TextBox x:Name="txtDescription" Grid.Row="1" Grid.Column="1" Margin="5" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
+                        
+                        <Label Grid.Row="2" Grid.Column="0" Content="Aktiviert:" VerticalAlignment="Center"/>
+                        <CheckBox x:Name="chkEnabled" Grid.Row="2" Grid.Column="1" IsChecked="True" Margin="5" VerticalAlignment="Center"/>
+                        
+                        <Label Grid.Row="3" Grid.Column="0" Content="Connector-Typ:" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="cmbConnectorType" Grid.Row="3" Grid.Column="1" Margin="5">
+                            <ComboBoxItem Content="Partner" Tag="Partner"/>
+                            <ComboBoxItem Content="OnPremises" Tag="OnPremises"/>
+                        </ComboBox>
+                    </Grid>
+                </GroupBox>
+                
+                <!-- Inbound-spezifische Einstellungen -->
+                <GroupBox x:Name="grpInbound" Header="Inbound Connector Einstellungen" Margin="0,0,0,10">
+                    <Grid Margin="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <Label Grid.Row="0" Grid.Column="0" Content="Sender-Domänen:" VerticalAlignment="Top"/>
+                        <TextBox x:Name="txtSenderDomains" Grid.Row="0" Grid.Column="1" Margin="5" Height="60" TextWrapping="Wrap" AcceptsReturn="True" 
+                                 ToolTip="Eine Domäne pro Zeile eingeben (z.B. contoso.com)"/>
+                        
+                        <Label Grid.Row="1" Grid.Column="0" Content="Sender-IP-Adressen:" VerticalAlignment="Top"/>
+                        <TextBox x:Name="txtSenderIPAddresses" Grid.Row="1" Grid.Column="1" Margin="5" Height="60" TextWrapping="Wrap" AcceptsReturn="True"
+                                 ToolTip="Eine IP-Adresse oder IP-Bereich pro Zeile (z.B. 192.168.1.1 oder 192.168.1.0/24)"/>
+                        
+                        <Label Grid.Row="2" Grid.Column="0" Content="TLS erforderlich:" VerticalAlignment="Center"/>
+                        <CheckBox x:Name="chkRequireTls" Grid.Row="2" Grid.Column="1" Margin="5" VerticalAlignment="Center"/>
+                        
+                        <Label Grid.Row="3" Grid.Column="0" Content="TLS-Zertifikat:" VerticalAlignment="Center"/>
+                        <TextBox x:Name="txtTlsCertificate" Grid.Row="3" Grid.Column="1" Margin="5" 
+                                 ToolTip="TLS-Zertifikat-Name (optional)"/>
+                        
+                        <Label Grid.Row="4" Grid.Column="0" Content="Behandlung als:" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="cmbTreatMessagesAs" Grid.Row="4" Grid.Column="1" Margin="5">
+                            <ComboBoxItem Content="Internal" Tag="Internal"/>
+                            <ComboBoxItem Content="External" Tag="External"/>
+                        </ComboBox>
+                    </Grid>
+                </GroupBox>
+                
+                <!-- Outbound-spezifische Einstellungen -->
+                <GroupBox x:Name="grpOutbound" Header="Outbound Connector Einstellungen" Margin="0,0,0,10" Visibility="Collapsed">
+                    <Grid Margin="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <Label Grid.Row="0" Grid.Column="0" Content="Empfänger-Domänen:" VerticalAlignment="Top"/>
+                        <TextBox x:Name="txtRecipientDomains" Grid.Row="0" Grid.Column="1" Margin="5" Height="60" TextWrapping="Wrap" AcceptsReturn="True"
+                                 ToolTip="Eine Domäne pro Zeile eingeben (z.B. contoso.com)"/>
+                        
+                        <Label Grid.Row="1" Grid.Column="0" Content="Smart Hosts:" VerticalAlignment="Top"/>
+                        <TextBox x:Name="txtSmartHosts" Grid.Row="1" Grid.Column="1" Margin="5" Height="60" TextWrapping="Wrap" AcceptsReturn="True"
+                                 ToolTip="FQDN oder IP-Adresse der Ziel-Server (eine pro Zeile)"/>
+                        
+                        <Label Grid.Row="2" Grid.Column="0" Content="TLS-Einstellungen:" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="cmbTlsSettings" Grid.Row="2" Grid.Column="1" Margin="5">
+                            <ComboBoxItem Content="EncryptionOnly" Tag="EncryptionOnly"/>
+                            <ComboBoxItem Content="CertificateValidation" Tag="CertificateValidation"/>
+                            <ComboBoxItem Content="DomainValidation" Tag="DomainValidation"/>
+                        </ComboBox>
+                        
+                        <Label Grid.Row="3" Grid.Column="0" Content="TLS-Domäne:" VerticalAlignment="Center"/>
+                        <TextBox x:Name="txtTlsDomain" Grid.Row="3" Grid.Column="1" Margin="5"
+                                 ToolTip="Domäne für TLS-Validierung (optional)"/>
+                        
+                        <Label Grid.Row="4" Grid.Column="0" Content="Authentifizierung:" VerticalAlignment="Center"/>
+                        <CheckBox x:Name="chkUseAuthentication" Grid.Row="4" Grid.Column="1" Margin="5" VerticalAlignment="Center"/>
+                        
+                        <Label Grid.Row="5" Grid.Column="0" Content="Test-Modus:" VerticalAlignment="Center"/>
+                        <CheckBox x:Name="chkTestMode" Grid.Row="5" Grid.Column="1" Margin="5" VerticalAlignment="Center"
+                                  ToolTip="Connector im Test-Modus erstellen"/>
+                    </Grid>
+                </GroupBox>
+            </StackPanel>
+        </ScrollViewer>
+        
+        <!-- Buttons -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+            <Button x:Name="btnCreate" Content="Connector erstellen" Width="120" Height="30" Margin="0,0,10,0"/>
+            <Button x:Name="btnCancel" Content="Abbrechen" Width="80" Height="30"/>
+        </StackPanel>
+    </Grid>
+</Window>
+"@
+
+        # XAML laden
+        $reader = [System.Xml.XmlReader]::Create([System.IO.StringReader]$xamlConnectorDialog)
+        $connectorWindow = [Windows.Markup.XamlReader]::Load($reader)
+        
+        # UI-Elemente referenzieren
+        $rbInbound = $connectorWindow.FindName("rbInbound")
+        $rbOutbound = $connectorWindow.FindName("rbOutbound")
+        $grpInbound = $connectorWindow.FindName("grpInbound")
+        $grpOutbound = $connectorWindow.FindName("grpOutbound")
+        $txtConnectorName = $connectorWindow.FindName("txtConnectorName")
+        $txtDescription = $connectorWindow.FindName("txtDescription")
+        $chkEnabled = $connectorWindow.FindName("chkEnabled")
+        $cmbConnectorType = $connectorWindow.FindName("cmbConnectorType")
+        $btnCreate = $connectorWindow.FindName("btnCreate")
+        $btnCancel = $connectorWindow.FindName("btnCancel")
+        
+        # Inbound-Elemente
+        $txtSenderDomains = $connectorWindow.FindName("txtSenderDomains")
+        $txtSenderIPAddresses = $connectorWindow.FindName("txtSenderIPAddresses")
+        $chkRequireTls = $connectorWindow.FindName("chkRequireTls")
+        $txtTlsCertificate = $connectorWindow.FindName("txtTlsCertificate")
+        $cmbTreatMessagesAs = $connectorWindow.FindName("cmbTreatMessagesAs")
+        
+        # Outbound-Elemente
+        $txtRecipientDomains = $connectorWindow.FindName("txtRecipientDomains")
+        $txtSmartHosts = $connectorWindow.FindName("txtSmartHosts")
+        $cmbTlsSettings = $connectorWindow.FindName("cmbTlsSettings")
+        $txtTlsDomain = $connectorWindow.FindName("txtTlsDomain")
+        $chkUseAuthentication = $connectorWindow.FindName("chkUseAuthentication")
+        $chkTestMode = $connectorWindow.FindName("chkTestMode")
+        
+        # Standardwerte setzen
+        $cmbConnectorType.SelectedIndex = 0
+        $cmbTreatMessagesAs.SelectedIndex = 1  # External als Standard
+        $cmbTlsSettings.SelectedIndex = 0      # EncryptionOnly als Standard
+        
+        # Event-Handler für Connector-Typ-Wechsel
+        $rbInbound.Add_Checked({
+            $grpInbound.Visibility = "Visible"
+            $grpOutbound.Visibility = "Collapsed"
+        })
+        
+        $rbOutbound.Add_Checked({
+            $grpInbound.Visibility = "Collapsed"
+            $grpOutbound.Visibility = "Visible"
+        })
+        
+        # Event-Handler für Abbrechen-Button
+        $btnCancel.Add_Click({
+            $connectorWindow.DialogResult = $false
+            $connectorWindow.Close()
+        })
+        
+        # Event-Handler für Erstellen-Button
+        $btnCreate.Add_Click({
+            try {
+                # Validierung
+                if ([string]::IsNullOrWhiteSpace($txtConnectorName.Text)) {
+                    [System.Windows.MessageBox]::Show("Bitte geben Sie einen Namen für den Connector ein.", "Validierungsfehler", "OK", "Warning")
+                    return
+                }
+                
+                $isInbound = $rbInbound.IsChecked
+                $connectorName = $txtConnectorName.Text.Trim()
+                $description = $txtDescription.Text.Trim()
+                $enabled = $chkEnabled.IsChecked
+                $connectorType = $cmbConnectorType.SelectedItem.Tag
+                
+                if ($isInbound) {
+                    # Inbound Connector erstellen
+                    $senderDomains = @()
+                    if (-not [string]::IsNullOrWhiteSpace($txtSenderDomains.Text)) {
+                        $senderDomains = $txtSenderDomains.Text.Split("`n") | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
+                    }
+                    
+                    $senderIPAddresses = @()
+                    if (-not [string]::IsNullOrWhiteSpace($txtSenderIPAddresses.Text)) {
+                        $senderIPAddresses = $txtSenderIPAddresses.Text.Split("`n") | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
+                    }
+                    
+                    $requireTls = $chkRequireTls.IsChecked
+                    $tlsCertificate = $txtTlsCertificate.Text.Trim()
+                    $treatMessagesAs = $cmbTreatMessagesAs.SelectedItem.Tag
+                    
+                    # Parameter für New-InboundConnector vorbereiten
+                    $inboundParams = @{
+                        Name = $connectorName
+                        Enabled = $enabled
+                        ConnectorType = $connectorType
+                    }
+                    
+                    if (-not [string]::IsNullOrWhiteSpace($description)) {
+                        $inboundParams.Comment = $description
+                    }
+                    
+                    if ($senderDomains.Count -gt 0) {
+                        $inboundParams.SenderDomains = $senderDomains
+                    }
+                    
+                    if ($senderIPAddresses.Count -gt 0) {
+                        $inboundParams.SenderIPAddresses = $senderIPAddresses
+                    }
+                    
+                    if ($requireTls) {
+                        $inboundParams.RequireTls = $true
+                        if (-not [string]::IsNullOrWhiteSpace($tlsCertificate)) {
+                            $inboundParams.TlsSenderCertificateName = $tlsCertificate
+                        }
+                    }
+                    
+                    if ($treatMessagesAs -eq "Internal") {
+                        $inboundParams.TreatMessagesAsInternal = $true
+                    }
+                    
+                    Write-Log "Erstelle Inbound Connector: $connectorName" -Type "Info"
+                    $result = New-InboundConnector @inboundParams -ErrorAction Stop
+                    
+                } else {
+                    # Outbound Connector erstellen
+                    $recipientDomains = @()
+                    if (-not [string]::IsNullOrWhiteSpace($txtRecipientDomains.Text)) {
+                        $recipientDomains = $txtRecipientDomains.Text.Split("`n") | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
+                    }
+                    
+                    $smartHosts = @()
+                    if (-not [string]::IsNullOrWhiteSpace($txtSmartHosts.Text)) {
+                        $smartHosts = $txtSmartHosts.Text.Split("`n") | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
+                    }
+                    
+                    if ($recipientDomains.Count -eq 0) {
+                        [System.Windows.MessageBox]::Show("Bitte geben Sie mindestens eine Empfänger-Domäne ein.", "Validierungsfehler", "OK", "Warning")
+                        return
+                    }
+                    
+                    if ($smartHosts.Count -eq 0) {
+                        [System.Windows.MessageBox]::Show("Bitte geben Sie mindestens einen Smart Host ein.", "Validierungsfehler", "OK", "Warning")
+                        return
+                    }
+                    
+                    $tlsSettings = $cmbTlsSettings.SelectedItem.Tag
+                    $tlsDomain = $txtTlsDomain.Text.Trim()
+                    $useAuthentication = $chkUseAuthentication.IsChecked
+                    $testMode = $chkTestMode.IsChecked
+                    
+                    # Parameter für New-OutboundConnector vorbereiten
+                    $outboundParams = @{
+                        Name = $connectorName
+                        Enabled = $enabled
+                        ConnectorType = $connectorType
+                        RecipientDomains = $recipientDomains
+                        SmartHosts = $smartHosts
+                        TlsSettings = $tlsSettings
+                    }
+                    
+                    if (-not [string]::IsNullOrWhiteSpace($description)) {
+                        $outboundParams.Comment = $description
+                    }
+                    
+                    if (-not [string]::IsNullOrWhiteSpace($tlsDomain)) {
+                        $outboundParams.TlsDomain = $tlsDomain
+                    }
+                    
+                    if ($testMode) {
+                        $outboundParams.TestMode = $true
+                    }
+                    
+                    Write-Log "Erstelle Outbound Connector: $connectorName" -Type "Info"
+                    $result = New-OutboundConnector @outboundParams -ErrorAction Stop
+                }
+                
+                Write-Log "Connector '$connectorName' erfolgreich erstellt" -Type "Success"
+                [System.Windows.MessageBox]::Show("Connector '$connectorName' wurde erfolgreich erstellt.", "Erfolg", "OK", "Information")
+                
+                $connectorWindow.DialogResult = $true
+                $connectorWindow.Close()
+                
+                # Connector-Liste aktualisieren
+                Get-MailConnectors
+                
+            } catch {
+                $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Erstellen des Connectors."
+                Write-Log $errorMsg -Type "Error"
+                [System.Windows.MessageBox]::Show($errorMsg, "Fehler", "OK", "Error")
+            }
+        })
+        
+        # Dialog anzeigen
+        $connectorWindow.Owner = $script:Form
+        $result = $connectorWindow.ShowDialog()
+        
+        Write-Log "Connector-Dialog geschlossen mit Ergebnis: $result" -Type "Debug"
+        
+    } catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Öffnen des Connector-Dialogs."
+        Write-Log $errorMsg -Type "Error"
+        [System.Windows.MessageBox]::Show($errorMsg, "Fehler", "OK", "Error")
     }
 }
 
@@ -5737,80 +6629,74 @@ function Get-InboxRulesAction {
         $inboxRules = Get-InboxRule -Mailbox $UserIdentity -ErrorAction Stop
         
         # Daten für die Anzeige aufbereiten
-        $rulesForGrid = @()
-        foreach ($rule in $inboxRules) {
-            $ruleObj = [PSCustomObject]@{
+        $rulesForGrid = foreach ($rule in $inboxRules) {
+            # Bedingungen sammeln
+            $conditions = @()
+            if ($rule.From) {
+                $conditions += "Von: $($rule.From -join ', ')"
+            }
+            if ($rule.FromAddressContainsWords) {
+                $conditions += "Absender enthält: $($rule.FromAddressContainsWords -join ', ')"
+            }
+            if ($rule.SubjectContainsWords) {
+                $conditions += "Betreff enthält: $($rule.SubjectContainsWords -join ', ')"
+            }
+            if ($rule.BodyContainsWords) {
+                $conditions += "Text enthält: $($rule.BodyContainsWords -join ', ')"
+            }
+            if ($rule.ReceivedAfterDate) {
+                $conditions += "Empfangen nach: $($rule.ReceivedAfterDate)"
+            }
+            if ($rule.ReceivedBeforeDate) {
+                $conditions += "Empfangen vor: $($rule.ReceivedBeforeDate)"
+            }
+            if ($rule.WithImportance) {
+                $conditions += "Wichtigkeit: $($rule.WithImportance)"
+            }
+            if ($rule.HasAttachment) {
+                $conditions += "Hat Anhang: $($rule.HasAttachment)"
+            }
+            
+            # Aktionen sammeln
+            $actions = @()
+            if ($rule.MoveToFolder) {
+                $actions += "Verschieben in Ordner: $($rule.MoveToFolder)"
+            }
+            if ($rule.CopyToFolder) {
+                $actions += "Kopieren in Ordner: $($rule.CopyToFolder)"
+            }
+            if ($rule.ForwardTo) {
+                $actions += "Weiterleiten an: $($rule.ForwardTo -join ', ')"
+            }
+            if ($rule.ForwardAsAttachmentTo) {
+                $actions += "Als Anhang weiterleiten an: $($rule.ForwardAsAttachmentTo -join ', ')"
+            }
+            if ($rule.RedirectTo) {
+                $actions += "Umleiten an: $($rule.RedirectTo -join ', ')"
+            }
+            if ($rule.MarkAsRead) {
+                $actions += "Als gelesen markieren: $($rule.MarkAsRead)"
+            }
+            if ($rule.MarkImportance) {
+                $actions += "Wichtigkeit setzen: $($rule.MarkImportance)"
+            }
+            if ($rule.DeleteMessage) {
+                $actions += "Nachricht löschen: $($rule.DeleteMessage)"
+            }
+            if ($rule.StopProcessingRules) {
+                $actions += "Weitere Regeln stoppen: $($rule.StopProcessingRules)"
+            }
+            
+            # Objekt für DataGrid erstellen
+            [PSCustomObject]@{
                 Identity = $rule.Identity
                 Name = $rule.Name
                 Description = $rule.Description
                 Enabled = $rule.Enabled
                 Priority = $rule.Priority
-                Conditions = @()
-                Actions = @()
-                ConditionsDisplay = ""
-                ActionsDisplay = ""
+                Conditions = $conditions -join '; '
+                Actions = $actions -join '; '
             }
-            
-            # Bedingungen sammeln
-            if ($rule.From) {
-                $ruleObj.Conditions += "Von: $($rule.From -join ', ')"
-            }
-            if ($rule.FromAddressContainsWords) {
-                $ruleObj.Conditions += "Absender enthält: $($rule.FromAddressContainsWords -join ', ')"
-            }
-            if ($rule.SubjectContainsWords) {
-                $ruleObj.Conditions += "Betreff enthält: $($rule.SubjectContainsWords -join ', ')"
-            }
-            if ($rule.BodyContainsWords) {
-                $ruleObj.Conditions += "Text enthält: $($rule.BodyContainsWords -join ', ')"
-            }
-            if ($rule.ReceivedAfterDate) {
-                $ruleObj.Conditions += "Empfangen nach: $($rule.ReceivedAfterDate)"
-            }
-            if ($rule.ReceivedBeforeDate) {
-                $ruleObj.Conditions += "Empfangen vor: $($rule.ReceivedBeforeDate)"
-            }
-            if ($rule.WithImportance) {
-                $ruleObj.Conditions += "Wichtigkeit: $($rule.WithImportance)"
-            }
-            if ($rule.HasAttachment) {
-                $ruleObj.Conditions += "Hat Anhang: $($rule.HasAttachment)"
-            }
-            
-            # Aktionen sammeln
-            if ($rule.MoveToFolder) {
-                $ruleObj.Actions += "Verschieben in Ordner: $($rule.MoveToFolder)"
-            }
-            if ($rule.CopyToFolder) {
-                $ruleObj.Actions += "Kopieren in Ordner: $($rule.CopyToFolder)"
-            }
-            if ($rule.ForwardTo) {
-                $ruleObj.Actions += "Weiterleiten an: $($rule.ForwardTo -join ', ')"
-            }
-            if ($rule.ForwardAsAttachmentTo) {
-                $ruleObj.Actions += "Als Anhang weiterleiten an: $($rule.ForwardAsAttachmentTo -join ', ')"
-            }
-            if ($rule.RedirectTo) {
-                $ruleObj.Actions += "Umleiten an: $($rule.RedirectTo -join ', ')"
-            }
-            if ($rule.MarkAsRead) {
-                $ruleObj.Actions += "Als gelesen markieren: $($rule.MarkAsRead)"
-            }
-            if ($rule.MarkImportance) {
-                $ruleObj.Actions += "Wichtigkeit setzen: $($rule.MarkImportance)"
-            }
-            if ($rule.DeleteMessage) {
-                $ruleObj.Actions += "Nachricht löschen: $($rule.DeleteMessage)"
-            }
-            if ($rule.StopProcessingRules) {
-                $ruleObj.Actions += "Weitere Regeln stoppen: $($rule.StopProcessingRules)"
-            }
-            
-            # Arrays zu Strings konvertieren für Anzeige
-            $ruleObj.ConditionsDisplay = $ruleObj.Conditions -join '; '
-            $ruleObj.ActionsDisplay = $ruleObj.Actions -join '; '
-            
-            $rulesForGrid += $ruleObj
         }
         
         # Daten in das DataGrid laden
@@ -5925,12 +6811,12 @@ function Set-InboxRuleStateAction {
             throw "Nicht mit Exchange Online verbunden."
         }
         
-        # Inbox Rule Status ändern
+        # Inbox Rule Status ändern - nur Identity verwenden (enthält bereits die Mailbox-Information)
         if ($Enabled) {
-            Enable-InboxRule -Mailbox $UserIdentity -Identity $RuleIdentity -ErrorAction Stop
+            Enable-InboxRule -Identity "$UserIdentity\$RuleIdentity" -ErrorAction Stop
         }
         else {
-            Disable-InboxRule -Mailbox $UserIdentity -Identity $RuleIdentity -ErrorAction Stop
+            Disable-InboxRule -Identity "$UserIdentity\$RuleIdentity" -ErrorAction Stop
         }
         
         Write-Log "Inbox Rule '$RuleIdentity' erfolgreich $state für $UserIdentity" -Type "Success"
@@ -5964,8 +6850,8 @@ function Remove-InboxRuleAction {
             throw "Nicht mit Exchange Online verbunden."
         }
         
-        # Inbox Rule löschen
-        Remove-InboxRule -Mailbox $UserIdentity -Identity $RuleIdentity -Confirm:$false -ErrorAction Stop
+        # Inbox Rule löschen - nur Identity verwenden
+        Remove-InboxRule -Identity "$UserIdentity\$RuleIdentity" -Confirm:$false -ErrorAction Stop
         
         Write-Log "Inbox Rule '$RuleIdentity' erfolgreich gelöscht für $UserIdentity" -Type "Success"
         Log-Action "Inbox Rule '$RuleIdentity' wurde gelöscht für $UserIdentity"
@@ -6029,8 +6915,8 @@ function Move-InboxRuleAction {
         }
         
         if ($newPriority -ne $currentPriority) {
-            # Inbox Rule Priorität ändern
-            Set-InboxRule -Mailbox $UserIdentity -Identity $RuleIdentity -Priority $newPriority -ErrorAction Stop
+            # Inbox Rule Priorität ändern - nur Identity verwenden
+            Set-InboxRule -Identity "$UserIdentity\$RuleIdentity" -Priority $newPriority -ErrorAction Stop
             
             Write-Log "Inbox Rule '$RuleIdentity' erfolgreich $directionText verschoben für $UserIdentity" -Type "Success"
             Log-Action "Inbox Rule '$RuleIdentity' wurde $directionText verschoben für $UserIdentity (Priorität: $currentPriority -> $newPriority)"
@@ -6232,8 +7118,22 @@ function Start-MessageTraceAction {
     if ($null -ne $script:dpTraceEnd.SelectedDate) { $params.EndDate = $script:dpTraceEnd.SelectedDate }
     
     $selectedStatus = $script:cmbTraceStatus.SelectedItem.Content
-    if ($selectedStatus -ne "All") {
-        $params.Status = $selectedStatus
+    if ($selectedStatus -ne "Alle") {
+        # Übersetze deutsche Status-Werte in englische für Get-MessageTrace
+        $statusMapping = @{
+            "Zugestellt" = "Delivered"
+            "Fehlgeschlagen" = "Failed"
+            "Ausstehend" = "Pending"
+            "Unter Quarantäne" = "Quarantined"
+        }
+        
+        if ($statusMapping.ContainsKey($selectedStatus)) {
+            $params.Status = $statusMapping[$selectedStatus]
+        }
+        else {
+            # Falls ein unbekannter Status ausgewählt wurde, logge eine Warnung
+            Write-Log "Unbekannter Message Trace Status: $selectedStatus" -Type "Warning"
+        }
     }
 
     $traceResults = Get-MessageTrace @params
@@ -8134,6 +9034,7 @@ function Update-GroupSettingsAction {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [string]$GroupName,
         
         [Parameter(Mandatory = $false)]
@@ -8147,12 +9048,17 @@ function Update-GroupSettingsAction {
     )
     
     try {
-        Write-Log  "Aktualisiere Einstellungen für Gruppe $GroupName" -Type "Info"
+        # Validierung der Eingabeparameter
+        if ([string]::IsNullOrWhiteSpace($GroupName)) {
+            throw "Der Parameter 'Identity' darf nicht leer sein."
+        }
+
+        Write-Log "Aktualisiere Einstellungen für Gruppe $GroupName" -Type "Info"
         
         # Prüfen, welcher Gruppentyp vorliegt
         $isUnifiedGroup = $false
         try {
-            $group = Get-ExoUnifiedGroup-Identity $GroupName -ErrorAction SilentlyContinue
+            $group = Get-ExoUnifiedGroup -Identity $GroupName -ErrorAction Stop
             if ($null -ne $group) {
                 $isUnifiedGroup = $true
                 
@@ -8168,14 +9074,22 @@ function Update-GroupSettingsAction {
                 # AllowExternalSenders für Microsoft 365-Gruppen setzen
                 Set-UnifiedGroup -Identity $GroupName -AcceptMessagesOnlyFromSendersOrMembers $(-not $AllowExternalSenders) -ErrorAction Stop
                 
-                Write-Log  "Microsoft 365-Gruppe $GroupName erfolgreich aktualisiert" -Type "Success"
+                Write-Log "Microsoft 365-Gruppe $GroupName erfolgreich aktualisiert" -Type "Success"
             }
         }
         catch {
+            Write-Log "Gruppe $GroupName ist keine Microsoft 365-Gruppe, versuche als Verteilerliste" -Type "Info"
             $isUnifiedGroup = $false
         }
         
         if (-not $isUnifiedGroup) {
+            # Prüfen ob die Gruppe als Verteilerliste existiert
+            $distributionGroup = Get-DistributionGroup -Identity $GroupName -ErrorAction Stop
+            
+            if ($null -eq $distributionGroup) {
+                throw "Gruppe $GroupName wurde nicht gefunden"
+            }
+
             # Parameter für das Update vorbereiten
             $params = @{
                 Identity = $GroupName
@@ -8193,7 +9107,7 @@ function Update-GroupSettingsAction {
                 Set-DistributionGroup -Identity $GroupName -AcceptMessagesOnlyFrom $null -ErrorAction Stop
             }
             
-            Write-Log  "Gruppe $GroupName erfolgreich aktualisiert" -Type "Success"
+            Write-Log "Gruppe $GroupName erfolgreich aktualisiert" -Type "Success"
         }
         
         Log-Action "Einstellungen für Gruppe $GroupName aktualisiert"
@@ -8207,7 +9121,7 @@ function Update-GroupSettingsAction {
     }
     catch {
         $errorMsg = $_.Exception.Message
-        Write-Log  "Fehler beim Aktualisieren der Gruppeneinstellungen: $errorMsg" -Type "Error"
+        Write-Log "Fehler beim Aktualisieren der Gruppeneinstellungen: $errorMsg" -Type "Error"
         Log-Action "Fehler beim Aktualisieren der Einstellungen von $GroupName - $errorMsg"
         
         # Status aktualisieren
@@ -8218,6 +9132,7 @@ function Update-GroupSettingsAction {
         return $false
     }
 }
+
 function RefreshSharedMailboxList {
     [CmdletBinding()]
     param()
@@ -8333,8 +9248,29 @@ function Add-SharedMailboxPermissionAction {
     )
     
     try {
-        Write-Log  "Füge Shared Mailbox Berechtigung hinzu: $PermissionType für $User auf $Mailbox" -Type "Info"
+        # Validiere Eingabeparameter
+        if ([string]::IsNullOrEmpty($Mailbox) -or [string]::IsNullOrEmpty($User)) {
+            throw "Mailbox und User dürfen nicht leer sein"
+        }
+
+        Write-Log "Füge Shared Mailbox Berechtigung hinzu: $PermissionType für $User auf $Mailbox" -Type "Info"
         
+        # Prüfe ob Benutzer existiert
+        try {
+            $null = Get-Recipient -Identity $User -ErrorAction Stop
+        }
+        catch {
+            throw "Der angegebene Benutzer $User wurde nicht gefunden"
+        }
+
+        # Prüfe ob Mailbox existiert
+        try {
+            $null = Get-Mailbox -Identity $Mailbox -ErrorAction Stop
+        }
+        catch {
+            throw "Die angegebene Mailbox $Mailbox wurde nicht gefunden"
+        }
+
         switch ($PermissionType) {
             "FullAccess" {
                 Add-MailboxPermission -Identity $Mailbox -User $User -AccessRights FullAccess -AutoMapping $AutoMapping -ErrorAction Stop
@@ -8349,15 +9285,18 @@ function Add-SharedMailboxPermissionAction {
                     Set-Mailbox -Identity $Mailbox -GrantSendOnBehalfTo $currentGrantSendOnBehalf -ErrorAction Stop
                 }
             }
+            default {
+                throw "Ungültiger PermissionType: $PermissionType"
+            }
         }
         
-        Write-Log  "Shared Mailbox Berechtigung erfolgreich hinzugefügt" -Type "Success"
+        Write-Log "Shared Mailbox Berechtigung erfolgreich hinzugefügt" -Type "Success"
         Log-Action "Shared Mailbox Berechtigung $PermissionType für $User auf $Mailbox hinzugefügt"
         return $true
     }
     catch {
         $errorMsg = $_.Exception.Message
-        Write-Log  "Fehler beim Hinzufügen der Shared Mailbox Berechtigung: $errorMsg" -Type "Error"
+        Write-Log "Fehler beim Hinzufügen der Shared Mailbox Berechtigung: $errorMsg" -Type "Error"
         Log-Action "Fehler beim Hinzufügen der Shared Mailbox Berechtigung: $errorMsg"
         return $false
     }
@@ -8373,11 +9312,41 @@ function Remove-SharedMailboxPermissionAction {
         [string]$User,
         
         [Parameter(Mandatory = $true)]
+        [ValidateSet("FullAccess", "SendAs", "SendOnBehalf")]
         [string]$PermissionType
     )
     
     try {
-        Write-Log  "Entferne Shared Mailbox Berechtigung: $PermissionType für $User auf $Mailbox" -Type "Info"
+        Write-Log "Entferne Shared Mailbox Berechtigung: $PermissionType für $User auf $Mailbox" -Type "Info"
+        
+        # Prüfe ob Benutzer existiert
+        try {
+            $null = Get-Recipient -Identity $User -ErrorAction Stop
+        }
+        catch {
+            throw "Der angegebene Benutzer $User wurde nicht gefunden"
+        }
+
+        # Prüfe ob Mailbox existiert
+        try {
+            $null = Get-Mailbox -Identity $Mailbox -ErrorAction Stop
+        }
+        catch {
+            throw "Die angegebene Mailbox $Mailbox wurde nicht gefunden"
+        }
+
+        # Bestätigungsdialog anzeigen
+        $confirmResult = [System.Windows.MessageBox]::Show(
+            "Möchten Sie wirklich die $PermissionType-Berechtigung für $User auf $Mailbox entfernen?",
+            "Berechtigung entfernen",
+            [System.Windows.MessageBoxButton]::YesNo,
+            [System.Windows.MessageBoxImage]::Question
+        )
+
+        if ($confirmResult -eq [System.Windows.MessageBoxResult]::No) {
+            Write-Log "Entfernen der Berechtigung durch Benutzer abgebrochen" -Type "Info"
+            return $false
+        }
         
         switch ($PermissionType) {
             "FullAccess" {
@@ -8393,15 +9362,18 @@ function Remove-SharedMailboxPermissionAction {
                     Set-Mailbox -Identity $Mailbox -GrantSendOnBehalfTo $newGrantSendOnBehalf -ErrorAction Stop
                 }
             }
+            default {
+                throw "Ungültiger PermissionType: $PermissionType"
+            }
         }
         
-        Write-Log  "Shared Mailbox Berechtigung erfolgreich entfernt" -Type "Success"
+        Write-Log "Shared Mailbox Berechtigung erfolgreich entfernt" -Type "Success"
         Log-Action "Shared Mailbox Berechtigung $PermissionType für $User auf $Mailbox entfernt"
         return $true
     }
     catch {
         $errorMsg = $_.Exception.Message
-        Write-Log  "Fehler beim Entfernen der Shared Mailbox Berechtigung: $errorMsg" -Type "Error"
+        Write-Log "Fehler beim Entfernen der Shared Mailbox Berechtigung: $errorMsg" -Type "Error"
         Log-Action "Fehler beim Entfernen der Shared Mailbox Berechtigung: $errorMsg"
         return $false
     }
@@ -8415,60 +9387,129 @@ function Get-SharedMailboxPermissionsAction {
     )
     
     try {
-        Write-Log  "Rufe Berechtigungen für Shared Mailbox ab: $Mailbox" -Type "Info"
+        # Prüfe ob Mailbox existiert
+        try {
+            $null = Get-Mailbox -Identity $Mailbox -ErrorAction Stop
+        }
+        catch {
+            throw "Die angegebene Mailbox $Mailbox wurde nicht gefunden"
+        }
+
+        Write-Log "Rufe Berechtigungen für Shared Mailbox ab: $Mailbox" -Type "Info"
+        Update-StatusBar -Message "Rufe Berechtigungen für $Mailbox ab..." -Type Info
         
         $permissions = @()
         
         # FullAccess-Berechtigungen abrufen
-        $fullAccessPerms = Get-MailboxPermission -Identity $Mailbox | Where-Object {
-            $_.User -notlike "NT AUTHORITY\SELF" -and 
-            $_.AccessRights -like "*FullAccess*" -and 
-            $_.IsInherited -eq $false
-        }
-        
-        foreach ($perm in $fullAccessPerms) {
-            $permissions += [PSCustomObject]@{
-                User = $perm.User.ToString()
-                AccessRights = "FullAccess"
-                PermissionType = "FullAccess"
+        try {
+            $fullAccessPerms = Get-MailboxPermission -Identity $Mailbox -ErrorAction Stop | Where-Object {
+                $_.User -notlike "NT AUTHORITY\SELF" -and 
+                $_.AccessRights -like "*FullAccess*" -and 
+                $_.IsInherited -eq $false
             }
+            
+            foreach ($perm in $fullAccessPerms) {
+                if ($null -ne $perm.User) {
+                    $permissions += [PSCustomObject]@{
+                        User = $perm.User.ToString()
+                        AccessRights = "FullAccess"
+                        PermissionType = "FullAccess"
+                    }
+                }
+            }
+        }
+        catch {
+            Write-Log "Fehler beim Abrufen der FullAccess-Berechtigungen: $($_.Exception.Message)" -Type "Warning"
         }
         
         # SendAs-Berechtigungen abrufen
-        $sendAsPerms = Get-RecipientPermission -Identity $Mailbox | Where-Object {
-            $_.Trustee -notlike "NT AUTHORITY\SELF" -and 
-            $_.IsInherited -eq $false
-        }
-        
-        foreach ($perm in $sendAsPerms) {
-            $permissions += [PSCustomObject]@{
-                User = $perm.Trustee.ToString()
-                AccessRights = "SendAs"
-                PermissionType = "SendAs"
+        try {
+            $sendAsPerms = Get-RecipientPermission -Identity $Mailbox -ErrorAction Stop | Where-Object {
+                $_.Trustee -notlike "NT AUTHORITY\SELF" -and 
+                $_.IsInherited -eq $false
             }
+            
+            foreach ($perm in $sendAsPerms) {
+                if ($null -ne $perm.Trustee) {
+                    $permissions += [PSCustomObject]@{
+                        User = $perm.Trustee.ToString()
+                        AccessRights = "SendAs"
+                        PermissionType = "SendAs"
+                    }
+                }
+            }
+        }
+        catch {
+            Write-Log "Fehler beim Abrufen der SendAs-Berechtigungen: $($_.Exception.Message)" -Type "Warning"
         }
         
         # SendOnBehalf-Berechtigungen abrufen
-        $mailboxObj = Get-Mailbox -Identity $Mailbox
-        $sendOnBehalfPerms = $mailboxObj.GrantSendOnBehalfTo
-        
-        foreach ($perm in $sendOnBehalfPerms) {
-            $permissions += [PSCustomObject]@{
-                User = $perm.ToString()
-                AccessRights = "SendOnBehalf"
-                PermissionType = "SendOnBehalf"
+        try {
+            $mailboxObj = Get-Mailbox -Identity $Mailbox -ErrorAction Stop
+            $sendOnBehalfPerms = $mailboxObj.GrantSendOnBehalfTo
+            
+            foreach ($perm in $sendOnBehalfPerms) {
+                if ($null -ne $perm) {
+                    $permissions += [PSCustomObject]@{
+                        User = $perm.ToString()
+                        AccessRights = "SendOnBehalf"
+                        PermissionType = "SendOnBehalf"
+                    }
+                }
             }
         }
-        
-        Write-Log  "Shared Mailbox Berechtigungen erfolgreich abgerufen: $($permissions.Count) Einträge" -Type "Success"
-        Log-Action "Shared Mailbox Berechtigungen für $Mailbox abgerufen: $($permissions.Count) Einträge"
+        catch {
+            Write-Log "Fehler beim Abrufen der SendOnBehalf-Berechtigungen: $($_.Exception.Message)" -Type "Warning"
+        }
+
+        # GUI-Aktualisierung
+        if ($null -ne $script:lstCurrentPermissions) {
+            if ($permissions.Count -gt 0) {
+                # DataGrid mit Berechtigungen füllen
+                $permissionsCollection = New-Object System.Collections.ObjectModel.ObservableCollection[Object]
+                foreach ($perm in $permissions) {
+                    $permissionsCollection.Add($perm)
+                }
+                $script:lstCurrentPermissions.ItemsSource = $permissionsCollection
+                
+                Write-Log "Shared Mailbox Berechtigungen erfolgreich abgerufen: $($permissions.Count) Einträge" -Type "Success"
+                Update-StatusBar -Message "Berechtigungen erfolgreich abgerufen: $($permissions.Count) Einträge" -Type Success
+                Log-Action "Shared Mailbox Berechtigungen für $Mailbox abgerufen: $($permissions.Count) Einträge"
+            }
+            else {
+                # Leere DataGrid mit Hinweistext
+                $noPermissionsCollection = New-Object System.Collections.ObjectModel.ObservableCollection[Object]
+                $noPermissionsCollection.Add([PSCustomObject]@{
+                    User = "Keine Berechtigungen"
+                    AccessRights = "---" 
+                    PermissionType = "---"
+                })
+                $script:lstCurrentPermissions.ItemsSource = $noPermissionsCollection
+                
+                Write-Log "Keine Berechtigungen für Shared Mailbox $Mailbox gefunden" -Type "Info"
+                Update-StatusBar -Message "Keine Berechtigungen hinterlegt" -Type Info
+            }
+        }
         
         return $permissions
     }
     catch {
         $errorMsg = $_.Exception.Message
-        Write-Log  "Fehler beim Abrufen der Shared Mailbox Berechtigungen: $errorMsg" -Type "Error"
+        Write-Log "Fehler beim Abrufen der Shared Mailbox Berechtigungen: $errorMsg" -Type "Error"
+        Update-StatusBar -Message "Fehler beim Abrufen der Berechtigungen: $errorMsg" -Type Error
         Log-Action "Fehler beim Abrufen der Shared Mailbox Berechtigungen: $errorMsg"
+        
+        # Fehler in GUI anzeigen
+        if ($null -ne $script:lstCurrentPermissions) {
+            $errorCollection = New-Object System.Collections.ObjectModel.ObservableCollection[Object]
+            $errorCollection.Add([PSCustomObject]@{
+                User = "Fehler beim Abrufen der Berechtigungen"
+                AccessRights = "---"
+                PermissionType = "---"  
+            })
+            $script:lstCurrentPermissions.ItemsSource = $errorCollection
+        }
+        
         return @()
     }
 }
@@ -9344,48 +10385,6 @@ function Show-ResourceSettingsDialog {
 }
 # Implementiert die Hauptfunktionen für den Kontakte-Tab
 
-function New-ExoContact {
-    [CmdletBinding()]
-    param()
-    
-    try {
-        $name = $script:txtContactName.Text.Trim()
-        $email = $script:txtContactEmail.Text.Trim()
-        
-        if ([string]::IsNullOrEmpty($name) -or [string]::IsNullOrEmpty($email)) {
-            Show-MessageBox -Message "Bitte geben Sie einen Namen und eine E-Mail-Adresse ein." -Title "Fehlende Angaben" -Type "Warning"
-            return
-        }
-        
-        # Stellen Sie sicher, dass wir mit Exchange verbunden sind
-        if (!(Confirm-ExchangeConnection)) {
-            Show-MessageBox -Message "Bitte zuerst mit Exchange Online verbinden." -Title "Nicht verbunden" -Type "Warning"
-            return
-        }
-        
-        Write-StatusMessage "Erstelle Kontakt $name mit E-Mail $email..."
-        
-        # Exchange-Befehle ausführen
-        $newMailContact = New-MailContact -Name $name -ExternalEmailAddress $email -ErrorAction Stop
-        
-        if ($newMailContact) {
-            Write-StatusMessage "Kontakt $name erfolgreich erstellt."
-            Show-MessageBox -Message "Der Kontakt $name wurde erfolgreich erstellt." -Title "Kontakt erstellt" -Type "Info"
-            
-            # Kontakte aktualisieren
-            Get-ExoContacts
-            
-            # Felder leeren
-            $script:txtContactName.Text = ""
-            $script:txtContactEmail.Text = ""
-        }
-    }
-    catch {
-        $errorMsg = $_.Exception.Message
-        Write-StatusMessage "Fehler beim Erstellen des Kontakts: $errorMsg"
-        Show-MessageBox -Message "Fehler beim Erstellen des Kontakts: $errorMsg" -Title "Fehler" -Type "Error"
-    }
-}
 
 function Update-ExoContact {
     [CmdletBinding()]
@@ -9482,62 +10481,143 @@ function Initialize-ContactsTab {
         Write-Log  "Initialisiere Kontakte-Tab" -Type "Info"
         
         # UI-Elemente referenzieren
+        $txtContactName = Get-XamlElement -ElementName "txtContactName" -Required
+        $txtContactAlias = Get-XamlElement -ElementName "txtContactAlias" -Required
         $txtContactExternalEmail = Get-XamlElement -ElementName "txtContactExternalEmail" -Required
-        $txtContactSearch = Get-XamlElement -ElementName "txtContactSearch" -Required
-        $cmbContactType = Get-XamlElement -ElementName "cmbContactType" -Required
         $btnCreateContact = Get-XamlElement -ElementName "btnCreateContact" -Required
+        
+        $txtUpdateContactName = Get-XamlElement -ElementName "txtUpdateContactName" -Required
+        $txtUpdateContactEmail = Get-XamlElement -ElementName "txtUpdateContactEmail" -Required
+        $btnUpdateContact = Get-XamlElement -ElementName "btnUpdateContact" -Required
+
+        $txtContactSearch = Get-XamlElement -ElementName "txtContactSearch" -Required
         $btnShowMailContacts = Get-XamlElement -ElementName "btnShowMailContacts" -Required
         $btnShowMailUsers = Get-XamlElement -ElementName "btnShowMailUsers" -Required
         $btnRemoveContact = Get-XamlElement -ElementName "btnRemoveContact" -Required
+        
         $lstContacts = Get-XamlElement -ElementName "lstContacts" -Required
         $btnExportContacts = Get-XamlElement -ElementName "btnExportContacts" -Required
+
         
         # Globale Variablen setzen
+        $script:txtContactName = $txtContactName
+        $script:txtContactAlias = $txtContactAlias
         $script:txtContactExternalEmail = $txtContactExternalEmail
+        $script:txtUpdateContactName = $txtUpdateContactName
+        $script:txtUpdateContactEmail = $txtUpdateContactEmail
+        $script:btnUpdateContact = $btnUpdateContact
         $script:txtContactSearch = $txtContactSearch
-        $script:cmbContactType = $cmbContactType
+        $script:btnShowMailContacts = $btnShowMailContacts # Hinzugefügt, um die Variable im Skript-Scope verfügbar zu machen
         $script:lstContacts = $lstContacts
         
         # Event-Handler für Buttons registrieren
         Register-EventHandler -Control $btnCreateContact -Handler {
-                $externalEmail = $script:txtContactExternalEmail.Text.Trim()
-                if ([string]::IsNullOrEmpty($externalEmail)) {
-                    Show-MessageBox -Message "Bitte geben Sie eine externe E-Mail-Adresse ein." -Title "Fehlende Angaben" -Type "Warning"
+            try {
+                if (!(Confirm-ExchangeConnection)) {
+                    Show-MessageBox -Message "Bitte zuerst mit Exchange Online verbinden." -Title "Nicht verbunden" -Type "Warning" 
                     return
                 }
-                
-                $contactType = $script:cmbContactType.SelectedIndex
-                if ($contactType -eq 0) { # MailContact
-                    try {
-                        $displayName = $externalEmail.Split('@')[0]
-                        $script:txtStatus.Text = "Erstelle MailContact $displayName..."
-                        New-MailContact -Name $displayName -ExternalEmailAddress $externalEmail -FirstName $displayName -DisplayName $displayName -ErrorAction Stop
-                        $script:txtStatus.Text = "MailContact erfolgreich erstellt: $displayName"
-                        Show-MessageBox -Message "MailContact $displayName wurde erfolgreich erstellt." -Title "Erfolg" -Type "Info"
-                        $script:txtContactExternalEmail.Text = ""
-                    }
-                    catch {
-                        $errorMsg = $_.Exception.Message
-                        $script:txtStatus.Text = "Fehler beim Erstellen des MailContact: $errorMsg"
-                        Show-MessageBox -Message "Fehler beim Erstellen des MailContact: $errorMsg" -Title "Fehler" -Type "Error"
-                    }
+
+                $contactName = $script:txtContactName.Text.Trim()
+                $contactAlias = $script:txtContactAlias.Text.Trim() 
+                $externalEmail = $script:txtContactExternalEmail.Text.Trim()
+
+                if ([string]::IsNullOrEmpty($contactName) -or [string]::IsNullOrEmpty($contactAlias) -or [string]::IsNullOrEmpty($externalEmail)) {
+                    Show-MessageBox -Message "Bitte füllen Sie alle erforderlichen Felder aus." -Title "Fehlende Angaben" -Type "Warning"
+                    return
                 }
-                else { # MailUser
-                    try {
-                        $displayName = $externalEmail.Split('@')[0]
-                        $script:txtStatus.Text = "Erstelle MailUser $displayName..."
-                        New-MailUser -Name $displayName -ExternalEmailAddress $externalEmail -MicrosoftOnlineServicesID "$displayName@$($script:primaryDomain)" -FirstName $displayName -DisplayName $displayName -ErrorAction Stop
-                        $script:txtStatus.Text = "MailUser erfolgreich erstellt: $displayName"
-                        Show-MessageBox -Message "MailUser $displayName wurde erfolgreich erstellt." -Title "Erfolg" -Type "Info"
-                        $script:txtContactExternalEmail.Text = ""
-                    }
-                    catch {
-                        $errorMsg = $_.Exception.Message
-                        $script:txtStatus.Text = "Fehler beim Erstellen des MailUser: $errorMsg"
-                        Show-MessageBox -Message "Fehler beim Erstellen des MailUser: $errorMsg" -Title "Fehler" -Type "Error"
-                    }
+
+                Update-StatusBar -Message "Erstelle externen Kontakt $contactName..."
+
+                New-MailContact -Name $contactAlias `
+                              -DisplayName $contactName `
+                              -ExternalEmailAddress $externalEmail `
+                              -ErrorAction Stop
+
+                Update-StatusBar -Message "Externer Kontakt erfolgreich erstellt: $contactName" -Type "Success"
+                Show-MessageBox -Message "Der externe Kontakt $contactName wurde erfolgreich erstellt." -Title "Erfolg" -Type "Info"
+
+                # Felder zurücksetzen
+                $script:txtContactName.Text = ""
+                $script:txtContactAlias.Text = ""
+                $script:txtContactExternalEmail.Text = ""
+
+                # Liste aktualisieren
+                $btnShowMailContacts.RaiseEvent([System.Windows.RoutedEventArgs]::new([System.Windows.Controls.Button]::ClickEvent))
+
+            } catch {
+                $errorMsg = $_.Exception.Message
+                Update-StatusBar -Message "Fehler beim Erstellen des Kontakts: $errorMsg" -Type "Error"
+                Show-MessageBox -Message "Fehler beim Erstellen des Kontakts: $errorMsg" -Title "Fehler" -Type "Error"
             }
         } -ControlName "btnCreateContact"
+
+        # Event-Handler für Kontaktauswahl in der Liste mit Register-EventHandler
+        Register-EventHandler -Control $script:lstContacts -Handler {
+            try {
+                $selectedContact = $script:lstContacts.SelectedItem
+                if ($null -ne $selectedContact) {
+                    # Felder mit aktuellen Werten befüllen
+                    $script:txtUpdateContactName.Text = $selectedContact.DisplayName
+                    $script:txtUpdateContactEmail.Text = ($selectedContact.ExternalEmailAddress -replace "SMTP:", "")
+                    
+                    # Update-Button aktivieren
+                    $script:btnUpdateContact.IsEnabled = $true
+                } else {
+                    # Felder leeren und Button deaktivieren wenn keine Auswahl
+                    $script:txtUpdateContactName.Text = ""
+                    $script:txtUpdateContactEmail.Text = ""
+                    $script:btnUpdateContact.IsEnabled = $false
+                }
+            } catch {
+                Write-Log "Fehler beim Befüllen der Update-Felder: $($_.Exception.Message)" -Type "Error"
+                Update-StatusBar -Message "Fehler beim Laden der Kontaktdetails" -Type "Error"
+            }
+        } -EventName "SelectionChanged" -ControlName "lstContacts"
+
+        # Event-Handler für Update-Button
+        Register-EventHandler -Control $script:btnUpdateContact -Handler {
+            try {
+                if (!(Confirm-ExchangeConnection)) {
+                    Show-MessageBox -Message "Bitte zuerst mit Exchange Online verbinden." -Title "Nicht verbunden" -Type "Warning"
+                    return
+                }
+
+                $selectedContact = $script:lstContacts.SelectedItem
+                if ($null -eq $selectedContact) {
+                    Show-MessageBox -Message "Bitte wählen Sie einen Kontakt aus." -Title "Keine Auswahl" -Type "Warning"
+                    return
+                }
+
+                $newName = $script:txtUpdateContactName.Text.Trim()
+                $newEmail = $script:txtUpdateContactEmail.Text.Trim()
+
+                if ([string]::IsNullOrEmpty($newName) -or [string]::IsNullOrEmpty($newEmail)) {
+                    Show-MessageBox -Message "Bitte füllen Sie alle Felder aus." -Title "Fehlende Angaben" -Type "Warning"
+                    return
+                }
+
+                Update-StatusBar -Message "Aktualisiere Kontakt $($selectedContact.DisplayName)..."
+
+                # Kontakt aktualisieren
+                Set-MailContact -Identity $selectedContact.PrimarySmtpAddress `
+                              -DisplayName $newName `
+                              -ExternalEmailAddress "SMTP:$newEmail" `
+                              -ErrorAction Stop
+
+                Show-MessageBox -Message "Der Kontakt wurde erfolgreich aktualisiert." -Title "Erfolg" -Type "Info"
+
+                # Liste aktualisieren
+                $script:btnShowMailContacts.RaiseEvent([System.Windows.RoutedEventArgs]::new([System.Windows.Controls.Button]::ClickEvent))
+
+            } catch {
+                $errorMsg = $_.Exception.Message
+                Write-Log "Fehler beim Aktualisieren des Kontakts: $errorMsg" -Type "Error"
+                Update-StatusBar -Message "Fehler beim Aktualisieren des Kontakts" -Type "Error"
+                Show-MessageBox -Message "Fehler beim Aktualisieren des Kontakts: $errorMsg" -Title "Fehler" -Type "Error"
+            }
+        } -ControlName "btnUpdateContact"
+        
         Register-EventHandler -Control $btnShowMailContacts -Handler {
             # Verbindungsprüfung - nur bei Bedarf
             if (-not $script:isConnected) {
@@ -9612,7 +10692,7 @@ function Initialize-ContactsTab {
         } -ControlName "btnShowMailUsers"
         
         Register-EventHandler -Control $btnRemoveContact -Handler {
-                if ($script:lstContacts.SelectedItem -eq $null) {
+                if ($null -eq $script:lstContacts.SelectedItem) {
                     Show-MessageBox -Message "Bitte wählen Sie zuerst einen Kontakt aus." -Title "Kein Kontakt ausgewählt" -Type "Warning"
                     return
                 }
@@ -9641,10 +10721,10 @@ function Initialize-ContactsTab {
                         
                         # Liste aktualisieren
                         if ($contactType -like "*MailContact*") {
-                            $script:btnShowMailContacts.RaiseEvent([System.Windows.RoutedEventArgs]::Click)
+                            $btnShowMailContacts.RaiseEvent([System.Windows.RoutedEventArgs]::new([System.Windows.Controls.Button]::ClickEvent))
                         }
                         else {
-                            $script:btnShowMailUsers.RaiseEvent([System.Windows.RoutedEventArgs]::Click)
+                            $btnShowMailUsers.RaiseEvent([System.Windows.RoutedEventArgs]::new([System.Windows.Controls.Button]::ClickEvent))
                         }
                     }
                     catch {
@@ -9708,8 +10788,10 @@ function Load-XAML {
             throw "XAML-Datei nicht gefunden: $XamlFilePath"
         }
         
-        # XAML-Datei laden
-        [xml]$xamlContent = Get-Content -Path $XamlFilePath -Encoding UTF8
+        # XAML-Datei laden und problematische Event-Handler entfernen
+        $xamlString = Get-Content -Path $XamlFilePath -Raw
+        $xamlString = $xamlString -replace 'SelectionChanged="lstContacts_SelectionChanged"', ''
+        [xml]$xamlContent = $xamlString
         
         # Parse XAML
         $reader = New-Object System.Xml.XmlNodeReader $xamlContent
@@ -9928,6 +11010,7 @@ $script:btnConnect.Add_Click({
         return
     }
     Connect-OwnExchangeOnline
+    Update-DomainList
 })
 
 $script:btnClose.Add_Click({ $script:Form.Close() })
@@ -11261,6 +12344,104 @@ function Get-ExoUnifiedGroup {
     }
 }
 
+function Get-ExoGroupRecipientAction {
+    <#
+    .SYNOPSIS
+    Ruft ein Gruppenobjekt basierend auf der Identity ab und ermittelt automatisch den Gruppentyp.
+    
+    .DESCRIPTION
+    Diese Funktion versucht, eine Gruppe anhand ihrer Identity zu finden, indem sie verschiedene 
+    Exchange Online Gruppentypen durchsucht (Unified Groups, Distribution Groups, Dynamic Distribution Groups).
+    
+    .PARAMETER Identity
+    Die Identity der Gruppe (Name, Alias, E-Mail-Adresse oder Distinguished Name)
+    
+    .RETURNS
+    Das gefundene Gruppenobjekt oder $null, wenn keine Gruppe gefunden wurde
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Identity
+    )
+    
+    try {
+        Write-Log "Get-ExoGroupRecipientAction: Suche Gruppe mit Identity '$Identity'" -Type "Debug"
+        
+        if (-not $script:isConnected) {
+            Write-Log "Get-ExoGroupRecipientAction: Nicht mit Exchange Online verbunden" -Type "Warning"
+            return $null
+        }
+        
+        # Zuerst versuchen wir Get-Recipient für eine schnelle Typ-Ermittlung
+        $recipient = $null
+        try {
+            $recipient = Get-Recipient -Identity $Identity -ErrorAction Stop
+            Write-Log "Get-ExoGroupRecipientAction: Recipient gefunden - Typ: $($recipient.RecipientTypeDetails)" -Type "Debug"
+        }
+        catch {
+            Write-Log "Get-ExoGroupRecipientAction: Recipient mit Identity '$Identity' nicht gefunden" -Type "Debug"
+            return $null
+        }
+        
+        if ($null -eq $recipient) {
+            return $null
+        }
+        
+        # Basierend auf dem RecipientTypeDetails den spezifischen Gruppentyp abrufen
+        switch ($recipient.RecipientTypeDetails) {
+            "GroupMailbox" {
+                # Microsoft 365 Gruppe (Unified Group)
+                try {
+                    $group = Get-UnifiedGroup -Identity $Identity -ErrorAction Stop
+                    Write-Log "Get-ExoGroupRecipientAction: Microsoft 365 Gruppe gefunden: $($group.DisplayName)" -Type "Debug"
+                    return $group
+                }
+                catch {
+                    Write-Log "Get-ExoGroupRecipientAction: Fehler beim Abrufen der Microsoft 365 Gruppe: $($_.Exception.Message)" -Type "Error"
+                    return $null
+                }
+            }
+            
+            { $_ -in @("MailUniversalDistributionGroup", "MailNonUniversalGroup", "MailUniversalSecurityGroup") } {
+                # Verteilerliste oder E-Mail-aktivierte Sicherheitsgruppe
+                try {
+                    $group = Get-DistributionGroup -Identity $Identity -ErrorAction Stop
+                    Write-Log "Get-ExoGroupRecipientAction: Verteilergruppe gefunden: $($group.DisplayName)" -Type "Debug"
+                    return $group
+                }
+                catch {
+                    Write-Log "Get-ExoGroupRecipientAction: Fehler beim Abrufen der Verteilergruppe: $($_.Exception.Message)" -Type "Error"
+                    return $null
+                }
+            }
+            
+            "DynamicDistributionGroup" {
+                # Dynamische Verteilergruppe
+                try {
+                    $group = Get-DynamicDistributionGroup -Identity $Identity -ErrorAction Stop
+                    Write-Log "Get-ExoGroupRecipientAction: Dynamische Verteilergruppe gefunden: $($group.DisplayName)" -Type "Debug"
+                    return $group
+                }
+                catch {
+                    Write-Log "Get-ExoGroupRecipientAction: Fehler beim Abrufen der dynamischen Verteilergruppe: $($_.Exception.Message)" -Type "Error"
+                    return $null
+                }
+            }
+            
+            default {
+                Write-Log "Get-ExoGroupRecipientAction: Unbekannter oder nicht unterstützter RecipientTypeDetails: $($recipient.RecipientTypeDetails)" -Type "Warning"
+                return $null
+            }
+        }
+    }
+    catch {
+        $errorMsg = $_.Exception.Message
+        Write-Log "Get-ExoGroupRecipientAction: Allgemeiner Fehler beim Abrufen der Gruppe '$Identity': $errorMsg" -Type "Error"
+        return $null
+    }
+}
+
 function Get-ExoGroupSettingsAction {
     [CmdletBinding()]
     param(
@@ -11882,21 +13063,19 @@ function Remove-ExoGroupMemberAction {
         if (Test-Path Function:\Log-Action) { Log-Action "Fehler Remove-ExoGroupMemberAction '$groupDisplayName'/'$UserIdentity': $errMsg" }
         Show-MessageBox -Message "Fehler beim Entfernen von '$UserIdentity' aus Gruppe '$groupDisplayName':`n$($_.Exception.Message)" -Title "Fehler bei Mitgliedschaft" -Type Error
         Update-StatusBar -Message "Fehler beim Entfernen aus '$groupDisplayName'." -Type Error
-        return $false
+        throw # Re-throw the exception so the calling code knows it failed
     }
 }
 
 function Get-ExoGroupMembersAction {
     [CmdletBinding()]
-    param() # Parameter wird nicht mehr benötigt, da wir direkt auf die ComboBox zugreifen
+    param()
 
-    # Direkter Zugriff auf das ausgewählte Element der ComboBox
     $selectedItem = $null
     if ($null -ne $script:cmbSelectExistingGroup) {
         $selectedItem = $script:cmbSelectExistingGroup.SelectedItem
     }
 
-    # Debugging: Log the selected item details
     if ($null -ne $selectedItem) {
         $tagType = if ($selectedItem.Tag) { $selectedItem.Tag.GetType().Name } else { 'null' }
         Write-Log "Get-ExoGroupMembersAction: SelectedItem gefunden. Content: '$($selectedItem.Content)', Tag Type: $tagType" -Type Debug
@@ -11918,16 +13097,12 @@ function Get-ExoGroupMembersAction {
         return
     }
 
-    # Überprüfen, ob das ausgewählte Element und sein Tag gültig sind
-    # Angepasste Logik basierend auf der Refresh-ExistingGroupsDropdown Funktion
     $groupObject = $null
     $isValidSelection = $false
 
     if ($null -ne $selectedItem -and $null -ne $selectedItem.Tag) {
-        # Das Tag sollte das benutzerdefinierte Objekt aus Get-AllGroupTypesAction enthalten
         $taggedObject = $selectedItem.Tag
         
-        # Prüfen ob es ein gültiges Gruppenobjekt ist
         if ($taggedObject.PSObject.Properties["Identity"] -and 
             $taggedObject.PSObject.Properties["DisplayName"] -and 
             $taggedObject.PSObject.Properties["RecipientTypeDetails"]) {
@@ -11936,7 +13111,6 @@ function Get-ExoGroupMembersAction {
             $isValidSelection = $true
             Write-Log "Get-ExoGroupMembersAction: Gültiges Gruppenobjekt im Tag gefunden." -Type Debug
         }
-        # Fallback: Prüfen ob OriginalObject vorhanden ist (falls die Struktur anders ist)
         elseif ($taggedObject.PSObject.Properties["OriginalObject"]) {
             $originalObject = $taggedObject.OriginalObject
             if ($originalObject.PSObject.Properties["Identity"] -and 
@@ -11956,10 +13130,8 @@ function Get-ExoGroupMembersAction {
         return
     }
 
-    # Variablen für die Hauptlogik definieren
     $groupDisplayName = $groupObject.DisplayName
     $recipientType = $groupObject.RecipientTypeDetails
-    # Verwende die DistinguishedName oder andere verfügbare Identifier
     $effectiveIdentityForExo = $null
     if ($groupObject.PSObject.Properties["DistinguishedName"] -and ![string]::IsNullOrEmpty($groupObject.DistinguishedName)) {
         $effectiveIdentityForExo = $groupObject.DistinguishedName
@@ -11974,42 +13146,39 @@ function Get-ExoGroupMembersAction {
     }
     
     $members = @()
+    $owners = @()
     $membersSuccessfullyRetrieved = $false
 
     Write-Log "Get-ExoGroupMembersAction: Verarbeite Gruppe '$groupDisplayName' (Identity: '$effectiveIdentityForExo', Typ: '$recipientType')" -Type Info
     Update-StatusBar -Message "Lade Mitglieder für '$groupDisplayName'..." -Type Info
 
     try {
-        # Prüfen, ob wir mit Exchange Online verbunden sind
         if (-not $script:isConnected) {
             Write-Log "Get-ExoGroupMembersAction: Keine Verbindung zu Exchange Online." -Type Warning
             Update-StatusBar -Message "Keine Verbindung zu Exchange Online." -Type Warning
             return
         }
 
-        # Gruppenmitglieder laden basierend auf dem Gruppentyp
         try {
             if ($recipientType -eq "GroupMailbox") {
-                # Für Microsoft 365 Gruppen - verwende Get-UnifiedGroupLinks
                 try {
                     $members = Get-UnifiedGroupLinks -Identity $effectiveIdentityForExo -LinkType Members -ErrorAction Stop
+                    $owners = Get-UnifiedGroupLinks -Identity $effectiveIdentityForExo -LinkType Owners -ErrorAction Stop
                     Write-Log "Get-ExoGroupMembersAction: Verwende Get-UnifiedGroupLinks für Microsoft 365 Gruppe." -Type Debug
                 } catch {
-                    # Fallback: Verwende alternative Identity falls erste fehlschlägt
                     if ($groupObject.PSObject.Properties["PrimarySmtpAddress"] -and $effectiveIdentityForExo -ne $groupObject.PrimarySmtpAddress) {
                         Write-Log "Get-ExoGroupMembersAction: Fallback zu PrimarySmtpAddress für UnifiedGroupLinks." -Type Debug
                         $members = Get-UnifiedGroupLinks -Identity $groupObject.PrimarySmtpAddress -LinkType Members -ErrorAction Stop
+                        $owners = Get-UnifiedGroupLinks -Identity $groupObject.PrimarySmtpAddress -LinkType Owners -ErrorAction Stop
                     } else {
                         throw $_
                     }
                 }
             } elseif ($recipientType -in ("MailUniversalDistributionGroup", "MailUniversalSecurityGroup", "MailNonUniversalGroup")) {
-                # Für Verteilergruppen - verwende Get-DistributionGroupMember
                 try {
                     $members = Get-DistributionGroupMember -Identity $effectiveIdentityForExo -ErrorAction Stop
                     Write-Log "Get-ExoGroupMembersAction: Verwende Get-DistributionGroupMember für Verteilergruppe." -Type Debug
                 } catch {
-                    # Fallback: Verwende alternative Identity falls erste fehlschlägt
                     if ($groupObject.PSObject.Properties["PrimarySmtpAddress"] -and $effectiveIdentityForExo -ne $groupObject.PrimarySmtpAddress) {
                         Write-Log "Get-ExoGroupMembersAction: Fallback zu PrimarySmtpAddress für DistributionGroupMember." -Type Debug
                         $members = Get-DistributionGroupMember -Identity $groupObject.PrimarySmtpAddress -ErrorAction Stop
@@ -12018,7 +13187,6 @@ function Get-ExoGroupMembersAction {
                     }
                 }
             } elseif ($recipientType -eq "DynamicDistributionGroup") {
-                # Dynamische Verteilergruppen haben keine festen Mitglieder
                 $members = @()
                 Write-Log "Get-ExoGroupMembersAction: Dynamische Verteilergruppe - keine festen Mitglieder." -Type Info
             } else {
@@ -12041,32 +13209,62 @@ function Get-ExoGroupMembersAction {
 
         # UI aktualisieren - Mitgliederliste
         if ($null -ne $script:lstGroupMembers) {
-            $script:lstGroupMembers.Items.Clear()
-            $script:lstGroupMembers.Tag = $groupObject # Store the group object for other actions
+            # Erstelle eine Liste für die DataGrid-Anzeige
+            $displayList = @()
+            
+            # Zuerst Besitzer hinzufügen (falls vorhanden)
+            if ($owners.Count -gt 0) {
+                foreach ($owner in $owners) {
+                    $displayItem = [PSCustomObject]@{
+                        DisplayName = "$($owner.DisplayName) (Besitzer)"
+                        PrimarySmtpAddress = $owner.PrimarySmtpAddress
+                        RecipientType = if ($owner.RecipientType) { "$($owner.RecipientType) - Besitzer" } else { "Besitzer" }
+                        HiddenFromAddressListsEnabled = $owner.HiddenFromAddressListsEnabled
+                    }
+                    $displayList += $displayItem
+                }
+            }
 
+            # Dann normale Mitglieder hinzufügen
             if ($membersSuccessfullyRetrieved -and $members.Count -gt 0) {
                 foreach ($member in $members) {
-                    $item = New-Object System.Windows.Controls.ListViewItem
-                    $item.Content = $member.DisplayName
-                    $item.Tag = $member # Store the full member object
-                    $script:lstGroupMembers.Items.Add($item) | Out-Null
+                    # Prüfen ob das Mitglied nicht bereits als Besitzer aufgelistet wurde
+                    if (-not ($owners | Where-Object {$_.PrimarySmtpAddress -eq $member.PrimarySmtpAddress})) {
+                        $displayItem = [PSCustomObject]@{
+                            DisplayName = $member.DisplayName
+                            PrimarySmtpAddress = $member.PrimarySmtpAddress
+                            RecipientType = $member.RecipientType
+                            HiddenFromAddressListsEnabled = $member.HiddenFromAddressListsEnabled
+                        }
+                        $displayList += $displayItem
+                    }
                 }
             } elseif ($recipientType -eq "DynamicDistributionGroup") {
-                $item = New-Object System.Windows.Controls.ListViewItem
-                $item.Content = "Dynamische Gruppen haben keine festen Mitglieder."
-                $item.IsEnabled = $false
-                $script:lstGroupMembers.Items.Add($item) | Out-Null
-            } else {
-                $item = New-Object System.Windows.Controls.ListViewItem
-                $item.Content = "Keine Mitglieder gefunden."
-                $item.IsEnabled = $false
-                $script:lstGroupMembers.Items.Add($item) | Out-Null
+                $displayItem = [PSCustomObject]@{
+                    DisplayName = "Dynamische Gruppen haben keine festen Mitglieder."
+                    PrimarySmtpAddress = ""
+                    RecipientType = ""
+                    HiddenFromAddressListsEnabled = ""
+                }
+                $displayList += $displayItem
+            } elseif ($displayList.Count -eq 0) {
+                $displayItem = [PSCustomObject]@{
+                    DisplayName = "Keine Mitglieder gefunden."
+                    PrimarySmtpAddress = ""
+                    RecipientType = ""
+                    HiddenFromAddressListsEnabled = ""
+                }
+                $displayList += $displayItem
             }
+            
+            # Setze die ItemsSource des DataGrids
+            $script:lstGroupMembers.ItemsSource = $displayList
+            # Speichere die Original-Mitgliederliste für Export
+            $script:lstGroupMembers.Tag = $members
         }
 
         # UI aktualisieren - Gruppeneinstellungen (Checkboxes)
         try {
-            # Enable all controls first
             $script:chkHiddenFromGAL.IsEnabled = $true
             $script:chkRequireSenderAuth.IsEnabled = $true
             $script:chkAllowExternalSenders.IsEnabled = $true
@@ -12138,12 +13336,14 @@ function Get-ExoGroupMembersAction {
             $script:chkRequireSenderAuth.IsChecked = $false; $script:chkRequireSenderAuth.IsEnabled = $false
             $script:chkAllowExternalSenders.IsChecked = $false; $script:chkAllowExternalSenders.IsEnabled = $false
             if ($null -ne $script:lstGroupMembers) {
-                $script:lstGroupMembers.Items.Clear()
+                $errorItem = [PSCustomObject]@{
+                    DisplayName = "Fehler beim Laden der Gruppeninformationen."
+                    PrimarySmtpAddress = ""
+                    RecipientType = ""
+                    HiddenFromAddressListsEnabled = ""
+                }
+                $script:lstGroupMembers.ItemsSource = @($errorItem)
                 $script:lstGroupMembers.Tag = $null
-                $item = New-Object System.Windows.Controls.ListViewItem
-                $item.Content = "Fehler beim Laden der Gruppeninformationen."
-                $item.IsEnabled = $false
-                $script:lstGroupMembers.Items.Add($item) | Out-Null
             }
         } catch {
             Write-Log "Get-ExoGroupMembersAction: Konnte UI nach schwerem Fehler nicht zurücksetzen." -Type Error
@@ -12503,26 +13703,9 @@ function Initialize-HelpLinks {
     # --- Header Button Event Handlers ---
     try {
         # Versuche, die Buttons über ihre Namen zu finden
-        $btnShowConnectionStatus = $script:Form.FindName("btnShowConnectionStatus")
         $btnSettings = $script:Form.FindName("btnSettings")
         $btnInfo = $script:Form.FindName("btnInfo")
         $btnClose = $script:Form.FindName("btnClose")
-
-        # Handler für Verbindungsstatus-Button
-        if ($null -ne $btnShowConnectionStatus) {
-            $btnShowConnectionStatus.Add_Click({
-                Write-Log "Button 'ShowConnectionStatus' geklickt." -Type Info
-                # Hier später die Funktion Show-ConnectionStatus aufrufen
-                if ($script:isConnected) {
-                    $userName = $script:ConnectedUser
-                    $tenantId = $script:ConnectedTenantId
-                    [System.Windows.MessageBox]::Show("Verbunden als '$userName' mit Tenant '$tenantId'.", "Verbindungsstatus", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
-                } else {
-                    [System.Windows.MessageBox]::Show("Sie sind aktuell nicht mit Exchange Online verbunden.", "Verbindungsstatus", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
-                }
-            })
-            Write-Log "Event-Handler für btnShowConnectionStatus hinzugefügt." -Type Info
-        } else { Write-Log "Header Button 'btnShowConnectionStatus' nicht gefunden." -Type Warning }
 
         # Handler für Settings-Button
         if ($null -ne $btnSettings) {
@@ -12821,20 +14004,73 @@ function Initialize-CalendarTab {
                 $targetUser = $script:txtCalendarTarget.Text
                 $permission = $script:cmbCalendarPermission.SelectedItem.ToString()
                 
-                # Kalenderberechtigung hinzufügen
-                $result = Add-CalendarPermission -SourceMailbox $sourceMailbox -TargetUser $targetUser -AccessRight $permission
+                # Liste der bekannten lokalisierten Kalendernamen
+                $knownCalendarNames = @(
+                    "Calendar",      # Englisch
+                    "Kalender",      # Deutsch
+                    "Calendrier",    # Französisch
+                    "Calendario",    # Spanisch/Italienisch
+                    "Agenda",        # Niederländisch
+                    "Kalendarz"      # Polnisch
+                )
                 
-                if ($result) {
-                    $script:txtStatus.Text = "Kalenderberechtigung erfolgreich hinzugefügt."
-                    # Aktualisiere die Berechtigungsliste, wenn der aktuelle Benutzer angezeigt wird
-                    if ($script:txtCalendarMailboxUser.Text -eq $sourceMailbox) {
-                        Show-CalendarPermissions -Mailbox $sourceMailbox
+                # Versuche den korrekten Kalenderordner zu finden
+                try {
+                    Write-Log "Suche Kalenderordner für Postfach $sourceMailbox" -Type Info
+                    $mailboxFolders = Get-MailboxFolderStatistics -Identity $sourceMailbox -FolderScope Calendar
+                    
+                    if ($mailboxFolders) {
+                        # Suche nach bekannten lokalisierten Kalendernamen
+                        $calendarFolder = $mailboxFolders | Where-Object { 
+                            $_.FolderType -eq "Calendar" -and
+                            ($knownCalendarNames -contains $_.Name)
+                        } | Select-Object -First 1
+                        
+                        if ($calendarFolder) {
+                            $calendarFolderName = $calendarFolder.Name
+                            Write-Log "Gefundener Kalenderordner: $calendarFolderName" -Type Info
+                        } else {
+                            # Fallback: Nimm den ersten Kalenderordner
+                            $calendarFolder = $mailboxFolders | Where-Object { 
+                                $_.FolderType -eq "Calendar" 
+                            } | Select-Object -First 1
+                            
+                            if ($calendarFolder) {
+                                $calendarFolderName = $calendarFolder.Name
+                                Write-Log "Fallback-Kalenderordner gefunden: $calendarFolderName" -Type Warning
+                            } else {
+                                throw "Kein Kalenderordner gefunden"
+                            }
+                        }
+                    } else {
+                        throw "Keine Ordnerstatistiken verfügbar"
                     }
+                    
+                    # Kalenderberechtigung hinzufügen
+                    Write-Log "Füge Berechtigung hinzu: $targetUser auf $sourceMailbox\$calendarFolderName" -Type Info
+                    $result = Add-MailboxFolderPermission -Identity "$sourceMailbox`:\$calendarFolderName" -User $targetUser -AccessRights $permission -ErrorAction Stop
+                    
+                    if ($result) {
+                        Write-Log "Kalenderberechtigung erfolgreich hinzugefügt" -Type Info
+                        $script:txtStatus.Text = "Kalenderberechtigung erfolgreich hinzugefügt."
+                        
+                        # Aktualisiere die Berechtigungsliste
+                        if ($script:txtCalendarMailboxUser.Text -eq $sourceMailbox) {
+                            Show-CalendarPermissions -Mailbox $sourceMailbox
+                        }
+                    }
+                }
+                catch {
+                    $errorMsg = $_.Exception.Message
+                    Write-Log "Fehler beim Hinzufügen der Kalenderberechtigung: $errorMsg" -Type Error
+                    $script:txtStatus.Text = "Fehler: $errorMsg"
+                    throw
                 }
             }
             catch {
                 $errorMsg = $_.Exception.Message
-                $script:txtStatus.Text = "Fehler: $errorMsg"
+                Write-Log "Kritischer Fehler: $errorMsg" -Type Error
+                $script:txtStatus.Text = "Kritischer Fehler: $errorMsg"
             }
         } -ControlName "btnAddCalendarPermission"
         
@@ -12843,8 +14079,8 @@ function Initialize-CalendarTab {
                 # Prüfen, ob eine Exchange-Verbindung besteht
                 if (-not $script:isConnected) {
                     [System.Windows.MessageBox]::Show(
-                        "Bitte stellen Sie zuerst eine Verbindung zu Exchange Online her.",
-                        "Keine Verbindung",
+                        (Get-LocalizedString "NoConnectionMessage"),
+                        (Get-LocalizedString "NoConnectionTitle"),
                         [System.Windows.MessageBoxButton]::OK,
                         [System.Windows.MessageBoxImage]::Warning
                     )
@@ -12855,8 +14091,8 @@ function Initialize-CalendarTab {
                 if ([string]::IsNullOrWhiteSpace($script:txtCalendarSource.Text) -or 
                     [string]::IsNullOrWhiteSpace($script:txtCalendarTarget.Text)) {
                     [System.Windows.MessageBox]::Show(
-                        "Bitte geben Sie Quell- und Zielbenutzer an.",
-                        "Unvollständige Eingabe",
+                        (Get-LocalizedString "IncompleteInputMessage"),
+                        (Get-LocalizedString "IncompleteInputTitle"),
                         [System.Windows.MessageBoxButton]::OK,
                         [System.Windows.MessageBoxImage]::Warning
                     )
@@ -12866,20 +14102,35 @@ function Initialize-CalendarTab {
                 $sourceMailbox = $script:txtCalendarSource.Text
                 $targetUser = $script:txtCalendarTarget.Text
                 
-                # Kalenderberechtigung entfernen
-                $result = Remove-CalendarPermission -SourceMailbox $sourceMailbox -TargetUser $targetUser
-                
-                if ($result) {
-                    $script:txtStatus.Text = "Kalenderberechtigung erfolgreich entfernt."
-                    # Aktualisiere die Berechtigungsliste, wenn der aktuelle Benutzer angezeigt wird
-                    if ($script:txtCalendarMailboxUser.Text -eq $sourceMailbox) {
-                        Show-CalendarPermissions -Mailbox $sourceMailbox
+                try {
+                    # Kalenderberechtigung entfernen
+                    $calendarFolders = Get-MailboxFolderStatistics -Identity $sourceMailbox -FolderScope Calendar
+                    $defaultCalendar = $calendarFolders | Where-Object { $_.FolderType -eq "Calendar" } | Select-Object -First 1
+                    
+                    if ($defaultCalendar) {
+                        $calendarPath = "$sourceMailbox`:\$($defaultCalendar.Name)"
+                        $result = Remove-MailboxFolderPermission -Identity $calendarPath -User $targetUser -Confirm:$false -ErrorAction Stop
+                        
+                        if ($result) {
+                            $script:txtStatus.Text = (Get-LocalizedString "PermissionRemovedSuccess")
+                            # Aktualisiere die Berechtigungsliste
+                            if ($script:txtCalendarMailboxUser.Text -eq $sourceMailbox) {
+                                Show-CalendarPermissions -Mailbox $sourceMailbox
+                            }
+                        }
+                    } else {
+                        throw (Get-LocalizedString "NoCalendarFound")
                     }
+                }
+                catch {
+                    Write-Log "Fehler beim Entfernen der Kalenderberechtigung: $($_.Exception.Message)" -Type Error
+                    throw
                 }
             }
             catch {
                 $errorMsg = $_.Exception.Message
-               $script:txtStatus.Text = "Fehler: $errorMsg"
+                Write-Log "Kritischer Fehler: $errorMsg" -Type Error
+                $script:txtStatus.Text = (Get-LocalizedString "ErrorPrefix") + $errorMsg
             }
         } -ControlName "btnRemoveCalendarPermission"
         
@@ -13618,7 +14869,7 @@ function Initialize-GroupsTab {
             Register-EventHandler -Control $script:btnRefreshExistingGroups -Handler {
                 try {
                     Write-Log "Button 'Gruppenliste aktualisieren' (btnRefreshExistingGroups) geklickt." -Type "Info"
-                    Refresh-ExistingGroupsDropdown 
+                    Refresh-ExistingGroupsDropdown
                 }
                 catch {
                     $errorMsg = $_.Exception.Message
@@ -13743,6 +14994,7 @@ function Initialize-GroupsTab {
                         $script:txtGroupMembers.Text = ""
                         $script:txtGroupDescription.Text = ""
                         Refresh-ExistingGroupsDropdown 
+                        Get-SharedMailboxPermissionsAction -Mailbox $mailbox
                     } # Fehlerfall wird in New-ExoGroupAction behandelt (Statusbar, Log)
 
                 } catch {
@@ -13779,9 +15031,24 @@ function Initialize-GroupsTab {
                     }
                     
                     $groupDisplayNameForDelete = $groupToDeleteObject.DisplayName
-                    $groupIdentityForDelete = $groupToDeleteObject.Identity
+                    
+                    # Bestimme die korrekte Identity für die Gruppe
+                    $groupIdentityForDelete = $null
+                    if ($groupToDeleteObject.PSObject.Properties["OriginalObject"] -and $groupToDeleteObject.OriginalObject.PSObject.Properties["Identity"]) {
+                        $groupIdentityForDelete = $groupToDeleteObject.OriginalObject.Identity
+                    } elseif ($groupToDeleteObject.PSObject.Properties["Identity"]) {
+                        $groupIdentityForDelete = $groupToDeleteObject.Identity
+                    } elseif ($groupToDeleteObject.PSObject.Properties["DistinguishedName"]) {
+                        $groupIdentityForDelete = $groupToDeleteObject.DistinguishedName
+                    } elseif ($groupToDeleteObject.PSObject.Properties["PrimarySmtpAddress"]) {
+                        $groupIdentityForDelete = $groupToDeleteObject.PrimarySmtpAddress
+                    } else {
+                        Write-Log "Keine gültige Identity für zu löschende Gruppe gefunden" -Type "Error"
+                        Show-MessageBox -Message "Keine gültige Gruppen-Identity gefunden." -Title "Fehler" -Type Error
+                        return
+                    }
 
-                    $confirmResult = Show-MessageBox -Message "Sind Sie sicher, dass Sie die Gruppe '$groupDisplayNameForDelete' (Identity: $groupIdentityForDelete) löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden." -Title "Gruppe löschen bestätigen" -Type Question -Buttons YesNo
+                    $confirmResult = Show-MessageBox -Message "Sind Sie sicher, dass Sie die Gruppe '$groupDisplayNameForDelete' (Identity: $groupIdentityForDelete) löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden." -Title "Gruppe löschen bestätigen" -Type Question
                     if ($confirmResult -ne "Yes") {
                         Write-Log "Löschen der Gruppe '$groupDisplayNameForDelete' abgebrochen." -Type "Info"
                         Update-StatusBar -Message "Löschen der Gruppe '$groupDisplayNameForDelete' abgebrochen." -Type Info
@@ -13794,7 +15061,7 @@ function Initialize-GroupsTab {
                         Update-StatusBar -Message "Gruppe '$groupDisplayNameForDelete' erfolgreich gelöscht." -Type Success
                         Write-Log "Gruppe '$groupDisplayNameForDelete' erfolgreich gelöscht." -Type "Success"
                         if ($script:txtGroupName.Text -eq $groupDisplayNameForDelete) { $script:txtGroupName.Text = "" }
-                        Refresh-ExistingGroupsDropdown 
+                        Refresh-ExistingGroupsDropdown
                     } # Fehlerfall wird in Remove-ExoGroupAction behandelt
 
                 } catch {
@@ -13809,32 +15076,62 @@ function Initialize-GroupsTab {
             Register-EventHandler -Control $script:btnAddUserToGroup -Handler {
                 try {
                     Write-Log "Button 'Benutzer hinzufügen' geklickt." -Type "Info"
+
+                    # Verbindungsprüfung
                     if (-not $script:isConnected) {
                         Show-MessageBox -Message "Bitte stellen Sie zuerst eine Verbindung zu Exchange Online her." -Title "Keine Verbindung" -Type Warning
                         return
                     }
+
+                    # Gruppenauswahl prüfen
                     if ($null -eq $script:cmbSelectExistingGroup.SelectedItem) {
                         Show-MessageBox -Message "Bitte wählen Sie zuerst eine Gruppe aus der Liste aus." -Title "Keine Gruppe ausgewählt" -Type Warning
                         return
                     }
+
+                    # Benutzereingabe prüfen
                     if ([string]::IsNullOrWhiteSpace($script:txtGroupUser.Text)) {
                         Show-MessageBox -Message "Bitte geben Sie den Benutzer (E-Mail-Adresse oder Alias) an, der hinzugefügt werden soll." -Title "Kein Benutzer angegeben" -Type Warning
                         return
                     }
 
                     $selectedGroupItem = $script:cmbSelectExistingGroup.SelectedItem
-                    $groupObject = $selectedGroupItem.Tag 
-                    $userEmail = $script:txtGroupUser.Text
+                    $groupObject = $selectedGroupItem.Tag
+                    $userEmail = $script:txtGroupUser.Text.Trim()
 
-                    # Parameter für Add-ExoGroupMemberAction sind -Identity (für Gruppe) und -MemberIdentity (für Benutzer)
-                    $addResult = Add-ExoGroupMemberAction -Identity $groupObject.Identity -MemberIdentity $userEmail 
+                    # Bestimme die korrekte Identity für die Gruppe
+                    $groupIdentity = $null
+                    if ($groupObject.PSObject.Properties["OriginalObject"] -and $groupObject.OriginalObject.PSObject.Properties["Identity"]) {
+                        $groupIdentity = $groupObject.OriginalObject.Identity
+                    } elseif ($groupObject.PSObject.Properties["DistinguishedName"]) {
+                        $groupIdentity = $groupObject.DistinguishedName
+                    } elseif ($groupObject.PSObject.Properties["PrimarySmtpAddress"]) {
+                        $groupIdentity = $groupObject.PrimarySmtpAddress
+                    } else {
+                        Write-Log "Keine gültige Identity für Gruppe gefunden" -Type "Error"
+                        Show-MessageBox -Message "Keine gültige Gruppen-Identity gefunden." -Title "Fehler" -Type Error
+                        return
+                    }
+
+                    # Bestätigung einholen
+                    $confirmResult = Show-MessageBox -Message "Möchten Sie den Benutzer '$userEmail' zur Gruppe '$($groupObject.DisplayName)' hinzufügen?" -Title "Benutzer hinzufügen bestätigen" -Type Question
+                    if ($confirmResult -ne "Yes") {
+                        Write-Log "Hinzufügen des Benutzers '$userEmail' zu Gruppe '$($groupObject.DisplayName)' abgebrochen." -Type "Info"
+                        Update-StatusBar -Message "Hinzufügen von '$userEmail' abgebrochen." -Type Info
+                        return
+                    }
+
+                    # Benutzer zur Gruppe hinzufügen mit ErrorAction Stop
+                    $addResult = Add-ExoGroupMemberAction -Identity $groupIdentity -MemberIdentity $userEmail -ErrorAction Stop
 
                     if ($addResult) {
-                        Update-StatusBar -Message "Benutzer '$userEmail' zu Gruppe '$($groupObject.DisplayName)' hinzugefügt." -Type Success
-                        Write-Log "Benutzer '$userEmail' zu Gruppe '$($groupObject.DisplayName)' hinzugefügt." -Type "Success"
-                        $script:txtGroupUser.Text = "" 
-                        # Mitgliederliste aktualisieren durch erneuten Aufruf von Get-ExoGroupMembersAction
-                        Get-ExoGroupMembersAction -Identity $groupObject.Identity
+                        $successMsg = "Benutzer '$userEmail' zu Gruppe '$($groupObject.DisplayName)' hinzugefügt."
+                        Update-StatusBar -Message $successMsg -Type Success
+                        Write-Log $successMsg -Type "Success"
+                        $script:txtGroupUser.Text = ""
+
+                        # Listen aktualisieren
+                        Get-ExoGroupMembersAction
                     }
                 } catch {
                     $errMsg = "Fehler beim Hinzufügen des Benutzers zur Gruppe: $($_.Exception.Message)"
@@ -13848,14 +15145,20 @@ function Initialize-GroupsTab {
             Register-EventHandler -Control $script:btnRemoveUserFromGroup -Handler {
                 try {
                     Write-Log "Button 'Benutzer entfernen' geklickt." -Type "Info"
-                     if (-not $script:isConnected) {
+                    
+                    # Verbindungsprüfung
+                    if (-not $script:isConnected) {
                         Show-MessageBox -Message "Bitte stellen Sie zuerst eine Verbindung zu Exchange Online her." -Title "Keine Verbindung" -Type Warning
                         return
                     }
+
+                    # Gruppenauswahl prüfen
                     if ($null -eq $script:cmbSelectExistingGroup.SelectedItem) {
                         Show-MessageBox -Message "Bitte wählen Sie zuerst eine Gruppe aus der Liste aus." -Title "Keine Gruppe ausgewählt" -Type Warning
                         return
                     }
+
+                    # Benutzereingabe prüfen
                     if ([string]::IsNullOrWhiteSpace($script:txtGroupUser.Text)) {
                         Show-MessageBox -Message "Bitte geben Sie den Benutzer (E-Mail-Adresse oder Alias) an, der entfernt werden soll." -Title "Kein Benutzer angegeben" -Type Warning
                         return
@@ -13863,28 +15166,46 @@ function Initialize-GroupsTab {
 
                     $selectedGroupItem = $script:cmbSelectExistingGroup.SelectedItem
                     $groupObject = $selectedGroupItem.Tag
-                    $userEmail = $script:txtGroupUser.Text
+                    $userEmail = $script:txtGroupUser.Text.Trim()
                     
-                    $confirmResult = Show-MessageBox -Message "Sind Sie sicher, dass Sie den Benutzer '$userEmail' aus der Gruppe '$($groupObject.DisplayName)' entfernen möchten?" -Title "Benutzer entfernen bestätigen" -Type Question -Buttons YesNo
+                    # Bestimme die korrekte Identity für die Gruppe
+                    $groupIdentity = $null
+                    if ($groupObject.PSObject.Properties["OriginalObject"] -and $groupObject.OriginalObject.PSObject.Properties["Identity"]) {
+                        $groupIdentity = $groupObject.OriginalObject.Identity
+                    } elseif ($groupObject.PSObject.Properties["DistinguishedName"]) {
+                        $groupIdentity = $groupObject.DistinguishedName
+                    } elseif ($groupObject.PSObject.Properties["PrimarySmtpAddress"]) {
+                        $groupIdentity = $groupObject.PrimarySmtpAddress
+                    } else {
+                        Write-Log "Keine gültige Identity für Gruppe gefunden" -Type "Error"
+                        Show-MessageBox -Message "Keine gültige Gruppen-Identity gefunden." -Title "Fehler" -Type Error
+                        return
+                    }
+                    
+                    # Bestätigung einholen
+                    $confirmResult = Show-MessageBox -Message "Sind Sie sicher, dass Sie den Benutzer '$userEmail' aus der Gruppe '$($groupObject.DisplayName)' entfernen möchten?" -Title "Benutzer entfernen bestätigen" -Type Question
                     if ($confirmResult -ne "Yes") {
                         Write-Log "Entfernen des Benutzers '$userEmail' aus Gruppe '$($groupObject.DisplayName)' abgebrochen." -Type "Info"
                         Update-StatusBar -Message "Entfernen von '$userEmail' abgebrochen." -Type Info
                         return
                     }
 
-                    # Parameter für Remove-ExoGroupMemberAction sind -GroupIdentity und -UserIdentity
-                    $removeResult = Remove-ExoGroupMemberAction -GroupIdentity $groupObject.Identity -UserIdentity $userEmail 
+                    # Benutzer aus Gruppe entfernen mit ErrorAction Stop
+                    $removeResult = Remove-ExoGroupMemberAction -GroupIdentity $groupIdentity -UserIdentity $userEmail -ErrorAction Stop
 
-                    if ($removeResult) {
-                        Update-StatusBar -Message "Benutzer '$userEmail' aus Gruppe '$($groupObject.DisplayName)' entfernt." -Type Success
-                        Write-Log "Benutzer '$userEmail' aus Gruppe '$($groupObject.DisplayName)' entfernt." -Type "Success"
-                        $script:txtGroupUser.Text = "" 
-                        Get-ExoGroupMembersAction -Identity $groupObject.Identity
-                    }
+                    # Wenn wir hier ankommen, war die Operation erfolgreich (sonst wäre eine Exception geworfen worden)
+                    $successMsg = "Benutzer '$userEmail' aus Gruppe '$($groupObject.DisplayName)' entfernt."
+                    Update-StatusBar -Message $successMsg -Type Success
+                    Write-Log $successMsg -Type "Success"
+                    $script:txtGroupUser.Text = ""
+                    
+                    # Listen aktualisieren
+                    Get-ExoGroupMembersAction
                 } catch {
                     $errMsg = "Fehler beim Entfernen des Benutzers aus der Gruppe: $($_.Exception.Message)"
                     Write-Log $errMsg -Type "Error"
                     Update-StatusBar -Message $errMsg -Type "Error"
+                    Show-MessageBox -Message $errMsg -Title "Fehler" -Type Error
                 }
             } -ControlName "btnRemoveUserFromGroup"
         }
@@ -13905,30 +15226,56 @@ function Initialize-GroupsTab {
                     $selectedGroupItem = $script:cmbSelectExistingGroup.SelectedItem
                     $groupObject = $selectedGroupItem.Tag
 
-                    $settingsParams = @{
-                        Identity = $groupObject.Identity
+                    # Bestimme die korrekte Identity für die Gruppe
+                    $groupIdentity = $null
+                    if ($groupObject.PSObject.Properties["OriginalObject"] -and $groupObject.OriginalObject.PSObject.Properties["Identity"]) {
+                        $groupIdentity = $groupObject.OriginalObject.Identity
+                    } elseif ($groupObject.PSObject.Properties["DistinguishedName"]) {
+                        $groupIdentity = $groupObject.DistinguishedName
+                    } elseif ($groupObject.PSObject.Properties["PrimarySmtpAddress"]) {
+                        $groupIdentity = $groupObject.PrimarySmtpAddress
+                    } else {
+                        Write-Log "Keine gültige Identity für Gruppe gefunden" -Type "Error"
+                        Show-MessageBox -Message "Keine gültige Gruppen-Identity gefunden." -Title "Fehler" -Type Error
+                        return
                     }
-                    # Nur gebundene Parameter übergeben, wenn Checkboxen aktiv sind
-                    if ($script:chkHiddenFromGAL.IsEnabled)       { $settingsParams.HiddenFromAddressListsEnabled = [bool]$script:chkHiddenFromGAL.IsChecked }
-                    # RequireSenderAuthenticationEnabled und AllowExternalSenders sind oft aneinander gekoppelt.
-                    # Update-ExoGroupSettingsAction sollte die Logik dafür haben.
-                    if ($script:chkRequireSenderAuth.IsEnabled)   { $settingsParams.RequireSenderAuthenticationEnabled = [bool]$script:chkRequireSenderAuth.IsChecked }
-                    if ($script:chkAllowExternalSenders.IsEnabled){ $settingsParams.AllowExternalSenders = [bool]$script:chkAllowExternalSenders.IsChecked }
 
+                    # Hashtable für die Gruppeneinstellungen erstellen
+                    $settingsParams = @{
+                        Identity = $groupIdentity
+                    }
 
-                    $updateResult = Update-ExoGroupSettingsAction @settingsParams 
+                    # Nur aktivierte und gesetzte Checkboxen in die Parameter aufnehmen
+                    if ($script:chkHiddenFromGAL.IsEnabled -and $null -ne $script:chkHiddenFromGAL.IsChecked) {
+                        $settingsParams.HiddenFromAddressListsEnabled = [bool]$script:chkHiddenFromGAL.IsChecked
+                    }
+                    if ($script:chkRequireSenderAuth.IsEnabled -and $null -ne $script:chkRequireSenderAuth.IsChecked) {
+                        $settingsParams.RequireSenderAuthenticationEnabled = [bool]$script:chkRequireSenderAuth.IsChecked
+                    }
+                    if ($script:chkAllowExternalSenders.IsEnabled -and $null -ne $script:chkAllowExternalSenders.IsChecked) {
+                        $settingsParams.AllowExternalSenders = [bool]$script:chkAllowExternalSenders.IsChecked
+                    }
+
+                    # Prüfen ob überhaupt Parameter zum Aktualisieren vorhanden sind
+                    if ($settingsParams.Keys.Count -eq 1) {
+                        Write-Log "Keine Einstellungen zum Aktualisieren ausgewählt." -Type "Warning"
+                        Show-MessageBox -Message "Bitte wählen Sie mindestens eine Einstellung zum Aktualisieren aus." -Title "Keine Änderungen" -Type Warning
+                        return
+                    }
+
+                    $updateResult = Update-ExoGroupSettingsAction @settingsParams
 
                     if ($updateResult) {
-                        # Status-Update erfolgt in Update-ExoGroupSettingsAction
-                        Write-Log "Aufruf von Update-ExoGroupSettingsAction für '$($groupObject.DisplayName)' war erfolgreich (laut Rückgabewert)." -Type "Info"
-                        # Optional: Einstellungen neu laden, um UI zu bestätigen
-                        Get-ExoGroupMembersAction -Identity $groupObject.Identity
+                        Write-Log "Gruppeneinstellungen für '$($groupObject.DisplayName)' erfolgreich aktualisiert." -Type "Success"
+                        # Aktualisiere die Anzeige
+                        Get-ExoGroupMembersAction
                     }
 
                 } catch {
                     $errMsg = "Fehler beim Aktualisieren der Gruppeneinstellungen: $($_.Exception.Message)"
                     Write-Log $errMsg -Type "Error"
                     Update-StatusBar -Message $errMsg -Type "Error"
+                    Show-MessageBox -Message $errMsg -Title "Fehler" -Type Error
                 }
             } -ControlName "btnUpdateGroupSettings"
         }
@@ -14595,19 +15942,35 @@ function Initialize-SharedMailboxTab {
                 }
         
                 # Eingabeprüfung
-                if ([string]::IsNullOrWhiteSpace($script:txtSharedMailboxPermSource.Text) -or 
-                    [string]::IsNullOrWhiteSpace($script:txtSharedMailboxPermUser.Text) -or 
-                    $null -eq $script:cmbSharedMailboxPermType.SelectedItem) {
-                    [System.Windows.MessageBox]::Show("Bitte geben Sie Shared Mailbox, Benutzer und Berechtigungstyp an.", 
-                        "Unvollständige Angaben", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning)
+                if ([string]::IsNullOrWhiteSpace($script:txtSharedMailboxPermSource.Text)) {
+                    [System.Windows.MessageBox]::Show("Bitte geben Sie eine Shared Mailbox an.", 
+                        "Fehlende Shared Mailbox", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning)
+                    return
+                }
+
+                if ([string]::IsNullOrWhiteSpace($script:txtSharedMailboxPermUser.Text)) {
+                    [System.Windows.MessageBox]::Show("Bitte geben Sie einen Benutzer an.", 
+                        "Fehlender Benutzer", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning)
+                    return
+                }
+
+                if ($null -eq $script:cmbSharedMailboxPermType.SelectedItem) {
+                    [System.Windows.MessageBox]::Show("Bitte wählen Sie einen Berechtigungstyp aus.", 
+                        "Fehlender Berechtigungstyp", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning)
                     return
                 }
         
-                # Parameter sammeln
-                $mailbox = $script:txtSharedMailboxPermSource.Text
-                $user = $script:txtSharedMailboxPermUser.Text
+                # Parameter sammeln und validieren
+                $mailbox = $script:txtSharedMailboxPermSource.Text.Trim()
+                $user = $script:txtSharedMailboxPermUser.Text.Trim()
                 $permType = $script:cmbSharedMailboxPermType.SelectedItem.Content.ToString()
                 $autoMapping = $script:chkAutoMapping.IsChecked
+
+                if ([string]::IsNullOrEmpty($mailbox) -or [string]::IsNullOrEmpty($user)) {
+                    [System.Windows.MessageBox]::Show("Die Shared Mailbox und der Benutzer dürfen nicht leer sein.", 
+                        "Ungültige Eingabe", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning)
+                    return
+                }
                 
                 # Funktion zum Hinzufügen der Berechtigung aufrufen
                 $result = Add-SharedMailboxPermissionAction -Mailbox $mailbox -User $user -PermissionType $permType -AutoMapping $autoMapping
@@ -14615,9 +15978,10 @@ function Initialize-SharedMailboxTab {
                 if ($result) {
                     $script:txtStatus.Text = "Berechtigung wurde erfolgreich hinzugefügt."
                 }
-    }
-    catch {
+            }
+            catch {
                 $errorMsg = $_.Exception.Message
+                Write-Log -Level Error -Message "Fehler beim Hinzufügen der Berechtigung: $errorMsg"
                 $script:txtStatus.Text = "Fehler: $errorMsg"
             }
         } -ControlName "btnAddSharedMailboxPermission"
@@ -14860,7 +16224,7 @@ function Initialize-SharedMailboxTab {
                 $keepCopy = $script:chkKeepCopy.IsChecked
                 
                 # Funktion zum Einrichten der Weiterleitung aufrufen
-                $result = Set-SharedMailboxForwardingAction -Mailbox $mailbox -ForwardingAddress $forwardingAddress -KeepCopy $keepCopy
+                $result = Set-SharedMailboxForwardingAction -Mailbox $mailbox -ForwardingAddress $forwardingAddress -DeliverToMailboxAndForward $keepCopy
                 
                 if ($result) {
                     $script:txtStatus.Text = "Weiterleitung wurde erfolgreich eingerichtet."
@@ -15098,6 +16462,7 @@ function Initialize-AuditTab {
                 $item.Content = $category
                 [void]$cmbAuditCategory.Items.Add($item)
             }
+            # Standardmäßig "Postfach-Informationen" auswählen
             if ($cmbAuditCategory.Items.Count -gt 0) {
                 $cmbAuditCategory.SelectedIndex = 0
             }
@@ -15137,6 +16502,7 @@ function Initialize-AuditTab {
                             [void]$script:cmbAuditType.Items.Add($item)
                         }
                         
+                        # Standardmäßig den ersten Typ auswählen
                         if ($script:cmbAuditType.Items.Count -gt 0) {
                             $script:cmbAuditType.SelectedIndex = 0
                         }
@@ -15148,9 +16514,23 @@ function Initialize-AuditTab {
                 }
             })
             
-            # Initial die erste Kategorie auswählen, um die Typen zu laden
+            # Initial die erste Kategorie auswählen und entsprechende Typen laden
             if ($cmbAuditCategory.Items.Count -gt 0) {
                 $cmbAuditCategory.SelectedIndex = 0
+                
+                # Manuell die Typen für "Postfach-Informationen" laden
+                $cmbAuditType.Items.Clear()
+                $infoTypes = @("Grundlegende Informationen", "Speicherbegrenzungen", "E-Mail-Adressen", "Funktion/Rolle", "Alle Details")
+                foreach ($type in $infoTypes) {
+                    $item = New-Object System.Windows.Controls.ComboBoxItem
+                    $item.Content = $type
+                    [void]$cmbAuditType.Items.Add($item)
+                }
+                
+                # Standardmäßig "Grundlegende Informationen" auswählen
+                if ($cmbAuditType.Items.Count -gt 0) {
+                    $cmbAuditType.SelectedIndex = 0
+                }
             }
         }
         
@@ -15488,7 +16868,7 @@ function Initialize-TroubleshootingTab {
                 
                 Write-Log  "Führe Diagnose aus: Index=$diagnosticIndex, User=$user, User2=$user2, Email=$email" -Type "Info"
                 
-                $result = Run-ExchangeDiagnostic -DiagnosticIndex $diagnosticIndex -User $user -User2 $user2 -Email $email
+                $result = Start-ExchangeDiagnostic -DiagnosticIndex $diagnosticIndex -User $user -User2 $user2 -Email $email
                 
                 if ($null -ne $script:txtDiagnosticResult) {
                     $script:txtDiagnosticResult.Text = $result
@@ -16834,6 +18214,105 @@ function Initialize-ApplicationUI {
     }
 }
 
+# Initialisiert das Cross-Premises Tab
+function Initialize-CrossPremisesTab {
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Log "Initialisiere Cross-Premises Tab..." -Type "Info"
+
+        # Connector Buttons
+        $btnGetConnectors = $script:Form.FindName("btnGetConnectors")
+        $btnSetConnectorStatus = $script:Form.FindName("btnSetConnectorStatus")
+        
+        # Accepted Domains Button
+        $btnGetAcceptedDomains = $script:Form.FindName("btnGetAcceptedDomains")
+        
+        # Remote Domains Button
+        $btnGetRemoteDomains = $script:Form.FindName("btnGetRemoteDomains")
+        
+        # DataGrids
+        $dgConnectors = $script:Form.FindName("dgConnectors")
+        $dgAcceptedDomains = $script:Form.FindName("dgAcceptedDomains")
+        $dgRemoteDomains = $script:Form.FindName("dgRemoteDomains")
+
+        # Event Handler für Connectors
+        if ($null -ne $btnGetConnectors) {
+            $btnGetConnectors.Add_Click({
+                try {
+                    Update-StatusBar -Message "Lade Connectors..."
+                    Get-MailConnectors
+                } catch {
+                    Write-Log "Fehler beim Laden der Connectors: $($_.Exception.Message)" -Type "Error"
+                    Update-StatusBar -Message "Fehler beim Laden der Connectors"
+                }
+            })
+        }
+
+        # Add Connector Button
+        $btnAddConnector = $script:Form.FindName("btnAddConnector")
+        
+        if ($null -ne $btnAddConnector) {
+            $btnAddConnector.Add_Click({
+                try {
+                    Update-StatusBar -Message "Öffne Connector-Dialog..."
+                    Add-NewConnector
+                } catch {
+                    Write-Log "Fehler beim Öffnen des Connector-Dialogs: $($_.Exception.Message)" -Type "Error"
+                    Update-StatusBar -Message "Fehler beim Öffnen des Connector-Dialogs"
+                }
+            })
+        }
+
+        if ($null -ne $btnSetConnectorStatus) {
+            $btnSetConnectorStatus.Add_Click({
+                try {
+                    Update-StatusBar -Message "Ändere Connector-Status..."
+                    Set-ConnectorStatus
+                } catch {
+                    Write-Log "Fehler beim Ändern des Connector-Status: $($_.Exception.Message)" -Type "Error"
+                    Update-StatusBar -Message "Fehler beim Ändern des Connector-Status"
+                }
+            })
+        }
+
+        # Event Handler für Accepted Domains
+        if ($null -ne $btnGetAcceptedDomains) {
+            $btnGetAcceptedDomains.Add_Click({
+                try {
+                    Update-StatusBar -Message "Lade akzeptierte Domänen..."
+                    Get-AcceptedDomainsList
+                } catch {
+                    Write-Log "Fehler beim Laden der akzeptierten Domänen: $($_.Exception.Message)" -Type "Error"
+                    Update-StatusBar -Message "Fehler beim Laden der akzeptierten Domänen"
+                }
+            })
+        }
+
+        # Event Handler für Remote Domains
+        if ($null -ne $btnGetRemoteDomains) {
+            $btnGetRemoteDomains.Add_Click({
+                try {
+                    Update-StatusBar -Message "Lade Remote-Domänen..."
+                    Get-RemoteDomainsList
+                } catch {
+                    Write-Log "Fehler beim Laden der Remote-Domänen: $($_.Exception.Message)" -Type "Error"
+                    Update-StatusBar -Message "Fehler beim Laden der Remote-Domänen"
+                }
+            })
+        }
+
+        Write-Log "Cross-Premises Tab erfolgreich initialisiert" -Type "Success"
+        return $true
+    }
+    catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler bei der Initialisierung des Cross-Premises Tabs."
+        Write-Log $errorMsg -Type "Error"
+        return $false
+    }
+}
+
 # Initialisiert die restlichen Tabs im Hintergrund über einen separaten Thread
 function Initialize-RemainingTabs {
     [CmdletBinding()]
@@ -16863,14 +18342,14 @@ function Initialize-RemainingTabs {
         MessageTrace = Initialize-MessageTraceTab
         AutoReply = Initialize-AutoReplyTab
         HealthCheck = Initialize-HealthCheckTab
-        # Tabs welche keine Funktion haben, aber im UI vorhanden sind
+        # Tabs welche keine Funktion haben, aber im UI bereits vorhanden sind
         #ATP = Initialize-ATPTab
         #DLP = Initialize-DLPTab
         #eDiscovery = Initialize-eDiscoveryTab
         #MDM = Initialize-MDMTab
         #HybridExchange = Initialize-HybridExchangeTab
         #MultiForest = Initialize-MultiForestTab
-        #CrossPremises = Initialize-CrossPremisesTab
+        CrossPremises = Initialize-CrossPremisesTab
     }
 
     $successCount = ($results.Values | Where-Object { $_ -eq $true }).Count
@@ -16965,6 +18444,7 @@ function Start-AsyncTabInitialization {
                     MessageTrace = Initialize-MessageTraceTab
                     AutoReply = Initialize-AutoReplyTab
                     HealthCheck = Initialize-HealthCheckTab
+                    CrossPremises = Initialize-CrossPremisesTab
                 }
                 
                 $successCount = ($results.Values | Where-Object { $_ -eq $true }).Count
