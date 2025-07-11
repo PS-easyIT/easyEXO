@@ -7178,38 +7178,278 @@ function Show-DetailedMessageTraceAction {
         return
     }
 
-    Update-StatusBar -Message "Lade detaillierte Informationen für die ausgewählte Nachricht..." -Type "Info"
+    Update-StatusBar -Message "Lade umfassende detaillierte Informationen für die ausgewählte Nachricht..." -Type "Info"
     
-    $details = Get-MessageTraceDetail -MessageTraceId $selectedTrace.MessageTraceId -RecipientAddress $selectedTrace.RecipientAddress
-    
-    $detailString = "Message Trace Details for Message from $($selectedTrace.SenderAddress) to $($selectedTrace.RecipientAddress):`n"
-    $detailString += "Subject: $($selectedTrace.Subject)`n"
-    $detailString += "--------------------------------------------------`n`n"
-    
-    foreach ($event in $details) {
-        $detailString += "Date: $($event.Date)`n"
-        $detailString += "Event: $($event.Event)`n"
-        $detailString += "Action: $($event.Action)`n"
-        $detailString += "Detail: $($event.Detail)`n"
-        $detailString += "---------------------------------`n"
-    }
+    try {
+        # Sammle alle verfügbaren Informationen
+        $details = Get-MessageTraceDetail -MessageTraceId $selectedTrace.MessageTraceId -RecipientAddress $selectedTrace.RecipientAddress
+        
+        # Versuche zusätzliche Informationen zu sammeln
+        $extendedInfo = $null
+        try {
+            # Erweiterte Message Trace Informationen falls verfügbar
+            $extendedInfo = Get-HistoricalSearch -ReportTitle "DetailedMessageTrace" -StartDate $selectedTrace.Received.AddHours(-1) -EndDate $selectedTrace.Received.AddHours(1) -ReportType MessageTrace -NotifyAddress (Get-Mailbox -ResultSize 1).PrimarySmtpAddress -ErrorAction SilentlyContinue
+        } catch {
+            Write-Log "Erweiterte Informationen nicht verfügbar: $($_.Exception.Message)" -Type "Warning"
+        }
+        
+        # Umfassende Detailinformationen zusammenstellen
+        $detailString = "=== UMFASSENDE NACHRICHTENVERFOLGUNG - MAXIMALE DETAILTIEFE ===`n"
+        $detailString += "Generiert am: $(Get-Date -Format 'dd.MM.yyyy HH:mm:ss')`n"
+        $detailString += "Analysiert von: $($env:USERNAME) auf $($env:COMPUTERNAME)`n"
+        $detailString += "PowerShell Version: $($PSVersionTable.PSVersion)`n"
+        $detailString += "Exchange Online Management Module: $(Get-Module ExchangeOnlineManagement -ListAvailable | Select-Object -First 1 | Select-Object -ExpandProperty Version)`n"
+        $detailString += "================================================================`n`n"
+        
+        # SEKTION 1: Grundlegende Nachrichteninformationen
+        $detailString += "█ SEKTION 1: GRUNDLEGENDE NACHRICHTENINFORMATIONEN`n"
+        $detailString += "================================================================`n"
+        $detailString += "Absender (From): $($selectedTrace.SenderAddress)`n"
+        $detailString += "Empfänger (To): $($selectedTrace.RecipientAddress)`n"
+        $detailString += "Betreff (Subject): $($selectedTrace.Subject)`n"
+        $detailString += "Nachrichtengröße: $($selectedTrace.Size) Bytes ($([math]::Round($selectedTrace.Size/1024, 2)) KB)`n"
+        $detailString += "Status: $($selectedTrace.Status)`n"
+        $detailString += "Empfangen: $($selectedTrace.Received) (UTC)`n"
+        $detailString += "Lokale Zeit: $(Get-Date $selectedTrace.Received -Format 'dd.MM.yyyy HH:mm:ss')`n"
+        $detailString += "Message-ID: $($selectedTrace.MessageId)`n"
+        $detailString += "Message Trace ID: $($selectedTrace.MessageTraceId)`n"
+        
+        # Zusätzliche Basis-Eigenschaften
+        if ($selectedTrace.FromIP) { $detailString += "Absender-IP: $($selectedTrace.FromIP)`n" }
+        if ($selectedTrace.ToIP) { $detailString += "Empfänger-IP: $($selectedTrace.ToIP)`n" }
+        if ($selectedTrace.Index) { $detailString += "Index: $($selectedTrace.Index)`n" }
+        
+        $detailString += "`n"
+        
+        # SEKTION 2: Netzwerk- und Routing-Informationen
+        $detailString += "█ SEKTION 2: NETZWERK- UND ROUTING-INFORMATIONEN`n"
+        $detailString += "================================================================`n"
+        
+        # IP-Adress-Analyse
+        if ($selectedTrace.FromIP) {
+            try {
+                $ipInfo = Resolve-DnsName $selectedTrace.FromIP -ErrorAction SilentlyContinue
+                if ($ipInfo) {
+                    $detailString += "Absender-IP Reverse DNS: $($ipInfo.NameHost)`n"
+                }
+            } catch {
+                $detailString += "Absender-IP Reverse DNS: Nicht auflösbar`n"
+            }
+        }
+        
+        # Geolocation-Informationen (falls verfügbar)
+        if ($selectedTrace.FromIP -and $selectedTrace.FromIP -notmatch "^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|127\.)" ) {
+            $detailString += "Absender-IP Typ: Öffentliche IP-Adresse`n"
+            $detailString += "Hinweis: Externe Absender-IP erkannt`n"
+        } elseif ($selectedTrace.FromIP) {
+            $detailString += "Absender-IP Typ: Private/Interne IP-Adresse`n"
+        }
+        
+        $detailString += "`n"
+        
+        # SEKTION 3: Detaillierte Ereignisverfolgung
+        $detailString += "█ SEKTION 3: DETAILLIERTE EREIGNISVERFOLGUNG`n"
+        $detailString += "================================================================`n"
+        
+        if ($details -and $details.Count -gt 0) {
+            $eventCounter = 1
+            $totalEvents = $details.Count
+            $detailString += "Anzahl der verfolgten Ereignisse: $totalEvents`n`n"
+            
+            foreach ($event in $details) {
+                $detailString += "┌─ EREIGNIS $eventCounter von $totalEvents ─────────────────────────────────────┐`n"
+                $detailString += "│ Zeitstempel: $($event.Date) (UTC)`n"
+                $detailString += "│ Lokale Zeit: $(Get-Date $event.Date -Format 'dd.MM.yyyy HH:mm:ss')`n"
+                $detailString += "│ Ereignistyp: $($event.Event)`n"
+                $detailString += "│ Durchgeführte Aktion: $($event.Action)`n"
+                $detailString += "│ Detailbeschreibung: $($event.Detail)`n"
+                
+                # Alle verfügbaren Event-Eigenschaften
+                $event.PSObject.Properties | ForEach-Object {
+                    if ($_.Name -notin @('Date', 'Event', 'Action', 'Detail') -and $null -ne $_.Value -and $_.Value -ne "") {
+                        $detailString += "│ $($_.Name): $($_.Value)`n"
+                    }
+                }
+                
+                # Ereignis-spezifische Analyse
+                switch ($event.Event) {
+                    "RECEIVE" { $detailString += "│ ► Nachricht wurde vom Exchange-System empfangen`n" }
+                    "SEND" { $detailString += "│ ► Nachricht wurde vom Exchange-System gesendet`n" }
+                    "DELIVER" { $detailString += "│ ► Nachricht wurde erfolgreich zugestellt`n" }
+                    "FAIL" { $detailString += "│ ► FEHLER: Nachrichtenzustellung fehlgeschlagen`n" }
+                    "DEFER" { $detailString += "│ ► Nachrichtenzustellung wurde verzögert`n" }
+                    "RESOLVE" { $detailString += "│ ► Empfängeradresse wurde aufgelöst`n" }
+                    "REDIRECT" { $detailString += "│ ► Nachricht wurde umgeleitet`n" }
+                    "EXPAND" { $detailString += "│ ► Verteilergruppe wurde erweitert`n" }
+                }
+                
+                $detailString += "└────────────────────────────────────────────────────────────────┘`n`n"
+                $eventCounter++
+            }
+        } else {
+            $detailString += "⚠️ Keine detaillierten Ereignisse verfügbar.`n"
+            $detailString += "Mögliche Gründe:`n"
+            $detailString += "- Nachricht ist zu alt (>10 Tage)`n"
+            $detailString += "- Unvollständige Protokollierung`n"
+            $detailString += "- Eingeschränkte Berechtigungen`n`n"
+        }
+        
+        # SEKTION 4: Vollständige Objekteigenschaften
+        $detailString += "█ SEKTION 4: VOLLSTÄNDIGE OBJEKTEIGENSCHAFTEN`n"
+        $detailString += "================================================================`n"
+        $detailString += "Alle verfügbaren Eigenschaften der Message Trace:`n`n"
+        
+        $propertyCounter = 1
+        $selectedTrace.PSObject.Properties | Sort-Object Name | ForEach-Object {
+            $value = if ($null -eq $_.Value) { "<NULL>" } elseif ($_.Value -eq "") { "<LEER>" } else { $_.Value }
+            $detailString += "[$propertyCounter] $($_.Name): $value`n"
+            $propertyCounter++
+        }
+        
+        # SEKTION 5: Technische Metadaten
+        $detailString += "`n█ SEKTION 5: TECHNISCHE METADATEN UND ANALYSE`n"
+        $detailString += "================================================================`n"
+        $detailString += "Objekttyp: $($selectedTrace.GetType().FullName)`n"
+        $detailString += "Anzahl Eigenschaften: $($selectedTrace.PSObject.Properties.Count)`n"
+        $detailString += "Nachrichtenalter: $((Get-Date) - $selectedTrace.Received | Select-Object -ExpandProperty Days) Tage`n"
+        
+        # Größenanalyse
+        if ($selectedTrace.Size -gt 0) {
+            $sizeKB = [math]::Round($selectedTrace.Size/1024, 2)
+            $sizeMB = [math]::Round($selectedTrace.Size/1048576, 2)
+            $detailString += "Größenanalyse:`n"
+            $detailString += "  - Bytes: $($selectedTrace.Size)`n"
+            $detailString += "  - Kilobytes: $sizeKB KB`n"
+            $detailString += "  - Megabytes: $sizeMB MB`n"
+            
+            if ($selectedTrace.Size -gt 25MB) {
+                $detailString += "  - ⚠️ Große Nachricht (>25MB) - könnte Zustellungsprobleme verursachen`n"
+            }
+        }
+        
+        # SEKTION 6: Empfehlungen und nächste Schritte
+        $detailString += "`n█ SEKTION 6: EMPFEHLUNGEN UND NÄCHSTE SCHRITTE`n"
+        $detailString += "================================================================`n"
+        
+        switch ($selectedTrace.Status) {
+            "Failed" {
+                $detailString += "🔴 STATUS: FEHLGESCHLAGEN`n"
+                $detailString += "Empfohlene Maßnahmen:`n"
+                $detailString += "- Überprüfen Sie die Ereignisdetails auf spezifische Fehlermeldungen`n"
+                $detailString += "- Kontrollieren Sie Spam-Filter und Mail-Flow-Regeln`n"
+                $detailString += "- Prüfen Sie die Empfängeradresse auf Gültigkeit`n"
+                $detailString += "- Verwenden Sie Get-MessageTrace mit erweiterten Parametern`n"
+            }
+            "Delivered" {
+                $detailString += "🟢 STATUS: ERFOLGREICH ZUGESTELLT`n"
+                $detailString += "Die Nachricht wurde erfolgreich zugestellt.`n"
+            }
+            "Pending" {
+                $detailString += "🟡 STATUS: AUSSTEHEND`n"
+                $detailString += "Die Nachricht wird noch verarbeitet oder ist in der Warteschlange.`n"
+            }
+            "Quarantined" {
+                $detailString += "🟠 STATUS: UNTER QUARANTÄNE`n"
+                $detailString += "Die Nachricht wurde von Sicherheitsfiltern blockiert.`n"
+                $detailString += "Überprüfen Sie das Security & Compliance Center.`n"
+            }
+        }
+        
+        $detailString += "`n================================================================`n"
+        $detailString += "Ende der detaillierten Analyse`n"
+        $detailString += "================================================================`n"
 
-    # Erstelle ein einfaches Text-Fenster für die Anzeige
-    $xaml = @"
+        # Erstelle ein erweitertes Fenster für die umfassende Anzeige
+        $xaml = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        Title="Detailed Message Trace" Height="600" Width="800" WindowStartupLocation="CenterScreen">
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <TextBox TextWrapping="Wrap" IsReadOnly="True" Margin="10" Name="txtDetails" FontFamily="Consolas" />
-    </ScrollViewer>
+        Title="Umfassende Nachrichtenverfolgung - $($selectedTrace.Subject)" Height="800" Width="1200" WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <Border Grid.Row="0" Background="#2C3E50" Padding="10">
+            <TextBlock Text="Umfassende Nachrichtenverfolgung - Maximale Detailtiefe" 
+                       Foreground="White" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
+        </Border>
+        
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Margin="10">
+            <TextBox TextWrapping="NoWrap" IsReadOnly="True" Name="txtDetails" FontFamily="Consolas" FontSize="10" 
+                     Background="#F8F8F8" Padding="15" BorderThickness="1" BorderBrush="#BDC3C7"
+                     VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
+        </ScrollViewer>
+        
+        <Border Grid.Row="2" Background="#ECF0F1" Padding="10">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Name="btnCopyToClipboard" Content="📋 In Zwischenablage kopieren" Padding="10,5" Margin="5" Background="#3498DB" Foreground="White"/>
+                <Button Name="btnSaveToFile" Content="💾 Als Datei speichern" Padding="10,5" Margin="5" Background="#27AE60" Foreground="White"/>
+                <Button Name="btnPrint" Content="🖨️ Drucken" Padding="10,5" Margin="5" Background="#F39C12" Foreground="White"/>
+                <Button Name="btnClose" Content="❌ Schließen" Padding="10,5" Margin="5" Background="#E74C3C" Foreground="White"/>
+            </StackPanel>
+        </Border>
+    </Grid>
 </Window>
 "@
-    $reader = [System.Xml.XmlReader]::Create([System.IO.StringReader]::new($xaml))
-    $window = [System.Windows.Markup.XamlReader]::Load($reader)
-    $txtDetails = $window.FindName("txtDetails")
-    $txtDetails.Text = $detailString
-    [void]$window.ShowDialog()
+        
+        $reader = [System.Xml.XmlReader]::Create([System.IO.StringReader]::new($xaml))
+        $window = [System.Windows.Markup.XamlReader]::Load($reader)
+        $txtDetails = $window.FindName("txtDetails")
+        $btnCopyToClipboard = $window.FindName("btnCopyToClipboard")
+        $btnSaveToFile = $window.FindName("btnSaveToFile")
+        $btnPrint = $window.FindName("btnPrint")
+        $btnClose = $window.FindName("btnClose")
+        
+        $txtDetails.Text = $detailString
+        
+        # Event-Handler für Buttons
+        $btnCopyToClipboard.Add_Click({
+            [System.Windows.Clipboard]::SetText($txtDetails.Text)
+            Show-MessageBox -Message "Umfassende Detailinformationen wurden in die Zwischenablage kopiert." -Title "Kopiert" -Type "Info"
+        })
+        
+        $btnSaveToFile.Add_Click({
+            $saveDialog = New-Object Microsoft.Win32.SaveFileDialog
+            $saveDialog.Filter = "Text-Dateien (*.txt)|*.txt|Log-Dateien (*.log)|*.log|Alle Dateien (*.*)|*.*"
+            $saveDialog.FileName = "MessageTrace_Comprehensive_Details_$(Get-Date -Format 'yyyyMMdd_HHmmss').txt"
+            
+            if ($saveDialog.ShowDialog() -eq $true) {
+                $txtDetails.Text | Out-File -FilePath $saveDialog.FileName -Encoding UTF8
+                Show-MessageBox -Message "Umfassende Detailinformationen wurden erfolgreich gespeichert unter:`n$($saveDialog.FileName)" -Title "Gespeichert" -Type "Info"
+            }
+        })
+        
+        $btnPrint.Add_Click({
+            try {
+                $printDialog = New-Object System.Windows.Controls.PrintDialog
+                if ($printDialog.ShowDialog() -eq $true) {
+                    $flowDoc = New-Object System.Windows.Documents.FlowDocument
+                    $para = New-Object System.Windows.Documents.Paragraph
+                    $para.Inlines.Add($txtDetails.Text)
+                    $flowDoc.Blocks.Add($para)
+                    $printDialog.PrintDocument($flowDoc.DocumentPaginator, "Message Trace Details")
+                    Show-MessageBox -Message "Druckauftrag wurde gesendet." -Title "Gedruckt" -Type "Info"
+                }
+            } catch {
+                Show-MessageBox -Message "Fehler beim Drucken: $($_.Exception.Message)" -Title "Druckfehler" -Type "Error"
+            }
+        })
+        
+        $btnClose.Add_Click({
+            $window.Close()
+        })
+        
+        [void]$window.ShowDialog()
 
-    Update-StatusBar -Message "Detaillierte Informationen angezeigt." -Type "Success"
+        Update-StatusBar -Message "Umfassende detaillierte Informationen erfolgreich angezeigt." -Type "Success"
+        
+    } catch {
+        $errorMsg = "Fehler beim Laden der detaillierten Informationen: $($_.Exception.Message)"
+        Write-Log $errorMsg -Type "Error"
+        Show-MessageBox -Message $errorMsg -Title "Fehler" -Type "Error"
+        Update-StatusBar -Message "Fehler beim Laden der Details." -Type "Error"
+    }
 }
 
 # -------------------------------------------------
@@ -10024,6 +10264,26 @@ function Get-ResourceSettingsAction {
             DeleteSubject = $calendarProcessing.DeleteSubject
             RemovePrivateProperty = $calendarProcessing.RemovePrivateProperty
             AddOrganizerToSubject = $calendarProcessing.AddOrganizerToSubject
+            ProcessExternalMeetingMessages = $calendarProcessing.ProcessExternalMeetingMessages
+            RemoveOldMeetingMessages = $calendarProcessing.RemoveOldMeetingMessages
+            AddAdditionalResponse = $calendarProcessing.AddAdditionalResponse
+            AdditionalResponse = $calendarProcessing.AdditionalResponse
+            DeleteNonCalendarItems = $calendarProcessing.DeleteNonCalendarItems
+            ForwardRequestsToDelegates = $calendarProcessing.ForwardRequestsToDelegates
+            TentativePendingApproval = $calendarProcessing.TentativePendingApproval
+            EnableResponseDetails = $calendarProcessing.EnableResponseDetails
+            OrganizerInfo = $calendarProcessing.OrganizerInfo
+            RequestOutOfPolicy = $calendarProcessing.RequestOutOfPolicy
+            AllRequestOutOfPolicy = $calendarProcessing.AllRequestOutOfPolicy
+            BookInPolicy = $calendarProcessing.BookInPolicy
+            AllBookInPolicy = $calendarProcessing.AllBookInPolicy
+            RequestInPolicy = $calendarProcessing.RequestInPolicy
+            AllRequestInPolicy = $calendarProcessing.AllRequestInPolicy
+            ResourceDelegates = $calendarProcessing.ResourceDelegates
+            ConflictPercentageAllowed = $calendarProcessing.ConflictPercentageAllowed
+            MaximumConflictInstances = $calendarProcessing.MaximumConflictInstances
+            MinimumDurationInMinutes = $calendarProcessing.MinimumDurationInMinutes
+            PostReservationMaxClaimTimeInMinutes = $calendarProcessing.PostReservationMaxClaimTimeInMinutes
         }
         
         Write-Log  "Ressourceneinstellungen erfolgreich abgerufen" -Type "Success"
@@ -10035,6 +10295,84 @@ function Get-ResourceSettingsAction {
         $errorMsg = $_.Exception.Message
         Write-Log  "Fehler beim Abrufen der Ressourceneinstellungen: $errorMsg" -Type "Error"
         Log-Action "Fehler beim Abrufen der Ressourceneinstellungen: $errorMsg"
+        throw $_
+    }
+}
+
+function Get-ResourcePermissionsAction {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Identity
+    )
+    
+    try {
+        Write-Log  "Rufe Ressourcenberechtigungen ab für: $Identity" -Type "Info"
+        
+        # Mailbox-Berechtigungen abrufen
+        $mailboxPermissions = Get-MailboxPermission -Identity $Identity | Where-Object { 
+            $_.User -notlike "NT AUTHORITY\*" -and 
+            $_.User -notlike "S-1-*" -and 
+            $_.User -ne "SELF" 
+        }
+        
+        # Kalender-Berechtigungen abrufen
+        # Kalender-Berechtigungen für verschiedene Sprachen abrufen
+        $calendarPermissions = @()
+        $calendarFolders = @("Calendar", "Kalender", "Calendrier", "Calendario", "Kalendarz")
+        
+        foreach ($folderName in $calendarFolders) {
+            try {
+                $permissions = Get-MailboxFolderPermission -Identity "${Identity}:\$folderName" -ErrorAction SilentlyContinue
+                if ($permissions) {
+                    $calendarPermissions += $permissions
+                    break  # Erfolgreich gefunden, keine weiteren Versuche nötig
+                }
+            }
+            catch {
+                # Ordner existiert nicht in dieser Sprache, weiter versuchen
+                continue
+            }
+        }
+        
+        # Berechtigungen zusammenstellen
+        $permissions = @()
+        
+        # Mailbox-Berechtigungen hinzufügen
+        foreach ($permission in $mailboxPermissions) {
+            $permissions += [PSCustomObject]@{
+                Resource = $Identity
+                User = $permission.User
+                PermissionType = "Mailbox"
+                AccessRights = ($permission.AccessRights -join ", ")
+                IsInherited = $permission.IsInherited
+                Deny = $permission.Deny
+            }
+        }
+        
+        # Kalender-Berechtigungen hinzufügen
+        foreach ($permission in $calendarPermissions) {
+            if ($permission.User -ne "Default" -and $permission.User -ne "Anonymous") {
+                $permissions += [PSCustomObject]@{
+                    Resource = $Identity
+                    User = $permission.User
+                    PermissionType = "Kalender"
+                    AccessRights = ($permission.AccessRights -join ", ")
+                    IsInherited = $false
+                    Deny = $false
+                }
+            }
+        }
+        
+        Write-Log  "Erfolgreich $($permissions.Count) Berechtigungen für Ressource abgerufen" -Type "Success"
+        Log-Action "Ressourcenberechtigungen abgerufen für: $Identity ($($permissions.Count) Berechtigungen)"
+        
+        return $permissions
+    }
+    catch {
+        $errorMsg = $_.Exception.Message
+        Write-Log  "Fehler beim Abrufen der Ressourcenberechtigungen: $errorMsg" -Type "Error"
+        Log-Action "Fehler beim Abrufen der Ressourcenberechtigungen: $errorMsg"
         throw $_
     }
 }
@@ -10067,6 +10405,9 @@ function Update-ResourceSettingsAction {
         [int]$MaximumDurationInMinutes,
         
         [Parameter(Mandatory = $false)]
+        [int]$MinimumDurationInMinutes,
+        
+        [Parameter(Mandatory = $false)]
         [bool]$AllowRecurringMeetings,
         
         [Parameter(Mandatory = $false)]
@@ -10082,7 +10423,46 @@ function Update-ResourceSettingsAction {
         [bool]$RemovePrivateProperty,
         
         [Parameter(Mandatory = $false)]
-        [bool]$AddOrganizerToSubject
+        [bool]$AddOrganizerToSubject,
+        
+        [Parameter(Mandatory = $false)]
+        [bool]$ProcessExternalMeetingMessages,
+        
+        [Parameter(Mandatory = $false)]
+        [bool]$RemoveOldMeetingMessages,
+        
+        [Parameter(Mandatory = $false)]
+        [bool]$AddAdditionalResponse,
+        
+        [Parameter(Mandatory = $false)]
+        [string]$AdditionalResponse,
+        
+        [Parameter(Mandatory = $false)]
+        [bool]$DeleteNonCalendarItems,
+        
+        [Parameter(Mandatory = $false)]
+        [bool]$ForwardRequestsToDelegates,
+        
+        [Parameter(Mandatory = $false)]
+        [bool]$TentativePendingApproval,
+        
+        [Parameter(Mandatory = $false)]
+        [bool]$EnableResponseDetails,
+        
+        [Parameter(Mandatory = $false)]
+        [bool]$OrganizerInfo,
+        
+        [Parameter(Mandatory = $false)]
+        [string[]]$ResourceDelegates,
+        
+        [Parameter(Mandatory = $false)]
+        [int]$ConflictPercentageAllowed,
+        
+        [Parameter(Mandatory = $false)]
+        [int]$MaximumConflictInstances,
+        
+        [Parameter(Mandatory = $false)]
+        [int]$PostReservationMaxClaimTimeInMinutes
     )
     
     try {
@@ -10098,15 +10478,15 @@ function Update-ResourceSettingsAction {
             ErrorAction = "Stop"
         }
         
-        if ($PSBoundParameters.ContainsKey('DisplayName')) {
+        if ($PSBoundParameters.ContainsKey('DisplayName') -and ![string]::IsNullOrWhiteSpace($DisplayName)) {
             $mailboxParams.Add("DisplayName", $DisplayName)
         }
         
-        if ($PSBoundParameters.ContainsKey('Capacity')) {
+        if ($PSBoundParameters.ContainsKey('Capacity') -and $Capacity -gt 0) {
             $mailboxParams.Add("ResourceCapacity", $Capacity)
         }
         
-        if ($PSBoundParameters.ContainsKey('Location')) {
+        if ($PSBoundParameters.ContainsKey('Location') -and ![string]::IsNullOrWhiteSpace($Location)) {
             $mailboxParams.Add("ResourceCustom", $Location)
         }
         
@@ -10129,12 +10509,16 @@ function Update-ResourceSettingsAction {
             $calendarParams.Add("AllowConflicts", $AllowConflicts)
         }
         
-        if ($PSBoundParameters.ContainsKey('BookingWindowInDays')) {
+        if ($PSBoundParameters.ContainsKey('BookingWindowInDays') -and $BookingWindowInDays -gt 0) {
             $calendarParams.Add("BookingWindowInDays", $BookingWindowInDays)
         }
         
-        if ($PSBoundParameters.ContainsKey('MaximumDurationInMinutes')) {
+        if ($PSBoundParameters.ContainsKey('MaximumDurationInMinutes') -and $MaximumDurationInMinutes -gt 0) {
             $calendarParams.Add("MaximumDurationInMinutes", $MaximumDurationInMinutes)
+        }
+        
+        if ($PSBoundParameters.ContainsKey('MinimumDurationInMinutes') -and $MinimumDurationInMinutes -gt 0) {
+            $calendarParams.Add("MinimumDurationInMinutes", $MinimumDurationInMinutes)
         }
         
         if ($PSBoundParameters.ContainsKey('AllowRecurringMeetings')) {
@@ -10159,6 +10543,58 @@ function Update-ResourceSettingsAction {
         
         if ($PSBoundParameters.ContainsKey('AddOrganizerToSubject')) {
             $calendarParams.Add("AddOrganizerToSubject", $AddOrganizerToSubject)
+        }
+        
+        if ($PSBoundParameters.ContainsKey('ProcessExternalMeetingMessages')) {
+            $calendarParams.Add("ProcessExternalMeetingMessages", $ProcessExternalMeetingMessages)
+        }
+        
+        if ($PSBoundParameters.ContainsKey('RemoveOldMeetingMessages')) {
+            $calendarParams.Add("RemoveOldMeetingMessages", $RemoveOldMeetingMessages)
+        }
+        
+        if ($PSBoundParameters.ContainsKey('AddAdditionalResponse')) {
+            $calendarParams.Add("AddAdditionalResponse", $AddAdditionalResponse)
+        }
+        
+        if ($PSBoundParameters.ContainsKey('AdditionalResponse') -and ![string]::IsNullOrWhiteSpace($AdditionalResponse)) {
+            $calendarParams.Add("AdditionalResponse", $AdditionalResponse)
+        }
+        
+        if ($PSBoundParameters.ContainsKey('DeleteNonCalendarItems')) {
+            $calendarParams.Add("DeleteNonCalendarItems", $DeleteNonCalendarItems)
+        }
+        
+        if ($PSBoundParameters.ContainsKey('ForwardRequestsToDelegates')) {
+            $calendarParams.Add("ForwardRequestsToDelegates", $ForwardRequestsToDelegates)
+        }
+        
+        if ($PSBoundParameters.ContainsKey('TentativePendingApproval')) {
+            $calendarParams.Add("TentativePendingApproval", $TentativePendingApproval)
+        }
+        
+        if ($PSBoundParameters.ContainsKey('EnableResponseDetails')) {
+            $calendarParams.Add("EnableResponseDetails", $EnableResponseDetails)
+        }
+        
+        if ($PSBoundParameters.ContainsKey('OrganizerInfo')) {
+            $calendarParams.Add("OrganizerInfo", $OrganizerInfo)
+        }
+        
+        if ($PSBoundParameters.ContainsKey('ResourceDelegates') -and $ResourceDelegates.Count -gt 0) {
+            $calendarParams.Add("ResourceDelegates", $ResourceDelegates)
+        }
+        
+        if ($PSBoundParameters.ContainsKey('ConflictPercentageAllowed') -and $ConflictPercentageAllowed -ge 0) {
+            $calendarParams.Add("ConflictPercentageAllowed", $ConflictPercentageAllowed)
+        }
+        
+        if ($PSBoundParameters.ContainsKey('MaximumConflictInstances') -and $MaximumConflictInstances -ge 0) {
+            $calendarParams.Add("MaximumConflictInstances", $MaximumConflictInstances)
+        }
+        
+        if ($PSBoundParameters.ContainsKey('PostReservationMaxClaimTimeInMinutes') -and $PostReservationMaxClaimTimeInMinutes -gt 0) {
+            $calendarParams.Add("PostReservationMaxClaimTimeInMinutes", $PostReservationMaxClaimTimeInMinutes)
         }
         
         if ($calendarParams.Count -gt 2) {
@@ -10192,22 +10628,30 @@ function Show-ResourceSettingsDialog {
         # Ressourceneinstellungen abrufen
         $resourceSettings = Get-ResourceSettingsAction -Identity $Identity
         
+        # Ressourcenberechtigungen abrufen
+        $resourcePermissions = Get-ResourcePermissionsAction -Identity $Identity
+        
         # XAML für den Dialog erstellen
         $xaml = @"
 <Window 
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="Ressourceneinstellungen bearbeiten" Height="550" Width="600" WindowStartupLocation="CenterScreen">
+    Title="Ressourceneinstellungen bearbeiten" Height="800" Width="1200" WindowStartupLocation="CenterScreen">
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="600"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
         
-        <TextBlock Grid.Row="0" Text="Ressourceneinstellungen für: $($resourceSettings.DisplayName)" FontWeight="Bold" Margin="0,0,0,10"/>
+        <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Ressourceneinstellungen für: $($resourceSettings.DisplayName)" FontWeight="Bold" Margin="0,0,0,10"/>
         
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+        <!-- Linke Spalte - Einstellungen -->
+        <ScrollViewer Grid.Row="1" Grid.Column="0" VerticalScrollBarVisibility="Auto" Margin="0,0,10,0">
             <StackPanel>
                 <GroupBox Header="Allgemeine Einstellungen" Margin="0,5,0,10">
                     <Grid Margin="5">
@@ -10245,6 +10689,8 @@ function Show-ResourceSettingsDialog {
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         
                         <CheckBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Name="chkAutoAccept" Content="Buchungen automatisch akzeptieren" Margin="0,5,0,5"/>
@@ -10257,9 +10703,34 @@ function Show-ResourceSettingsDialog {
                         <TextBlock Grid.Row="3" Grid.Column="0" Text="Maximale Dauer (Minuten):" Margin="0,5,10,5" VerticalAlignment="Center"/>
                         <TextBox Grid.Row="3" Grid.Column="1" Name="txtMaxDuration" Margin="0,5,0,5"/>
                         
-                        <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Name="chkAllowRecurring" Content="Serientermine erlauben" Margin="0,5,0,5"/>
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Minimale Dauer (Minuten):" Margin="0,5,10,5" VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="4" Grid.Column="1" Name="txtMinDuration" Margin="0,5,0,5"/>
                         
-                        <CheckBox Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Name="chkWorkHoursOnly" Content="Nur während Arbeitszeiten buchen" Margin="0,5,0,5"/>
+                        <CheckBox Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Name="chkAllowRecurring" Content="Serientermine erlauben" Margin="0,5,0,5"/>
+                        
+                        <CheckBox Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Name="chkWorkHoursOnly" Content="Nur während Arbeitszeiten buchen" Margin="0,5,0,5"/>
+                        
+                        <TextBlock Grid.Row="7" Grid.Column="0" Text="Nachreservierungszeit (Min):" Margin="0,5,10,5" VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="7" Grid.Column="1" Name="txtPostReservationTime" Margin="0,5,0,5"/>
+                    </Grid>
+                </GroupBox>
+                
+                <GroupBox Header="Konfliktbehandlung" Margin="0,5,0,10">
+                    <Grid Margin="5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Erlaubter Konfliktprozentsatz:" Margin="0,5,10,5" VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="0" Grid.Column="1" Name="txtConflictPercentage" Margin="0,5,0,5"/>
+                        
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Maximale Konfliktinstanzen:" Margin="0,5,10,5" VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" Name="txtMaxConflictInstances" Margin="0,5,0,5"/>
                     </Grid>
                 </GroupBox>
                 
@@ -10272,6 +10743,10 @@ function Show-ResourceSettingsDialog {
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         
                         <CheckBox Grid.Row="0" Grid.Column="0" Name="chkDeleteComments" Content="Kommentare löschen" Margin="0,5,0,5"/>
@@ -10279,12 +10754,95 @@ function Show-ResourceSettingsDialog {
                         
                         <CheckBox Grid.Row="1" Grid.Column="0" Name="chkRemovePrivate" Content="Private Markierung entfernen" Margin="0,5,0,5"/>
                         <CheckBox Grid.Row="1" Grid.Column="1" Name="chkAddOrganizer" Content="Organisator zum Betreff hinzufügen" Margin="0,5,0,5"/>
+                        
+                        <CheckBox Grid.Row="2" Grid.Column="0" Name="chkProcessExternal" Content="Externe Termine verarbeiten" Margin="0,5,0,5"/>
+                        <CheckBox Grid.Row="2" Grid.Column="1" Name="chkRemoveOldMessages" Content="Alte Nachrichten entfernen" Margin="0,5,0,5"/>
+                        
+                        <CheckBox Grid.Row="3" Grid.Column="0" Name="chkDeleteNonCalendar" Content="Nicht-Kalender-Elemente löschen" Margin="0,5,0,5"/>
+                        <CheckBox Grid.Row="3" Grid.Column="1" Name="chkForwardToDelegates" Content="An Delegaten weiterleiten" Margin="0,5,0,5"/>
+                        
+                        <CheckBox Grid.Row="4" Grid.Column="0" Name="chkTentativePending" Content="Vorläufig bei Genehmigung" Margin="0,5,0,5"/>
+                        <CheckBox Grid.Row="4" Grid.Column="1" Name="chkEnableResponseDetails" Content="Antwortdetails aktivieren" Margin="0,5,0,5"/>
+                        
+                        <CheckBox Grid.Row="5" Grid.Column="0" Name="chkOrganizerInfo" Content="Organisator-Informationen" Margin="0,5,0,5"/>
+                        <CheckBox Grid.Row="5" Grid.Column="1" Name="chkAddAdditionalResponse" Content="Zusätzliche Antwort hinzufügen" Margin="0,5,0,5"/>
+                    </Grid>
+                </GroupBox>
+                
+                <GroupBox Header="Zusätzliche Antwort" Margin="0,5,0,10">
+                    <Grid Margin="5">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <TextBox Grid.Row="0" Name="txtAdditionalResponse" Height="60" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Margin="0,5,0,5"/>
+                    </Grid>
+                </GroupBox>
+                
+                <GroupBox Header="Ressourcen-Delegaten" Margin="0,5,0,10">
+                    <Grid Margin="5">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <TextBox Grid.Row="0" Name="txtResourceDelegates" Margin="0,5,0,5"/>
                     </Grid>
                 </GroupBox>
             </StackPanel>
         </ScrollViewer>
         
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+        <!-- Rechte Spalte - Berechtigungen -->
+        <GroupBox Grid.Row="1" Grid.Column="1" Header="Ressourcenberechtigungen" Background="#ffffff">
+            <Grid Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <TextBlock Grid.Row="0" Text="Aktuelle Berechtigungen für diese Ressource:" Margin="0,0,0,10" FontWeight="SemiBold"/>
+                
+                <DataGrid
+                    Grid.Row="1"
+                    Name="dgResourcePermissions"
+                    AutoGenerateColumns="False"
+                    IsReadOnly="True"
+                    GridLinesVisibility="Horizontal"
+                    HeadersVisibility="Column"
+                    CanUserResizeColumns="True"
+                    CanUserSortColumns="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn
+                            Width="*"
+                            Binding="{Binding User}"
+                            Header="Benutzer" />
+                        <DataGridTextColumn
+                            Width="100"
+                            Binding="{Binding PermissionType}"
+                            Header="Typ" />
+                        <DataGridTextColumn
+                            Width="*"
+                            Binding="{Binding AccessRights}"
+                            Header="Zugriffsrechte" />
+                        <DataGridCheckBoxColumn
+                            Width="80"
+                            Binding="{Binding IsInherited}"
+                            Header="Vererbt" />
+                        <DataGridCheckBoxColumn
+                            Width="60"
+                            Binding="{Binding Deny}"
+                            Header="Verweigern" />
+                    </DataGrid.Columns>
+                </DataGrid>
+                
+                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                    <Button Name="btnRefreshPermissions" Content="Aktualisieren" Width="100" Margin="0,0,10,0"/>
+                    <Button Name="btnExportPermissions" Content="Exportieren (CSV)" Width="120"/>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+        
+        <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
             <Button Name="btnSave" Content="Speichern" Width="100" Margin="0,0,10,0"/>
             <Button Name="btnCancel" Content="Abbrechen" Width="100"/>
         </StackPanel>
@@ -10304,49 +10862,259 @@ function Show-ResourceSettingsDialog {
         $chkAllowConflicts = $window.FindName("chkAllowConflicts")
         $txtBookingWindow = $window.FindName("txtBookingWindow")
         $txtMaxDuration = $window.FindName("txtMaxDuration")
+        $txtMinDuration = $window.FindName("txtMinDuration")
         $chkAllowRecurring = $window.FindName("chkAllowRecurring")
         $chkWorkHoursOnly = $window.FindName("chkWorkHoursOnly")
+        $txtPostReservationTime = $window.FindName("txtPostReservationTime")
+        $txtConflictPercentage = $window.FindName("txtConflictPercentage")
+        $txtMaxConflictInstances = $window.FindName("txtMaxConflictInstances")
         $chkDeleteComments = $window.FindName("chkDeleteComments")
         $chkDeleteSubject = $window.FindName("chkDeleteSubject")
         $chkRemovePrivate = $window.FindName("chkRemovePrivate")
         $chkAddOrganizer = $window.FindName("chkAddOrganizer")
+        $chkProcessExternal = $window.FindName("chkProcessExternal")
+        $chkRemoveOldMessages = $window.FindName("chkRemoveOldMessages")
+        $chkDeleteNonCalendar = $window.FindName("chkDeleteNonCalendar")
+        $chkForwardToDelegates = $window.FindName("chkForwardToDelegates")
+        $chkTentativePending = $window.FindName("chkTentativePending")
+        $chkEnableResponseDetails = $window.FindName("chkEnableResponseDetails")
+        $chkOrganizerInfo = $window.FindName("chkOrganizerInfo")
+        $chkAddAdditionalResponse = $window.FindName("chkAddAdditionalResponse")
+        $txtAdditionalResponse = $window.FindName("txtAdditionalResponse")
+        $txtResourceDelegates = $window.FindName("txtResourceDelegates")
+        $dgResourcePermissions = $window.FindName("dgResourcePermissions")
+        $btnRefreshPermissions = $window.FindName("btnRefreshPermissions")
+        $btnExportPermissions = $window.FindName("btnExportPermissions")
         $btnSave = $window.FindName("btnSave")
         $btnCancel = $window.FindName("btnCancel")
         
-        # Werte in die UI-Elemente laden
-        $txtDisplayName.Text = $resourceSettings.DisplayName
-        $txtCapacity.Text = $resourceSettings.Capacity
-        $txtLocation.Text = $resourceSettings.Location
+        # Werte in die UI-Elemente laden oder Platzhalter setzen
+        $txtDisplayName.Text = if ($resourceSettings.DisplayName) { $resourceSettings.DisplayName } else { "" }
+        $txtDisplayName.Tag = "z.B. Konferenzraum Berlin"
+        
+        $txtCapacity.Text = if ($resourceSettings.Capacity) { $resourceSettings.Capacity.ToString() } else { "" }
+        $txtCapacity.Tag = "z.B. 12"
+        
+        $txtLocation.Text = if ($resourceSettings.Location) { $resourceSettings.Location } else { "" }
+        $txtLocation.Tag = "z.B. Gebäude A, 2. Stock"
+        
         $chkAutoAccept.IsChecked = $resourceSettings.AutoAccept
         $chkAllowConflicts.IsChecked = $resourceSettings.AllowConflicts
-        $txtBookingWindow.Text = $resourceSettings.BookingWindowInDays
-        $txtMaxDuration.Text = $resourceSettings.MaximumDurationInMinutes
+        
+        $txtBookingWindow.Text = if ($resourceSettings.BookingWindowInDays) { $resourceSettings.BookingWindowInDays.ToString() } else { "" }
+        $txtBookingWindow.Tag = "z.B. 180"
+        
+        $txtMaxDuration.Text = if ($resourceSettings.MaximumDurationInMinutes) { $resourceSettings.MaximumDurationInMinutes.ToString() } else { "" }
+        $txtMaxDuration.Tag = "z.B. 480"
+        
+        $txtMinDuration.Text = if ($resourceSettings.MinimumDurationInMinutes) { $resourceSettings.MinimumDurationInMinutes.ToString() } else { "" }
+        $txtMinDuration.Tag = "z.B. 15"
+        
         $chkAllowRecurring.IsChecked = $resourceSettings.AllowRecurringMeetings
         $chkWorkHoursOnly.IsChecked = $resourceSettings.ScheduleOnlyDuringWorkHours
+        
+        $txtPostReservationTime.Text = if ($resourceSettings.PostReservationMaxClaimTimeInMinutes) { $resourceSettings.PostReservationMaxClaimTimeInMinutes.ToString() } else { "" }
+        $txtPostReservationTime.Tag = "z.B. 10"
+        
+        $txtConflictPercentage.Text = if ($resourceSettings.ConflictPercentageAllowed) { $resourceSettings.ConflictPercentageAllowed.ToString() } else { "" }
+        $txtConflictPercentage.Tag = "z.B. 0"
+        
+        $txtMaxConflictInstances.Text = if ($resourceSettings.MaximumConflictInstances) { $resourceSettings.MaximumConflictInstances.ToString() } else { "" }
+        $txtMaxConflictInstances.Tag = "z.B. 0"
+        
         $chkDeleteComments.IsChecked = $resourceSettings.DeleteComments
         $chkDeleteSubject.IsChecked = $resourceSettings.DeleteSubject
         $chkRemovePrivate.IsChecked = $resourceSettings.RemovePrivateProperty
         $chkAddOrganizer.IsChecked = $resourceSettings.AddOrganizerToSubject
+        $chkProcessExternal.IsChecked = $resourceSettings.ProcessExternalMeetingMessages
+        $chkRemoveOldMessages.IsChecked = $resourceSettings.RemoveOldMeetingMessages
+        $chkDeleteNonCalendar.IsChecked = $resourceSettings.DeleteNonCalendarItems
+        $chkForwardToDelegates.IsChecked = $resourceSettings.ForwardRequestsToDelegates
+        $chkTentativePending.IsChecked = $resourceSettings.TentativePendingApproval
+        $chkEnableResponseDetails.IsChecked = $resourceSettings.EnableResponseDetails
+        $chkOrganizerInfo.IsChecked = $resourceSettings.OrganizerInfo
+        $chkAddAdditionalResponse.IsChecked = $resourceSettings.AddAdditionalResponse
+        
+        $txtAdditionalResponse.Text = if ($resourceSettings.AdditionalResponse) { $resourceSettings.AdditionalResponse } else { "" }
+        $txtAdditionalResponse.Tag = "z.B. Bitte beachten Sie die Hausordnung."
+        
+        $txtResourceDelegates.Text = if ($resourceSettings.ResourceDelegates) { ($resourceSettings.ResourceDelegates -join "; ") } else { "" }
+        $txtResourceDelegates.Tag = "z.B. admin@firma.de; manager@firma.de"
+        
+        # Berechtigungen in DataGrid laden
+        $dgResourcePermissions.ItemsSource = $resourcePermissions
+        
+        # Platzhalter-Funktionalität für TextBoxen
+        $textBoxes = @($txtDisplayName, $txtCapacity, $txtLocation, $txtBookingWindow, $txtMaxDuration, $txtMinDuration, 
+                      $txtPostReservationTime, $txtConflictPercentage, $txtMaxConflictInstances, $txtAdditionalResponse, $txtResourceDelegates)
+        
+        foreach ($textBox in $textBoxes) {
+            # GotFocus Event - Platzhalter entfernen
+            $textBox.Add_GotFocus({
+                param($sender, $e)
+                if ($sender.Text -eq "" -and $sender.Tag) {
+                    $sender.Foreground = [System.Windows.Media.Brushes]::Black
+                }
+            })
+            
+            # LostFocus Event - Platzhalter anzeigen wenn leer
+            $textBox.Add_LostFocus({
+                param($sender, $e)
+                if ($sender.Text -eq "" -and $sender.Tag) {
+                    $sender.Text = $sender.Tag
+                    $sender.Foreground = [System.Windows.Media.Brushes]::Gray
+                }
+            })
+            
+            # Initialer Platzhalter wenn Feld leer ist
+            if ($textBox.Text -eq "" -and $textBox.Tag) {
+                $textBox.Text = $textBox.Tag
+                $textBox.Foreground = [System.Windows.Media.Brushes]::Gray
+            }
+        }
+        
+        # Event-Handler für Berechtigungen aktualisieren
+        $btnRefreshPermissions.Add_Click({
+            try {
+                $updatedPermissions = Get-ResourcePermissionsAction -Identity $Identity
+                $dgResourcePermissions.ItemsSource = $updatedPermissions
+                [System.Windows.MessageBox]::Show("Berechtigungen wurden erfolgreich aktualisiert.", 
+                    "Aktualisiert", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
+            }
+            catch {
+                $errorMsg = $_.Exception.Message
+                [System.Windows.MessageBox]::Show("Fehler beim Aktualisieren der Berechtigungen: $errorMsg", 
+                    "Fehler", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error)
+            }
+        })
+        
+        # Event-Handler für Berechtigungen exportieren
+        $btnExportPermissions.Add_Click({
+            try {
+                $saveDialog = New-Object Microsoft.Win32.SaveFileDialog
+                $saveDialog.Filter = "CSV-Dateien (*.csv)|*.csv"
+                $saveDialog.FileName = "Ressourcenberechtigungen_$($resourceSettings.Name)_$(Get-Date -Format 'yyyyMMdd_HHmmss').csv"
+                
+                if ($saveDialog.ShowDialog() -eq $true) {
+                    $dgResourcePermissions.ItemsSource | Export-Csv -Path $saveDialog.FileName -NoTypeInformation -Encoding UTF8 -Delimiter ";"
+                    [System.Windows.MessageBox]::Show("Berechtigungen wurden erfolgreich exportiert nach: $($saveDialog.FileName)", 
+                        "Export erfolgreich", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
+                }
+            }
+            catch {
+                $errorMsg = $_.Exception.Message
+                [System.Windows.MessageBox]::Show("Fehler beim Exportieren der Berechtigungen: $errorMsg", 
+                    "Fehler", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error)
+            }
+        })
         
         # Event-Handler für Speichern-Button
         $btnSave.Add_Click({
             try {
-                # Parameter sammeln
+                # Parameter sammeln - nur wenn Werte nicht Platzhalter sind
                 $params = @{
                     Identity = $Identity
-                    DisplayName = $txtDisplayName.Text
-                    Capacity = [int]::Parse($txtCapacity.Text)
-                    Location = $txtLocation.Text
-                    AutoAccept = $chkAutoAccept.IsChecked
-                    AllowConflicts = $chkAllowConflicts.IsChecked
-                    BookingWindowInDays = [int]::Parse($txtBookingWindow.Text)
-                    MaximumDurationInMinutes = [int]::Parse($txtMaxDuration.Text)
-                    AllowRecurringMeetings = $chkAllowRecurring.IsChecked
-                    ScheduleOnlyDuringWorkHours = $chkWorkHoursOnly.IsChecked
-                    DeleteComments = $chkDeleteComments.IsChecked
-                    DeleteSubject = $chkDeleteSubject.IsChecked
-                    RemovePrivateProperty = $chkRemovePrivate.IsChecked
-                    AddOrganizerToSubject = $chkAddOrganizer.IsChecked
+                }
+                
+                if ($txtDisplayName.Text -ne "" -and $txtDisplayName.Text -ne $txtDisplayName.Tag) {
+                    $params.Add("DisplayName", $txtDisplayName.Text)
+                }
+                
+                if ($txtCapacity.Text -ne "" -and $txtCapacity.Text -ne $txtCapacity.Tag) {
+                    try {
+                        $capacityValue = [int]::Parse($txtCapacity.Text)
+                        if ($capacityValue -gt 0) {
+                            $params.Add("Capacity", $capacityValue)
+                        }
+                    } catch { }
+                }
+                
+                if ($txtLocation.Text -ne "" -and $txtLocation.Text -ne $txtLocation.Tag) {
+                    $params.Add("Location", $txtLocation.Text)
+                }
+                
+                $params.Add("AutoAccept", $chkAutoAccept.IsChecked)
+                $params.Add("AllowConflicts", $chkAllowConflicts.IsChecked)
+                
+                if ($txtBookingWindow.Text -ne "" -and $txtBookingWindow.Text -ne $txtBookingWindow.Tag) {
+                    try {
+                        $bookingWindowValue = [int]::Parse($txtBookingWindow.Text)
+                        if ($bookingWindowValue -gt 0) {
+                            $params.Add("BookingWindowInDays", $bookingWindowValue)
+                        }
+                    } catch { }
+                }
+                
+                if ($txtMaxDuration.Text -ne "" -and $txtMaxDuration.Text -ne $txtMaxDuration.Tag) {
+                    try {
+                        $maxDurationValue = [int]::Parse($txtMaxDuration.Text)
+                        if ($maxDurationValue -gt 0) {
+                            $params.Add("MaximumDurationInMinutes", $maxDurationValue)
+                        }
+                    } catch { }
+                }
+                
+                if ($txtMinDuration.Text -ne "" -and $txtMinDuration.Text -ne $txtMinDuration.Tag) {
+                    try {
+                        $minDurationValue = [int]::Parse($txtMinDuration.Text)
+                        if ($minDurationValue -gt 0) {
+                            $params.Add("MinimumDurationInMinutes", $minDurationValue)
+                        }
+                    } catch { }
+                }
+                
+                $params.Add("AllowRecurringMeetings", $chkAllowRecurring.IsChecked)
+                $params.Add("ScheduleOnlyDuringWorkHours", $chkWorkHoursOnly.IsChecked)
+                
+                if ($txtPostReservationTime.Text -ne "" -and $txtPostReservationTime.Text -ne $txtPostReservationTime.Tag) {
+                    try {
+                        $postReservationValue = [int]::Parse($txtPostReservationTime.Text)
+                        if ($postReservationValue -gt 0) {
+                            $params.Add("PostReservationMaxClaimTimeInMinutes", $postReservationValue)
+                        }
+                    } catch { }
+                }
+                
+                if ($txtConflictPercentage.Text -ne "" -and $txtConflictPercentage.Text -ne $txtConflictPercentage.Tag) {
+                    try {
+                        $conflictPercentageValue = [int]::Parse($txtConflictPercentage.Text)
+                        if ($conflictPercentageValue -ge 0) {
+                            $params.Add("ConflictPercentageAllowed", $conflictPercentageValue)
+                        }
+                    } catch { }
+                }
+                
+                if ($txtMaxConflictInstances.Text -ne "" -and $txtMaxConflictInstances.Text -ne $txtMaxConflictInstances.Tag) {
+                    try {
+                        $maxConflictValue = [int]::Parse($txtMaxConflictInstances.Text)
+                        if ($maxConflictValue -ge 0) {
+                            $params.Add("MaximumConflictInstances", $maxConflictValue)
+                        }
+                    } catch { }
+                }
+                
+                $params.Add("DeleteComments", $chkDeleteComments.IsChecked)
+                $params.Add("DeleteSubject", $chkDeleteSubject.IsChecked)
+                $params.Add("RemovePrivateProperty", $chkRemovePrivate.IsChecked)
+                $params.Add("AddOrganizerToSubject", $chkAddOrganizer.IsChecked)
+                $params.Add("ProcessExternalMeetingMessages", $chkProcessExternal.IsChecked)
+                $params.Add("RemoveOldMeetingMessages", $chkRemoveOldMessages.IsChecked)
+                $params.Add("DeleteNonCalendarItems", $chkDeleteNonCalendar.IsChecked)
+                $params.Add("ForwardRequestsToDelegates", $chkForwardToDelegates.IsChecked)
+                $params.Add("TentativePendingApproval", $chkTentativePending.IsChecked)
+                $params.Add("EnableResponseDetails", $chkEnableResponseDetails.IsChecked)
+                $params.Add("OrganizerInfo", $chkOrganizerInfo.IsChecked)
+                $params.Add("AddAdditionalResponse", $chkAddAdditionalResponse.IsChecked)
+                
+                if ($txtAdditionalResponse.Text -ne "" -and $txtAdditionalResponse.Text -ne $txtAdditionalResponse.Tag) {
+                    $params.Add("AdditionalResponse", $txtAdditionalResponse.Text)
+                }
+                
+                if ($txtResourceDelegates.Text -ne "" -and $txtResourceDelegates.Text -ne $txtResourceDelegates.Tag) {
+                    $delegatesArray = $txtResourceDelegates.Text -split ";" | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
+                    if ($delegatesArray.Count -gt 0) {
+                        $params.Add("ResourceDelegates", $delegatesArray)
+                    }
                 }
                 
                 # Ressourceneinstellungen aktualisieren
@@ -10383,9 +11151,8 @@ function Show-ResourceSettingsDialog {
         throw $_
     }
 }
+
 # Implementiert die Hauptfunktionen für den Kontakte-Tab
-
-
 function Update-ExoContact {
     [CmdletBinding()]
     param()
@@ -15611,14 +16378,53 @@ function Initialize-ResourcesTab {
         Register-EventHandler -Control $btnRefreshResourceList -Handler {
             try {
                 if (-not $script:isConnected) { Throw "Keine Verbindung zu Exchange Online." }
-                Update-StatusBar -Message "Aktualisiere Ressourcenliste..."
+                Update-StatusBar -Message "Aktualisiere Ressourcenliste..." -Type Info
                 $allResources = Get-AllResourcesAction
-                $script:cmbResourceSelect.ItemsSource = $allResources | ForEach-Object { $_.PrimarySmtpAddress }
-                if ($script:cmbResourceSelect.Items.Count -gt 0) {
-                    $script:cmbResourceSelect.SelectedIndex = 0
+                
+                if ($null -eq $allResources) {
+                    Write-Log "Get-AllResourcesAction gab null zurück." -Type Warning
+                    $allResources = @()
                 }
-                Update-StatusBar -Message "Ressourcenliste aktualisiert." -Type "Success"
-            } catch { Update-StatusBar -Message "Fehler: $($_.Exception.Message)" -Type "Error" }
+                
+                # Thread-sichere UI-Aktualisierung der ComboBox
+                $script:cmbResourceSelect.Dispatcher.Invoke([Action]{
+                    # Aktuell ausgewähltes Element merken
+                    $currentSelection = $script:cmbResourceSelect.SelectedItem
+                    
+                    # ComboBox leeren und neu befüllen
+                    $script:cmbResourceSelect.Items.Clear()
+                    
+                    if ($allResources.Count -gt 0) {
+                        # Ressourcen nach PrimarySmtpAddress sortieren (A-Z)
+                        $sortedResourceEmails = $allResources | ForEach-Object { $_.PrimarySmtpAddress } | Sort-Object
+                        
+                        foreach ($email in $sortedResourceEmails) {
+                            if (-not [string]::IsNullOrWhiteSpace($email)) {
+                                [void]$script:cmbResourceSelect.Items.Add($email)
+                            }
+                        }
+                        
+                        # Versuche die vorherige Auswahl wiederherzustellen
+                        if ($null -ne $currentSelection -and $script:cmbResourceSelect.Items.Contains($currentSelection)) {
+                            $script:cmbResourceSelect.SelectedItem = $currentSelection
+                        } elseif ($script:cmbResourceSelect.Items.Count -gt 0) {
+                            $script:cmbResourceSelect.SelectedIndex = 0
+                        }
+                        
+                        # ComboBox explizit aktualisieren
+                        $script:cmbResourceSelect.UpdateLayout()
+                        $script:cmbResourceSelect.InvalidateVisual()
+                    }
+                }, "Normal")
+                
+                Update-StatusBar -Message "Ressourcenliste aktualisiert ($($allResources.Count) Einträge)." -Type Success
+                Write-Log "Ressourcenliste erfolgreich aktualisiert: $($allResources.Count) Einträge" -Type Success
+                
+            } catch { 
+                $errorMsg = $_.Exception.Message
+                Write-Log "Fehler beim Aktualisieren der Ressourcenliste: $errorMsg" -Type Error
+                Update-StatusBar -Message "Fehler beim Aktualisieren der Ressourcenliste: $errorMsg" -Type Error
+            }
         } -ControlName "btnRefreshResourceList"
 
         # Event-Handler für "Ressource erstellen"

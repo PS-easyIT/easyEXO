@@ -132,7 +132,7 @@
             <Setter Property="BorderBrush" Value="#005A9E" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="10,6" />
-            <Setter Property="MaxHeight" Value="30" />
+            <Setter Property="MaxHeight" Value="35" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="FontWeight" Value="Normal" />
@@ -169,7 +169,7 @@
             x:Key="NavigationButtonStyle"
             BasedOn="{StaticResource {x:Type Button}}"
             TargetType="Button">
-            <Setter Property="MaxHeight" Value="35" />
+            <Setter Property="MaxHeight" Value="38" />
             <Setter Property="Height" Value="35" />
             <Setter Property="Margin" Value="0,3" />
             <Setter Property="Padding" Value="10,0" />
@@ -246,12 +246,11 @@
             </Setter>
         </Style>
 
-        <!--  Diese Templates müssen VOR dem ComboBox-Style definiert werden  -->
         <ControlTemplate x:Key="ComboBoxToggleButtonTemplate" TargetType="ToggleButton">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
-                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="200" />
                 </Grid.ColumnDefinitions>
                 <Border
                     x:Name="Border"
@@ -598,7 +597,7 @@
         <!--  Main Content mit moderner Navigation  -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="220" MinWidth="200" />
+                <ColumnDefinition Width="220"/>
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
@@ -612,7 +611,7 @@
                     <Button
                         x:Name="btnConnect"
                         Height="38"
-                        Margin="8,5,8,12"
+                        Margin="8,5,8,10"
                         Padding="0,0"
                         Background="#FFAB0404"
                         BorderBrush="#E86C00"
@@ -632,7 +631,7 @@
                         <StackPanel>
                             <TextBlock
                                 x:Name="txtConnectionStatus"
-                                Margin="0,0,0,0"
+                                Margin="8,0,8,0"
                                 FontWeight="SemiBold"
                                 Foreground="#FFF1FDCC"
                                 Text="Nicht verbunden" />
@@ -642,31 +641,31 @@
 
                     <Button
                         x:Name="btnDashboard"
-                        Margin="0,10,0,20"
+                        Margin="0,5,0,25"
                         Background="#FF738AA0"
-                        Content="Dashboard" Width="203"/>
+                        Content="Dashboard" Width="205"/>
 
-                    <!--  Grundlegende Verwaltung  -->
+                    <!--  Verwaltung  -->
                     <Expander
                         Background="#FF738AA0"
-                        Header="Grundlegende Verwaltung"
+                        Header="Verwaltung"
                         IsExpanded="False">
                         <StackPanel>
-                            <Button
-                                x:Name="btnNavCalendar"
-                                HorizontalAlignment="Left"
-                                Background="#FF738AA0"
-                                Content="* Kalenderberechtigungen" />
                             <Button
                                 x:Name="btnNavMailbox"
                                 HorizontalAlignment="Left"
                                 Background="#FF738AA0"
                                 Content="* Postfachberechtigungen" />
                             <Button
+                                x:Name="btnNavCalendar"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Kalenderberechtigungen" />
+                            <Button
                                 x:Name="btnNavSharedMailbox"
                                 HorizontalAlignment="Left"
                                 Background="#FF738AA0"
-                                Content="* Shared Mailboxes" />
+                                Content="* Freigegebene Postfächer" />
                             <Button
                                 x:Name="btnNavGroups"
                                 HorizontalAlignment="Left"
@@ -685,50 +684,70 @@
                         </StackPanel>
                     </Expander>
 
-                    <!--  Trennlinie  -->
-                    <Border
-                        Height="1"
-                        Margin="16,8,16,8"
-                        Background="#4A5C6E"
-                        Opacity="0.5" />
-
-                    <!--  Mail Flow Management  -->
+                    <!--  Mail-Fluss  -->
                     <Expander
                         Background="#FF738AA0"
-                        Header="Mail Flow"
+                        Header="Mail-Fluss"
                         IsExpanded="False">
                         <StackPanel>
                             <Button
                                 x:Name="btnNavMailFlowRules"
                                 HorizontalAlignment="Left"
                                 Background="#FF738AA0"
-                                Content="* Transport Rules" />
+                                Content="* Transportregeln" />
                             <Button
                                 x:Name="btnNavInboxRules"
                                 HorizontalAlignment="Left"
                                 Background="#FF738AA0"
-                                Content="* Inbox Rules" />
+                                Content="* Posteingangsregeln" />
                             <Button
                                 x:Name="btnNavMessageTrace"
                                 HorizontalAlignment="Left"
                                 Background="#FF738AA0"
-                                Content="* Message Trace" />
+                                Content="* Nachrichtenverfolgung" />
                             <Button
                                 x:Name="btnNavAutoReply"
                                 HorizontalAlignment="Left"
                                 Background="#FF738AA0"
-                                Content="* Auto Reply" />
+                                Content="* Automatische Antwort" />
+                        <!--    <Button
+                                x:Name="btnNavHybridExchange"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Hybrid Exchange" />
+                            <Button
+                                x:Name="btnNavMultiForest"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Multi-Forest" />
+                            <Button
+                                x:Name="btnNavCrossPremises"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Connectors" />  -->
                         </StackPanel>
                     </Expander>
 
-                    <!--  Trennlinie  -->
-                    <Border
-                        Height="1"
-                        Margin="16,8,16,8"
-                        Background="#4A5C6E"
-                        Opacity="0.5" />
+                    <!--  Systemkonfiguration  -->
+                    <Expander
+                        Background="#FF738AA0"
+                        Header="Konfiguration"
+                        IsExpanded="False">
+                        <StackPanel>
+                            <Button
+                                x:Name="btnNavEXOSettings"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Exchange Online" />
+                            <Button
+                                x:Name="btnNavRegion"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Sprache / Zeitzone" />
+                        </StackPanel>
+                    </Expander>
 
-                    <!--  Sicherheit & Compliance  -->
+                    <!--  Sicherheit & Compliance  
                     <Expander
                         Background="#FF738AA0"
                         Header="Sicherheit &amp; Compliance"
@@ -755,71 +774,7 @@
                                 Background="#FF738AA0"
                                 Content="* Mobile Device Management" />
                         </StackPanel>
-                    </Expander>
-
-                    <!--  Trennlinie  -->
-                    <Border
-                        Height="1"
-                        Margin="16,8,16,8"
-                        Background="#4A5C6E"
-                        Opacity="0.5" />
-
-                    <!--  Systemkonfiguration  -->
-                    <Expander
-                        Background="#FF738AA0"
-                        Header="Systemkonfiguration"
-                        IsExpanded="False">
-                        <StackPanel>
-                            <Button
-                                x:Name="btnNavEXOSettings"
-                                HorizontalAlignment="Left"
-                                Background="#FF738AA0"
-                                Content="* Exchange Online" />
-                            <Button
-                                x:Name="btnNavRegion"
-                                HorizontalAlignment="Left"
-                                Background="#FF738AA0"
-                                Content="* Sprache / Zeitzone" />
-                            <Button
-                                x:Name="btnNavCrossPremises"
-                                HorizontalAlignment="Left"
-                                Background="#FF738AA0"
-                                Content="* Cross-Premises Routing" />
-                        </StackPanel>
-                    </Expander>
-
-                    <!--  Trennlinie  -->
-                    <Border
-                        Height="1"
-                        Margin="16,8,16,8"
-                        Background="#4A5C6E"
-                        Opacity="0.5" />
-
-                    <!--  Erweiterte Verwaltung  -->
-                    <Expander
-                        Background="#FF738AA0"
-                        Header="Erweiterte Verwaltung"
-                        IsExpanded="False">
-                        <StackPanel>
-                            <Button
-                                x:Name="btnNavHybridExchange"
-                                HorizontalAlignment="Left"
-                                Background="#FF738AA0"
-                                Content="* Hybrid Exchange Config" />
-                            <Button
-                                x:Name="btnNavMultiForest"
-                                HorizontalAlignment="Left"
-                                Background="#FF738AA0"
-                                Content="* Multi-Forest Management" />
-                        </StackPanel>
-                    </Expander>
-
-                    <!--  Trennlinie  -->
-                    <Border
-                        Height="1"
-                        Margin="16,8,16,8"
-                        Background="#4A5C6E"
-                        Opacity="0.5" />
+                    </Expander> -->
 
                     <!--  Monitoring & Support  -->
                     <Expander
@@ -871,7 +826,7 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="400" />
+                                <ColumnDefinition Width="420" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
@@ -962,7 +917,7 @@
                                                 Orientation="Horizontal">
                                                 <Button
                                                     x:Name="btnAddCalendarPermission"
-                                                    Width="170"
+                                                    Width="180"
                                                     Height="30"
                                                     Margin="0,0,10,0"
                                                     Background="#D4EDDA"
@@ -971,7 +926,7 @@
                                                     Foreground="#155724" />
                                                 <Button
                                                     x:Name="btnRemoveCalendarPermission"
-                                                    Width="170"
+                                                    Width="180"
                                                     Height="30"
                                                     Background="#F8D7DA"
                                                     BorderBrush="#F5C6CB"
@@ -1028,7 +983,7 @@
                                                     Foreground="#004085" />
                                                 <Button
                                                     x:Name="btnSetAnonymousPermission"
-                                                    Width="110"
+                                                    Width="120"
                                                     Height="30"
                                                     Margin="5,0,5,0"
                                                     Background="#CCE5FF"
@@ -1037,7 +992,7 @@
                                                     Foreground="#004085" />
                                                 <Button
                                                     x:Name="btnSetAllCalPermission"
-                                                    Width="110"
+                                                    Width="120"
                                                     Height="30"
                                                     Margin="5,0,0,0"
                                                     Background="#FFF3CD"
@@ -1081,7 +1036,7 @@
                                                 x:Name="btnShowCalendarPermissions"
                                                 Grid.Row="1"
                                                 Grid.ColumnSpan="2"
-                                                Width="220"
+                                                Width="240"
                                                 Height="30"
                                                 Margin="130,5,0,10"
                                                 HorizontalAlignment="Center"
@@ -1153,7 +1108,7 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="400" />
+                                <ColumnDefinition Width="420" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
@@ -1197,7 +1152,7 @@
                                             <TextBlock
                                                 Grid.Row="0"
                                                 Grid.Column="0"
-                                                Width="120"
+                                                Width="140"
                                                 Margin="0,5,10,5"
                                                 VerticalAlignment="Center"
                                                 Text="Quell-Postfach:" />
@@ -1211,7 +1166,7 @@
                                             <TextBlock
                                                 Grid.Row="1"
                                                 Grid.Column="0"
-                                                Width="120"
+                                                Width="140"
                                                 Margin="0,5,10,5"
                                                 VerticalAlignment="Center"
                                                 Text="Ziel-Benutzer:" />
@@ -1230,7 +1185,7 @@
                                                 Orientation="Horizontal">
                                                 <Button
                                                     x:Name="btnAddMailboxPermission"
-                                                    Width="170"
+                                                    Width="180"
                                                     Height="30"
                                                     Margin="0,0,10,0"
                                                     Background="#D4EDDA"
@@ -1239,13 +1194,57 @@
                                                     Foreground="#155724" />
                                                 <Button
                                                     x:Name="btnRemoveMailboxPermission"
-                                                    Width="170"
+                                                    Width="180"
                                                     Height="30"
                                                     Background="#F8D7DA"
                                                     BorderBrush="#F5C6CB"
                                                     Content="Entfernen"
                                                     Foreground="#721C24" />
                                             </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <GroupBox
+                                Margin="0,25,10,0"
+                                Background="#ffffff"
+                                Header="Berechtigungen anzeigen">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                        Grid.Row="0"
+                                                        Grid.Column="0"
+                                                        Width="120"
+                                                        Margin="0,5,10,5"
+                                                        VerticalAlignment="Center"
+                                                        Text="Postfach:" />
+                                            <TextBox
+                                                        x:Name="txtMailboxUser"
+                                                        Grid.Row="0"
+                                                        Grid.Column="1"
+                                                        Height="30"
+                                                        Margin="0,5,0,10" />
+
+                                            <Button
+                                                        x:Name="btnShowMailboxPermissions"
+                                                        Grid.Row="1"
+                                                        Grid.ColumnSpan="2"
+                                                        Width="230"
+                                                        Height="30"
+                                                        Margin="130,5,0,10"
+                                                        HorizontalAlignment="Center"
+                                                        Background="#E7F3FF"
+                                                        BorderBrush="#B8DAFF"
+                                                        Content="Berechtigungen anzeigen"
+                                                        Foreground="#0056B3" />
                                         </Grid>
                                     </StackPanel>
                                 </GroupBox>
@@ -1274,7 +1273,7 @@
                                         <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                                             <Button
                                                 x:Name="btnAddSendAs"
-                                                Width="110"
+                                                Width="120"
                                                 Height="30"
                                                 Margin="0,0,10,0"
                                                 Background="#D4EDDA"
@@ -1283,7 +1282,7 @@
                                                 Foreground="#155724" />
                                             <Button
                                                 x:Name="btnRemoveSendAs"
-                                                Width="110"
+                                                Width="115"
                                                 Height="30"
                                                 Margin="0,0,10,0"
                                                 Background="#F8D7DA"
@@ -1292,7 +1291,7 @@
                                                 Foreground="#721C24" />
                                             <Button
                                                 x:Name="btnShowSendAs"
-                                                Width="110"
+                                                Width="115"
                                                 Height="30"
                                                 Background="#CCE5FF"
                                                 BorderBrush="#B3D7FF"
@@ -1311,7 +1310,7 @@
                                         <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                                             <Button
                                                 x:Name="btnAddSendOnBehalf"
-                                                Width="110"
+                                                Width="120"
                                                 Height="30"
                                                 Margin="0,0,10,0"
                                                 Background="#D4EDDA"
@@ -1320,7 +1319,7 @@
                                                 Foreground="#155724" />
                                             <Button
                                                 x:Name="btnRemoveSendOnBehalf"
-                                                Width="110"
+                                                Width="115"
                                                 Height="30"
                                                 Margin="0,0,10,0"
                                                 Background="#F8D7DA"
@@ -1329,59 +1328,13 @@
                                                 Foreground="#721C24" />
                                             <Button
                                                 x:Name="btnShowSendOnBehalf"
-                                                Width="110"
+                                                Width="115"
                                                 Height="30"
                                                 Background="#CCE5FF"
                                                 BorderBrush="#B3D7FF"
                                                 Content="Anzeigen"
                                                 Foreground="#004085" />
                                         </StackPanel>
-                                    </StackPanel>
-                                </GroupBox>
-
-                                <!--  Berechtigungen anzeigen  -->
-                                <GroupBox
-                                    Margin="0,25,10,0"
-                                    Background="#ffffff"
-                                    Header="Berechtigungen anzeigen">
-                                    <StackPanel Margin="10">
-                                        <Grid>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                            </Grid.RowDefinitions>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="*" />
-                                            </Grid.ColumnDefinitions>
-
-                                            <TextBlock
-                                                Grid.Row="0"
-                                                Grid.Column="0"
-                                                Width="120"
-                                                Margin="0,5,10,5"
-                                                VerticalAlignment="Center"
-                                                Text="Postfach:" />
-                                            <TextBox
-                                                x:Name="txtMailboxUser"
-                                                Grid.Row="0"
-                                                Grid.Column="1"
-                                                Height="30"
-                                                Margin="0,5,0,10" />
-
-                                            <Button
-                                                x:Name="btnShowMailboxPermissions"
-                                                Grid.Row="1"
-                                                Grid.ColumnSpan="2"
-                                                Width="210"
-                                                Height="30"
-                                                Margin="130,5,0,10"
-                                                HorizontalAlignment="Center"
-                                                Background="#E7F3FF"
-                                                BorderBrush="#B8DAFF"
-                                                Content="Berechtigungen anzeigen"
-                                                Foreground="#0056B3" />
-                                        </Grid>
                                     </StackPanel>
                                 </GroupBox>
                             </StackPanel>
@@ -1449,7 +1402,7 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="400" />
+                                <ColumnDefinition Width="420" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
@@ -1490,7 +1443,7 @@
                                             Grid.Row="0"
                                             Grid.Column="0"
                                             Width="120"
-                                            Margin="0,5,10,5"
+                                            Margin="0,5,10,25"
                                             VerticalAlignment="Center"
                                             Text="Postfach/Benutzer:" />
                                         <TextBox
@@ -1498,7 +1451,7 @@
                                             Grid.Row="0"
                                             Grid.Column="1"
                                             Height="30"
-                                            Margin="0,5,0,5" />
+                                            Margin="0,5,20,25" />
 
                                         <TextBlock
                                             Grid.Row="1"
@@ -1532,9 +1485,9 @@
                                             x:Name="btnRunAudit"
                                             Grid.Row="3"
                                             Grid.ColumnSpan="2"
-                                            Width="350"
+                                            Width="370"
                                             Height="30"
-                                            Margin="0,10,0,0"
+                                            Margin="0,30,0,0"
                                             HorizontalAlignment="Center"
                                             Background="#E7F3FF"
                                             BorderBrush="#B8DAFF"
@@ -1568,7 +1521,7 @@
                                     <Button
                                         x:Name="btnExportAuditResult"
                                         Grid.Row="1"
-                                        Width="180"
+                                        Width="200"
                                         Height="30"
                                         Margin="0,8,8,8"
                                         HorizontalAlignment="Right"
@@ -1592,7 +1545,7 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="400" />
+                                <ColumnDefinition Width="420" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
@@ -1631,7 +1584,7 @@
                                         <ListBox
                                             x:Name="lstDiagnostics"
                                             Grid.Row="1"
-                                            Height="475"
+                                            Height="440"
                                             Margin="0,0,0,0"
                                             BorderBrush="#e4e4e4"
                                             BorderThickness="1" />
@@ -1706,7 +1659,7 @@
                                                 Orientation="Horizontal">
                                                 <Button
                                                     x:Name="btnRunDiagnostic"
-                                                    Width="170"
+                                                    Width="180"
                                                     Height="30"
                                                     Margin="0,0,10,0"
                                                     Background="#D4EDDA"
@@ -1715,7 +1668,7 @@
                                                     Foreground="#155724" />
                                                 <Button
                                                     x:Name="btnAdminCenter"
-                                                    Width="170"
+                                                    Width="180"
                                                     Height="30"
                                                     Background="#CCE5FF"
                                                     BorderBrush="#B3D7FF"
@@ -1751,8 +1704,8 @@
                                     <Button
                                         x:Name="btnExportDiagnosticResult"
                                         Grid.Row="1"
-                                        Width="180"
-                                        Height="30"
+                                        Width="220"
+                                        Height="40"
                                         Margin="0,8,8,8"
                                         HorizontalAlignment="Right"
                                         Background="#E8F4FD"
@@ -2829,7 +2782,7 @@
                                 <Button
                                     x:Name="btnGetOrganizationConfig"
                                     Grid.Column="1"
-                                    Width="225"
+                                    Width="205"
                                     Height="30"
                                     Margin="0,0,10,0"
                                     Background="#FF40678C"
@@ -2837,14 +2790,14 @@
                                 <Button
                                     x:Name="btnSetOrganizationConfig"
                                     Grid.Column="2"
-                                    Width="225"
+                                    Width="205"
                                     Height="30"
                                     Background="#FF4E8434"
-                                    Content="Einstellungen speichern" />
+                                    Content="Neue Einstellungen speichern" />
                                 <Button
                                     x:Name="btnExportOrganizationConfig"
                                     Grid.Column="3"
-                                    Width="210"
+                                    Width="250"
                                     Height="30"
                                     Margin="25,0,0,0"
                                     Background="#FF7D3838"
@@ -2864,7 +2817,7 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="400" />
+                                <ColumnDefinition Width="420" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
@@ -2994,7 +2947,7 @@
                                                 Orientation="Horizontal">
                                                 <Button
                                                     x:Name="btnCreateGroup"
-                                                    Width="170"
+                                                    Width="180"
                                                     Height="30"
                                                     Margin="0,0,10,0"
                                                     Background="#D4EDDA"
@@ -3003,7 +2956,7 @@
                                                     Foreground="#155724" />
                                                 <Button
                                                     x:Name="btnDeleteGroup"
-                                                    Width="170"
+                                                    Width="180"
                                                     Height="30"
                                                     Background="#F8D7DA"
                                                     BorderBrush="#F5C6CB"
@@ -3085,7 +3038,7 @@
                                                 Orientation="Horizontal">
                                                 <Button
                                                     x:Name="btnAddUserToGroup"
-                                                    Width="170"
+                                                    Width="180"
                                                     Height="30"
                                                     Margin="0,0,10,0"
                                                     Background="#D4EDDA"
@@ -3094,7 +3047,7 @@
                                                     Foreground="#155724" />
                                                 <Button
                                                     x:Name="btnRemoveUserFromGroup"
-                                                    Width="170"
+                                                    Width="180"
                                                     Height="30"
                                                     Background="#F8D7DA"
                                                     BorderBrush="#F5C6CB"
@@ -3139,7 +3092,7 @@
                                                 Orientation="Horizontal">
                                                 <Button
                                                     x:Name="btnUpdateGroupSettings"
-                                                    Width="170"
+                                                    Width="370"
                                                     Height="30"
                                                     Background="#D1ECF1"
                                                     BorderBrush="#BEE5EB"
@@ -3215,7 +3168,7 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="400" />
+                                <ColumnDefinition Width="420" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
@@ -3249,7 +3202,7 @@
                                             TextWrapping="Wrap" />
                                         <Button
                                             x:Name="btnRunHCW"
-                                            Width="350"
+                                            Width="370"
                                             Height="30"
                                             HorizontalAlignment="Center"
                                             Background="#0078D7"
@@ -3272,8 +3225,8 @@
                                         <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                                             <Button
                                                 x:Name="btnGetHybridStatus"
-                                                Width="135"
-                                                Height="30"
+                                                Width="150"
+                                                Height="35"
                                                 Margin="0,0,10,0"
                                                 Background="#E7F3FF"
                                                 BorderBrush="#B8DAFF"
@@ -3281,11 +3234,11 @@
                                                 Foreground="#0056B3" />
                                             <Button
                                                 x:Name="btnGetFederationTrust"
-                                                Width="205"
-                                                Height="30"
+                                                Width="210"
+                                                Height="35"
                                                 Background="#E7F3FF"
                                                 BorderBrush="#B8DAFF"
-                                                Content="Verbundvertrauensstellung prüfen"
+                                                Content="Vertrauensstellung prüfen"
                                                 Foreground="#0056B3" />
                                         </StackPanel>
                                     </StackPanel>
@@ -3395,7 +3348,7 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="400" />
+                                <ColumnDefinition Width="420" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
@@ -3675,7 +3628,7 @@
                                             <RowDefinition Height="*" />
                                         </Grid.RowDefinitions>
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="400" />
+                                            <ColumnDefinition Width="420" />
                                             <ColumnDefinition Width="*" />
                                         </Grid.ColumnDefinitions>
 
@@ -4405,6 +4358,7 @@
                                             <Button
                                                 x:Name="btnAddConnector"
                                                 Width="220"
+                                                Margin="30,0,10,0"
                                                 Content="Connector anlegen" />
                                             <Button
                                                 x:Name="btnSetConnectorStatus"
@@ -5048,7 +5002,7 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="400" />
+                                <ColumnDefinition Width="420" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
@@ -5123,7 +5077,7 @@
                                                 x:Name="btnCreateResource"
                                                 Grid.Row="2"
                                                 Grid.ColumnSpan="2"
-                                                Width="350"
+                                                Width="370"
                                                 Height="30"
                                                 Margin="0,5,0,0"
                                                 HorizontalAlignment="Center"
@@ -5168,7 +5122,7 @@
                                              x:Name="btnSearchResources"
                                              Grid.Row="1"
                                              Grid.ColumnSpan="2"
-                                             Width="260"
+                                             Width="280"
                                              Height="30"
                                              Margin="90,0,0,0"
                                              Background="#FF40678C"
@@ -5184,21 +5138,21 @@
                                                 <Button
                                                     x:Name="btnRefreshResources"
                                                     Width="110"
-                                                    Height="35"
+                                                    Height="40"
                                                     Margin="0,0,10,0"
                                                     Background="#FFA4D0F1"
                                                     Content="Alle anzeigen" Foreground="Black" />
                                                 <Button
                                                     x:Name="btnShowRoomResources"
                                                     Width="110"
-                                                    Height="30"
+                                                    Height="40"
                                                     Margin="0,0,0,0"
                                                     Background="#FF638BA9"
                                                     Content="Nur Räume" />
                                                 <Button
                                                     x:Name="btnShowEquipmentResources"
-                                                    Width="110"
-                                                    Height="30"
+                                                    Width="130"
+                                                    Height="40"
                                                     Margin="10,0,0,0"
                                                     HorizontalAlignment="Center"
                                                     Background="#FF638BA9"
@@ -5343,7 +5297,7 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="400" />
+                                <ColumnDefinition Width="420" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
@@ -5840,7 +5794,7 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="400" />
+                                <ColumnDefinition Width="420" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
@@ -6026,7 +5980,7 @@
                                             <ComboBoxItem Content="yyyy-MM-dd" Tag="yyyy-MM-dd" />
                                             <ComboBoxItem Content="d. MMMM yyyy" Tag="d. MMMM yyyy" />
                                         </ComboBox>
-                                        
+
                                         <TextBlock
                                             Grid.Row="4"
                                             Grid.Column="0"
@@ -6065,7 +6019,7 @@
                                             VerticalAlignment="Center"
                                             IsThreeState="True"
                                             ToolTip="Legt fest, ob Standardordner (z.B. Posteingang) an die Benutzersprache angepasst werden." />
-                                            
+
                                         <Border
                                             Grid.Row="6"
                                             Grid.ColumnSpan="2"
@@ -6143,7 +6097,7 @@
                         Visibility="Collapsed">
                         <Grid Margin="10">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="400" />
+                                <ColumnDefinition Width="420" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
@@ -6582,7 +6536,7 @@
                         Visibility="Collapsed">
                         <Grid Margin="10">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" MinWidth="400" />
+                                <ColumnDefinition Width="Auto" MinWidth="420" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
@@ -6979,6 +6933,22 @@
                                             Content="Status exportieren" />
                                     </StackPanel>
                                 </GroupBox>
+
+                                <!--  Hinweis  -->
+                                <Border
+                                    Margin="0,30,0,10"
+                                    Padding="10"
+                                    Background="#FFF3CD"
+                                    BorderBrush="#FFEAA7"
+                                    BorderThickness="1"
+                                    CornerRadius="3">
+                                    <TextBlock
+                                        FontSize="12"
+                                        Foreground="#856404"
+                                        Text="Umbruch in der Abwesenheitsnotiz mit HTML Code 'br' setzten"
+                                        TextWrapping="Wrap" />
+                                </Border>
+
                             </StackPanel>
 
                             <!--  Rechte Spalte - Ausgaben  -->
@@ -7036,14 +7006,13 @@
                 <TextBlock
                     x:Name="txtStatus"
                     Grid.Column="0"
-                    VerticalAlignment="Center"
-                    FontSize="11"
+                    FontSize="16"
                     Foreground="#e2e2e2"
-                    Text="Bereit" />
+                    Text="Bereit" Grid.ColumnSpan="3" Margin="0,0,450,0" />
 
                 <StackPanel
-                    Grid.Column="1"
-                    HorizontalAlignment="Center"
+                    Grid.Column="2"
+                    HorizontalAlignment="Right"
                     VerticalAlignment="Center"
                     Orientation="Horizontal">
                     <TextBlock
