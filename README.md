@@ -1,6 +1,4 @@
-# easyEXO PowerShell GUI (Version 0.0.11)
-
-Dieses Repository enthält das PowerShell Script **easyEXO_V0.0.11.ps1** zur Verwaltung und Konfiguration von Exchange Online. 
+Dieses Repository enthält das PowerShell Script **easyEXO_V0.0.12.ps1** zur Verwaltung und Konfiguration von Exchange Online. 
 easyEXO bietet eine übersichtliche Benutzeroberfläche mit vielfältigen Tabs und Funktionen.
 
 ## 📚 Inhalt / Table of Contents
@@ -43,17 +41,11 @@ easyEXO ist ein PowerShell-Skript mit WPF-GUI, das zentrale Exchange Online-Verw
 - Exchange Online-Administratorrechte (z.B. Global Admin)
 - Ausführungsrichtlinie `RemoteSigned` oder strenger
 
-### 🚀 Installation
-```powershell
-git clone https://github.com/PS-easyIT/easyEXO.git
-cd easyEXO
-```
-
 ### 🖥️ Starten
-- Doppelklick auf `easyEXO_V0.0.11.ps1`  
+- Doppelklick auf `easyEXO_V0.0.12.ps1`  
 - Oder im PowerShell (Administrator):
   ```powershell
-  pwsh .\easyEXO_V0.0.11.ps1
+  pwsh .\easyEXO_V0.0.12.ps1
   ```
 
 ### 📋 Tabs & Funktionen
@@ -76,10 +68,7 @@ Zeigt Skriptversion, Verbindungsstatus und Schnellstatistiken.
 - **Auto Reply**: Automatische Antworten (Abwesenheitsnotizen) erstellen und verwalten  
 
 #### Systemkonfiguration
-- **Region & Routing**: Standorte und Nachrichtenrouting  
-- **Cross-Premises**: Hybrid- und Cross-Premises-Einstellungen  
-- **Hybrid Exchange**: Hybrid-Verbindung zwischen On-Prem und Cloud  
-- **Multi-Forest**: Konfiguration für Multi-Forest-Umgebungen  
+- **Regionsettings**: Regional und Zeitzonen Einstellungen auslesen und anpassen 
 - **EXO Settings**: Global Organization Settings auslesen und anpassen  
 
 #### Monitoring & Support
@@ -90,7 +79,6 @@ Zeigt Skriptversion, Verbindungsstatus und Schnellstatistiken.
 
 ### 📂 Logs
 - Ordner: `Logs`  
-- Logdatei: `ExchangeTool.log`
 
 ### 🔗 Weiterführende Links
 - [easyEXO auf GitHub](https://github.com/PS-easyIT/easyEXO)  
@@ -109,17 +97,11 @@ easyEXO is a PowerShell WPF GUI tool grouping key Exchange Online management tas
 - Exchange Online admin permissions  
 - Execution policy `RemoteSigned` or stricter  
 
-### 🚀 Installation
-```powershell
-git clone https://github.com/PS-easyIT/easyEXO.git
-cd easyEXO
-```
-
 ### 🖥️ Launching
-- Double-click `easyEXO_V0.0.11.ps1`  
+- Double-click `easyEXO_V0.0.12.ps1`  
 - Or run in PowerShell (admin):
   ```powershell
-  pwsh .\easyEXO_V0.0.11.ps1
+  pwsh .\easyEXO_V0.0.12.ps1
   ```
 
 ### 📋 Tabs & Features
@@ -142,10 +124,7 @@ Displays script version, connection status, and quick stats.
 - **Auto Reply**: Create/manage automatic replies (out-of-office)  
 
 #### System Configuration
-- **Region & Routing**: Locations and mail routing  
-- **Cross-Premises**: Hybrid and cross-premises settings  
-- **Hybrid Exchange**: On-prem/cloud hybrid connection  
-- **Multi-Forest**: Multi-forest environment configuration  
+- **Regionsettings**:
 - **EXO Settings**: Read and adjust global organization settings  
 
 #### Monitoring & Support
@@ -156,7 +135,6 @@ Displays script version, connection status, and quick stats.
 
 ### 📂 Logs
 - Folder: `Logs`  
-- Log file: `ExchangeTool.log`
 
 ### 🔗 References
 - [easyEXO project](https://github.com/PS-easyIT/easyEXO)  
