@@ -1,143 +1,71 @@
-![Screenshot](https://github.com/PS-easyIT/easyEXO/blob/main/%23%20Screenshots/easyEXO-V0.0.13_Dashboard.jpg)
+# easyEXO - Exchange Online Verwaltungstool
 
-Dieses Repository enthält das PowerShell Script **easyEXO_V0.0.12.ps1** zur Verwaltung und Konfiguration von Exchange Online. 
-easyEXO bietet eine übersichtliche Benutzeroberfläche mit vielfältigen Tabs und Funktionen.
+![Screenshot](https://github.com/PS-easyIT/easyEXO/blob/main/%23%20Screenshots/easyEXO-V0.1.1_Dashboard.jpg)
 
-## 📚 Inhalt / Table of Contents
+## Übersicht
 
-- [🇩🇪 Deutsch](#-deutsch)
-  - [🔧 Übersicht](#-übersicht)
-  - [⚙️ Voraussetzungen](#-voraussetzungen)
-  - [🚀 Installation](#-installation)
-  - [🖥️ Starten](#-starten)
-  - [📋 Tabs & Funktionen](#-tabs--funktionen)
-    - [Dashboard](#dashboard)
-    - [Grundlegende Verwaltung](#grundlegende-verwaltung)
-    - [Mail Flow](#mail-flow)
-    - [Systemkonfiguration](#systemkonfiguration)
-    - [Monitoring & Support](#monitoring--support)
-  - [📂 Logs](#-logs)
-  - [🔗 Weiterführende Links](#-weiterführende-links)
-- [🇬🇧 English](#-english)
-  - [🔧 Overview](#-overview)
-  - [⚙️ Prerequisites](#-prerequisites)
-  - [🚀 Installation](#-installation-1)
-  - [🖥️ Launching](#-launching)
-  - [📋 Tabs & Features](#-tabs--features)
-    - [Dashboard](#dashboard-1)
-    - [Basic Management](#basic-management)
-    - [Mail Flow](#mail-flow-1)
-    - [System Configuration](#system-configuration)
-    - [Monitoring & Support](#monitoring--support-1)
-  - [📂 Logs](#-logs-1)
-  - [🔗 References](#-references)
+**easyEXO** ist ein leistungsstarkes PowerShell-basiertes Tool mit einer grafischen Benutzeroberfläche (WPF), das die Verwaltung von Microsoft Exchange Online vereinfacht. Es bündelt eine Vielzahl von administrativen Aufgaben in einer zentralen Konsole und richtet sich an IT-Administratoren, die eine effiziente Alternative zur webbasierten Exchange-Verwaltungskonsole und zur reinen Kommandozeile suchen.
 
-## 🇩🇪 Deutsch
+Das Tool bietet einen modularen Aufbau mit verschiedenen Tabs für spezifische Verwaltungsbereiche, von der grundlegenden Postfach- und Kalenderverwaltung bis hin zu komplexen Mailflow-Regeln, Sicherheitsrichtlinien und Fehlerbehebungsdiagnosen.
 
-### 🔧 Übersicht
-easyEXO ist ein PowerShell-Skript mit WPF-GUI, das zentrale Exchange Online-Verwaltungsaufgaben in einer grafischen Oberfläche bündelt.
+## Hauptfunktionen
 
-### ⚙️ Voraussetzungen
-- Windows mit PowerShell 7 oder höher
-- PowerShell-Modul **ExchangeOnlineManagement** (`Install-Module ExchangeOnlineManagement`)
-- Exchange Online-Administratorrechte (z.B. Global Admin)
-- Ausführungsrichtlinie `RemoteSigned` oder strenger
+### 📊 Dashboard
+- **Live-Statistiken**: Zeigt eine dynamische Übersicht über wichtige Exchange-Objekte wie Postfächer, Gruppen, Kontakte und Ressourcen.
+- **Verbindungsstatus**: Klare visuelle Anzeige, ob eine Verbindung zu Exchange Online besteht.
 
-### 🖥️ Starten
-- Doppelklick auf `easyEXO_V0.0.12.ps1`  
-- Oder im PowerShell (Administrator):
-  ```powershell
-  pwsh .\easyEXO_V0.0.12.ps1
-  ```
+### 🗂️ Grundlegende Verwaltung
+- **Kalenderberechtigungen**: Einfaches Anzeigen, Hinzufügen, Ändern und Entfernen von Berechtigungen für Benutzerkalender. Setzen von Standard- und anonymen Berechtigungen.
+- **Postfachberechtigungen**: Verwaltung von `FullAccess`, `SendAs` und `SendOnBehalf` Berechtigungen.
+- **Freigegebene Postfächer**: Erstellen, Konvertieren und Verwalten von freigegebenen Postfächern und deren Berechtigungen.
+- **Gruppen**: Verwaltung von Verteilergruppen, inklusive Mitgliedschaften und Einstellungen.
+- **Ressourcen**: Verwaltung von Raum- und Gerätepostfächern (Erstellen, Suchen, Berechtigungen bearbeiten).
+- **Kontakte**: Suchen und Bearbeiten von Mail-Kontakten.
 
-### 📋 Tabs & Funktionen
+### ⚙️ Mailflow
+- **Transportregeln**: Erstellen, Anzeigen, Aktivieren/Deaktivieren und Exportieren/Importieren von Mailflow-Regeln.
+- **Posteingangsregeln**: Verwaltung von Posteingangsregeln für einzelne Benutzerpostfächer.
+- **Nachrichtenverfolgung**: Detaillierte Suche und Analyse von E-Mail-Zustellungen.
+- **Automatische Antworten**: Konfiguration von Abwesenheitsnotizen für Benutzer.
 
-#### Dashboard
-Zeigt Skriptversion, Verbindungsstatus und Schnellstatistiken.
+### 🛡️ Sicherheit & Compliance
+- **Microsoft Defender (ATP)**: Verwaltung von Anti-Phishing-, sicheren Anlagen- und sicheren Links-Richtlinien.
+- **Quarantäne**: Anzeigen, Freigeben und Löschen von Nachrichten in Quarantäne.
+- **Mobile Device Management (MDM)**: Verwaltung von Geräterichtlinien und Geräten in Quarantäne.
 
-#### Grundlegende Verwaltung
-- **Calendar**: Kalenderberechtigungen und Freigaben verwalten  
-- **Mailbox**: Postfach-Eigenschaften und Delegierungen  
-- **Shared Mailbox**: Freigegebene Postfächer konfigurieren  
-- **Groups**: Office 365-Gruppen und Sicherheitsgruppen verwalten  
-- **Resources**: Ressourcenpostfächer (Raum/Equipment) verwalten  
-- **Contacts**: Kontakte außerhalb der Organisation verwalten  
+### 🔧 Systemkonfiguration
+- **Regionaleinstellungen**: Anpassen von Sprache, Zeitzone sowie Datums- und Zeitformaten für Postfächer.
+- **Mail-Routing (Cross-Premises)**: Anzeigen von Mail-Connectors, akzeptierten und Remote-Domänen.
 
-#### Mail Flow
-- **Mail Flow Rules**: Transportregeln anzeigen und bearbeiten  
-- **Inbox Rules**: Posteingangsregeln für Benutzerpostfächer  
-- **Message Trace**: Nachrichtennachverfolgung und Details (inkl. Export)  
-- **Auto Reply**: Automatische Antworten (Abwesenheitsnotizen) erstellen und verwalten  
+### 📈 Monitoring & Support
+- **Health Check**: Umfassende Überprüfung des Exchange Online-Dienststatus, der Konnektivität und wichtiger Konfigurationen.
+- **Troubleshooting**: Ausführen von Diagnosen für Postfächer, Abrufen von Drosselungsinformationen (Throttling) und Audit-Logs.
 
-#### Systemkonfiguration
-- **Regionsettings**: Regional und Zeitzonen Einstellungen auslesen und anpassen 
-- **EXO Settings**: Global Organization Settings auslesen und anpassen  
+## Voraussetzungen
 
-#### Monitoring & Support
-- **Health Check**: Systemgesundheit und Service-Status prüfen  
-- **Mailbox Audit**: Prüfprotokolle und Auditing-Einstellungen  
-- **Reports**: Standardberichte generieren (z.B. Mailbox-Größen)  
-- **Troubleshooting**: Hilfsfunktionen und Log-Analyse  
+- **Windows PowerShell 5.1** oder **PowerShell 7**
+- **ExchangeOnlineManagement Modul**: Version 3.0.0 oder höher. Das Skript prüft beim Start, ob das Modul installiert ist.
+- **Administratorrechte**: Das Skript muss mit erhöhten Rechten ausgeführt werden, um eine Verbindung zu Exchange Online herstellen und Konfigurationen ändern zu können.
+- **Internetverbindung**: Für die Verbindung zu Exchange Online.
 
-### 📂 Logs
-- Ordner: `Logs`  
+## Anwendung
 
-### 🔗 Weiterführende Links
-- [easyEXO auf GitHub](https://github.com/PS-easyIT/easyEXO)  
-- [Exchange Online PowerShell Docs](https://aka.ms/exops-docs)
+1.  **Herunterladen**: Laden Sie das Skript `easyEXO_V0.1.1.ps1` herunter.
+2.  **Ausführen**: Starten Sie das Skript in einer PowerShell-Konsole mit Administratorrechten.
+    ```powershell
+    .\easyEXO_V0.1.1.ps1
+    ```
+3.  **Verbinden**: Klicken Sie auf den Button "Mit Exchange Online verbinden". Nach erfolgreicher Authentifizierung werden die GUI-Elemente aktiviert.
+4.  **Verwalten**: Navigieren Sie durch die Tabs, um die gewünschten Aktionen auszuführen.
 
----
+## Konfiguration
 
-## 🇬🇧 English
+Das Skript speichert grundlegende Einstellungen in der Windows-Registrierung unter:
+`HKCU:\Software\easyIT\easyEXO`
 
-### 🔧 Overview
-easyEXO is a PowerShell WPF GUI tool grouping key Exchange Online management tasks into a single interface.
+Hier kann z.B. der **Debug-Modus** aktiviert werden, um detailliertere Log-Ausgaben zu erhalten.
 
-### ⚙️ Prerequisites
-- Windows with PowerShell 7 or newer  
-- **ExchangeOnlineManagement** PowerShell module (`Install-Module ExchangeOnlineManagement`)  
-- Exchange Online admin permissions  
-- Execution policy `RemoteSigned` or stricter  
+## Logging
 
-### 🖥️ Launching
-- Double-click `easyEXO_V0.0.12.ps1`  
-- Or run in PowerShell (admin):
-  ```powershell
-  pwsh .\easyEXO_V0.0.12.ps1
-  ```
+Alle Aktionen, Fehler und wichtige Informationen werden in einer Log-Datei im Unterordner `Logs` gespeichert (`ExchangeTool.log`). Dies erleichtert die Nachverfolgung und Fehlerbehebung.
 
-### 📋 Tabs & Features
-
-#### Dashboard
-Displays script version, connection status, and quick stats.
-
-#### Basic Management
-- **Calendar**: Manage calendar permissions and sharing  
-- **Mailbox**: Manage mailbox properties and delegations  
-- **Shared Mailbox**: Configure shared mailboxes  
-- **Groups**: Manage Office 365 and security groups  
-- **Resources**: Manage resource mailboxes (room/equipment)  
-- **Contacts**: Manage external contacts  
-
-#### Mail Flow
-- **Mail Flow Rules**: View/edit transport rules  
-- **Inbox Rules**: User mailbox inbox rules  
-- **Message Trace**: Track messages and view details (exportable)  
-- **Auto Reply**: Create/manage automatic replies (out-of-office)  
-
-#### System Configuration
-- **Regionsettings**:
-- **EXO Settings**: Read and adjust global organization settings  
-
-#### Monitoring & Support
-- **Health Check**: Check system health and service status  
-- **Mailbox Audit**: Audit logs and auditing settings  
-- **Reports**: Generate standard reports (e.g., mailbox sizes)  
-- **Troubleshooting**: Utilities and log analysis  
-
-### 📂 Logs
-- Folder: `Logs`  
-
-### 🔗 References
-- [easyEXO project](https://github.com/PS-easyIT/easyEXO)  
-- [Exchange Online PowerShell docs](https://aka.ms/exops-docs)
