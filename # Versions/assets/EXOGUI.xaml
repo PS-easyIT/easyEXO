@@ -648,19 +648,19 @@
                     <!--  Grundlegende Verwaltung  -->
                     <Expander
                         Background="#FF738AA0"
-                        Header="Verwaltung"
+                        Header="Management"
                         IsExpanded="True">
                         <StackPanel>
-                            <Button
-                                x:Name="btnNavCalendar"
-                                HorizontalAlignment="Left"
-                                Background="#FF738AA0"
-                                Content="* Kalenderberechtigungen" />
                             <Button
                                 x:Name="btnNavMailbox"
                                 HorizontalAlignment="Left"
                                 Background="#FF738AA0"
-                                Content="* Postfachberechtigungen" />
+                                Content="* Mailbox Permissions" />
+                            <Button
+                                x:Name="btnNavCalendar"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Calendar Permissions" />
                             <Button
                                 x:Name="btnNavSharedMailbox"
                                 HorizontalAlignment="Left"
@@ -670,17 +670,27 @@
                                 x:Name="btnNavGroups"
                                 HorizontalAlignment="Left"
                                 Background="#FF738AA0"
-                                Content="* Gruppen / Verteiler" />
+                                Content="* Groups / Distribution Lists" />
                             <Button
                                 x:Name="btnNavResources"
                                 HorizontalAlignment="Left"
                                 Background="#FF738AA0"
-                                Content="* Ressourcen" />
+                                Content="* Resources" />
                             <Button
                                 x:Name="btnNavContacts"
                                 HorizontalAlignment="Left"
                                 Background="#FF738AA0"
-                                Content="* Kontakte" />
+                                Content="* Contacts" />
+                        </StackPanel>
+                    </Expander>
+
+
+                    <!--  Mail Flow  -->
+                    <Expander
+                        Background="#FF738AA0"
+                        Header="Mail-Flow"
+                        IsExpanded="False">
+                        <StackPanel>
                             <Button
                                 x:Name="btnNavMailFlowRules"
                                 HorizontalAlignment="Left"
@@ -701,7 +711,12 @@
                                 HorizontalAlignment="Left"
                                 Background="#FF738AA0"
                                 Content="* Auto Reply" />
-                       <!-- <Button
+                            <Button
+                                x:Name="btnNavCrossPremises"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Cross-Premises Routing" />
+                            <!-- <Button
                                 x:Name="btnNavHybridExchange"
                                 HorizontalAlignment="Left"
                                 Background="#FF738AA0"
@@ -713,6 +728,7 @@
                                 Content="* Multi-Forest Management" /> -->
                         </StackPanel>
                     </Expander>
+
 
                     <!--  Systemkonfiguration  -->
                     <Expander
@@ -729,12 +745,7 @@
                                 x:Name="btnNavRegion"
                                 HorizontalAlignment="Left"
                                 Background="#FF738AA0"
-                                Content="* Sprache / Zeitzone" />
-                       <!-- <Button
-                                x:Name="btnNavCrossPremises"
-                                HorizontalAlignment="Left"
-                                Background="#FF738AA0"
-                                Content="* Cross-Premises Routing" /> -->
+                                Content="* Language / Time Zone" />
                         </StackPanel>
                     </Expander>
 
@@ -749,7 +760,7 @@
                                 HorizontalAlignment="Left"
                                 Background="#FF738AA0"
                                 Content="* Advanced Threat Protection" />
-                   <!--     <Button
+                            <!--     <Button
                                 x:Name="btnNavDLP"
                                 HorizontalAlignment="Left"
                                 Background="#FF738AA0"
@@ -777,17 +788,17 @@
                                 x:Name="btnNavHealthCheck"
                                 HorizontalAlignment="Left"
                                 Background="#FF738AA0"
-                                Content="* Exchange Health Check" />
+                                Content="* Health Check" />
                             <Button
                                 x:Name="btnNavAudit"
                                 HorizontalAlignment="Left"
                                 Background="#FF738AA0"
-                                Content="* Information / Audit" />
+                                Content="* Audit" />
                             <Button
                                 x:Name="btnNavReports"
                                 HorizontalAlignment="Left"
                                 Background="#FF738AA0"
-                                Content="* export Berichte" />
+                                Content="* Reports" />
                             <Button
                                 x:Name="btnNavTroubleshooting"
                                 HorizontalAlignment="Left"
@@ -1121,150 +1132,87 @@
                                 Grid.Column="0"
                                 Margin="0,0,10,0">
 
-                                <!--  FullAccess Berechtigungen  -->
+                                <!--  Postfach und Benutzer auswählen  -->
                                 <GroupBox
                                     Margin="0,0,0,10"
                                     Background="#ffffff"
-                                    Header="FullAccess Berechtigungen verwalten">
-                                    <StackPanel Margin="10">
-                                        <Grid>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                            </Grid.RowDefinitions>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="*" />
-                                            </Grid.ColumnDefinitions>
+                                    Header="Postfach und Benutzer auswählen">
+                                    <Grid Margin="10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
 
-                                            <TextBlock
-                                                Grid.Row="0"
-                                                Grid.Column="0"
-                                                Width="140"
-                                                Margin="0,5,10,5"
-                                                VerticalAlignment="Center"
-                                                Text="Quell-Postfach:" />
-                                            <TextBox
-                                                x:Name="txtMailboxSource"
-                                                Grid.Row="0"
-                                                Grid.Column="1"
-                                                Height="30"
-                                                Margin="0,5,0,5" />
+                                        <TextBlock
+                                            Grid.Row="0"
+                                            Grid.Column="0"
+                                            Width="120"
+                                            Margin="0,5,10,5"
+                                            VerticalAlignment="Center"
+                                            Text="Postfach:" />
+                                        <TextBox
+                                            x:Name="txtMailboxSource"
+                                            Grid.Row="0"
+                                            Grid.Column="1"
+                                            Height="30"
+                                            Margin="0,5,0,5"
+                                            ToolTip="Das Postfach, dessen Berechtigungen verwaltet werden sollen." />
 
-                                            <TextBlock
-                                                Grid.Row="1"
-                                                Grid.Column="0"
-                                                Width="140"
-                                                Margin="0,5,10,5"
-                                                VerticalAlignment="Center"
-                                                Text="Ziel-Benutzer:" />
-                                            <TextBox
-                                                x:Name="txtMailboxTarget"
-                                                Grid.Row="1"
-                                                Grid.Column="1"
-                                                Height="30"
-                                                Margin="0,5,0,10" />
-
-                                            <StackPanel
-                                                Grid.Row="2"
-                                                Grid.ColumnSpan="2"
-                                                Margin="0,0,0,0"
-                                                HorizontalAlignment="Center"
-                                                Orientation="Horizontal">
-                                                <Button
-                                                    x:Name="btnAddMailboxPermission"
-                                                    Width="180"
-                                                    Height="30"
-                                                    Margin="0,0,10,0"
-                                                    Background="#D4EDDA"
-                                                    BorderBrush="#C3E6CB"
-                                                    Content="Hinzufügen"
-                                                    Foreground="#155724" />
-                                                <Button
-                                                    x:Name="btnRemoveMailboxPermission"
-                                                    Width="180"
-                                                    Height="30"
-                                                    Background="#F8D7DA"
-                                                    BorderBrush="#F5C6CB"
-                                                    Content="Entfernen"
-                                                    Foreground="#721C24" />
-                                            </StackPanel>
-                                        </Grid>
-                                    </StackPanel>
+                                        <TextBlock
+                                            Grid.Row="1"
+                                            Grid.Column="0"
+                                            Width="120"
+                                            Margin="0,5,10,5"
+                                            VerticalAlignment="Center"
+                                            Text="Ziel-Benutzer:" />
+                                        <TextBox
+                                            x:Name="txtMailboxTarget"
+                                            Grid.Row="1"
+                                            Grid.Column="1"
+                                            Height="30"
+                                            Margin="0,5,0,5"
+                                            ToolTip="Der Benutzer, der Berechtigungen erhalten oder verlieren soll." />
+                                    </Grid>
                                 </GroupBox>
 
+                                <!--  Berechtigungen verwalten  -->
                                 <GroupBox
-                                Margin="0,25,10,0"
-                                Background="#ffffff"
-                                Header="Berechtigungen anzeigen">
-                                    <StackPanel Margin="10">
-                                        <Grid>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                            </Grid.RowDefinitions>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="*" />
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock
-                                                        Grid.Row="0"
-                                                        Grid.Column="0"
-                                                        Width="120"
-                                                        Margin="0,5,10,5"
-                                                        VerticalAlignment="Center"
-                                                        Text="Postfach:" />
-                                            <TextBox
-                                                        x:Name="txtMailboxUser"
-                                                        Grid.Row="0"
-                                                        Grid.Column="1"
-                                                        Height="30"
-                                                        Margin="0,5,0,10" />
-
-                                            <Button
-                                                        x:Name="btnShowMailboxPermissions"
-                                                        Grid.Row="1"
-                                                        Grid.ColumnSpan="2"
-                                                        Width="230"
-                                                        Height="30"
-                                                        Margin="130,5,0,10"
-                                                        HorizontalAlignment="Center"
-                                                        Background="#E7F3FF"
-                                                        BorderBrush="#B8DAFF"
-                                                        Content="Berechtigungen anzeigen"
-                                                        Foreground="#0056B3" />
-                                        </Grid>
-                                    </StackPanel>
-                                </GroupBox>
-
-                                <!--  Hinweis  -->
-                                <Border
-                                    Margin="0,25,0,0"
-                                    Padding="10"
-                                    Background="#FFF3CD"
-                                    BorderBrush="#FFEAA7"
-                                    BorderThickness="1"
-                                    CornerRadius="3">
-                                    <TextBlock
-                                        FontSize="11"
-                                        Foreground="#856404"
-                                        Text="Hinweis: Für SendAs und SendOnBehalf werden die gleichen Werte für Quell- und Zielbenutzer wie oben verwendet."
-                                        TextWrapping="Wrap" />
-                                </Border>
-
-                                <!--  SendAs Berechtigungen  -->
-                                <GroupBox
-                                    Margin="0,15,0,10"
+                                    Margin="0,0,0,10"
                                     Background="#ffffff"
-                                    Header="SendAs Berechtigungen">
+                                    Header="Berechtigungen verwalten">
                                     <StackPanel Margin="10">
-                                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                        <!--  FullAccess Berechtigungen  -->
+                                        <TextBlock FontWeight="SemiBold" Text="FullAccess:" />
+                                        <StackPanel Margin="0,5,0,15" Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnAddMailboxPermission"
+                                                Width="180"
+                                                Height="30"
+                                                Margin="0,0,10,0"
+                                                Background="#D4EDDA"
+                                                BorderBrush="#C3E6CB"
+                                                Content="Hinzufügen"
+                                                Foreground="#155724" />
+                                            <Button
+                                                x:Name="btnRemoveMailboxPermission"
+                                                Width="180"
+                                                Height="30"
+                                                Background="#F8D7DA"
+                                                BorderBrush="#F5C6CB"
+                                                Content="Entfernen"
+                                                Foreground="#721C24" />
+                                        </StackPanel>
+
+                                        <!--  SendAs Berechtigungen  -->
+                                        <TextBlock FontWeight="SemiBold" Text="SendAs:" />
+                                        <StackPanel Margin="0,5,0,15" Orientation="Horizontal">
                                             <Button
                                                 x:Name="btnAddSendAs"
-                                                Width="120"
+                                                Width="180"
                                                 Height="30"
                                                 Margin="0,0,10,0"
                                                 Background="#D4EDDA"
@@ -1273,35 +1221,20 @@
                                                 Foreground="#155724" />
                                             <Button
                                                 x:Name="btnRemoveSendAs"
-                                                Width="115"
+                                                Width="180"
                                                 Height="30"
-                                                Margin="0,0,10,0"
                                                 Background="#F8D7DA"
                                                 BorderBrush="#F5C6CB"
                                                 Content="Entfernen"
                                                 Foreground="#721C24" />
-                                            <Button
-                                                x:Name="btnShowSendAs"
-                                                Width="115"
-                                                Height="30"
-                                                Background="#CCE5FF"
-                                                BorderBrush="#B3D7FF"
-                                                Content="Anzeigen"
-                                                Foreground="#004085" />
                                         </StackPanel>
-                                    </StackPanel>
-                                </GroupBox>
 
-                                <!--  SendOnBehalf Berechtigungen  -->
-                                <GroupBox
-                                    Margin="0,0,0,10"
-                                    Background="#ffffff"
-                                    Header="SendOnBehalf Berechtigungen">
-                                    <StackPanel Margin="10">
-                                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                        <!--  SendOnBehalf Berechtigungen  -->
+                                        <TextBlock FontWeight="SemiBold" Text="SendOnBehalf:" />
+                                        <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
                                             <Button
                                                 x:Name="btnAddSendOnBehalf"
-                                                Width="120"
+                                                Width="180"
                                                 Height="30"
                                                 Margin="0,0,10,0"
                                                 Background="#D4EDDA"
@@ -1310,22 +1243,59 @@
                                                 Foreground="#155724" />
                                             <Button
                                                 x:Name="btnRemoveSendOnBehalf"
-                                                Width="115"
+                                                Width="180"
                                                 Height="30"
-                                                Margin="0,0,10,0"
                                                 Background="#F8D7DA"
                                                 BorderBrush="#F5C6CB"
                                                 Content="Entfernen"
                                                 Foreground="#721C24" />
-                                            <Button
-                                                x:Name="btnShowSendOnBehalf"
-                                                Width="115"
-                                                Height="30"
-                                                Background="#CCE5FF"
-                                                BorderBrush="#B3D7FF"
-                                                Content="Anzeigen"
-                                                Foreground="#004085" />
                                         </StackPanel>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Berechtigungen anzeigen  -->
+                                <GroupBox
+                                    Margin="0,15,0,10"
+                                    Background="#ffffff"
+                                    Header="Berechtigungen für ein Postfach anzeigen">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Width="120"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Postfach:" />
+                                            <TextBox
+                                                x:Name="txtMailboxShowPermissions"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,10"
+                                                ToolTip="Das Postfach, dessen Berechtigungen angezeigt werden sollen." />
+
+                                            <Button
+                                                x:Name="btnShowMailboxPermissions"
+                                                Grid.Row="1"
+                                                Grid.ColumnSpan="2"
+                                                Width="240"
+                                                Height="30"
+                                                Margin="130,5,0,10"
+                                                HorizontalAlignment="Center"
+                                                Background="#E7F3FF"
+                                                BorderBrush="#B8DAFF"
+                                                Content="Berechtigungen anzeigen"
+                                                Foreground="#0056B3" />
+                                        </Grid>
                                     </StackPanel>
                                 </GroupBox>
                             </StackPanel>
@@ -4564,13 +4534,14 @@
                                 Grid.Column="0"
                                 Margin="0,0,10,0">
 
-                                <!--  Neue Shared Mailbox erstellen  -->
+                                <!--  Neue Shared Mailbox erstellen & verwalten  -->
                                 <GroupBox
                                     Margin="0,0,0,10"
                                     Background="#ffffff"
-                                    Header="Neue Shared Mailbox erstellen">
+                                    Header="Shared Mailbox erstellen &amp; verwalten">
                                     <Grid Margin="10">
                                         <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
@@ -4580,85 +4551,118 @@
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
 
                                         <TextBlock
                                             Grid.Row="0"
                                             Grid.Column="0"
                                             Width="105"
-                                            Margin="0,5,10,5"
+                                            Margin="0,2,10,2"
                                             VerticalAlignment="Center"
                                             Text="Name:" />
                                         <TextBox
                                             x:Name="txtSharedMailboxName"
                                             Grid.Row="0"
                                             Grid.Column="1"
-                                            Height="30"
-                                            Margin="0,5,0,5" />
+                                            Grid.ColumnSpan="2"
+                                            Height="28"
+                                            Margin="0,2" />
 
                                         <TextBlock
                                             Grid.Row="1"
                                             Grid.Column="0"
-                                            Width="105"
-                                            Margin="0,5,10,5"
+                                            Margin="0,2,10,2"
                                             VerticalAlignment="Center"
                                             Text="E-Mail-Adresse:" />
                                         <TextBox
                                             x:Name="txtSharedMailboxEmail"
                                             Grid.Row="1"
                                             Grid.Column="1"
-                                            Height="30"
-                                            Margin="0,5,0,5" />
+                                            Grid.ColumnSpan="2"
+                                            Height="28"
+                                            Margin="0,2" />
 
                                         <TextBlock
                                             Grid.Row="2"
                                             Grid.Column="0"
-                                            Width="105"
-                                            Margin="0,5,10,5"
+                                            Margin="0,2,10,2"
                                             VerticalAlignment="Center"
                                             Text="SMTP-Domain:" />
                                         <ComboBox
                                             x:Name="cmbSharedMailboxDomain"
                                             Grid.Row="2"
                                             Grid.Column="1"
-                                            Height="30"
-                                            Margin="0,5,0,5" />
+                                            Grid.ColumnSpan="2"
+                                            Height="28"
+                                            Margin="0,2" />
 
                                         <StackPanel
                                             Grid.Row="3"
-                                            Grid.ColumnSpan="2"
-                                            Margin="0,5,0,0"
+                                            Grid.ColumnSpan="3"
+                                            Margin="0,8,0,0"
                                             HorizontalAlignment="Center"
                                             Orientation="Horizontal">
                                             <Button
                                                 x:Name="btnCreateSharedMailbox"
-                                                Width="195"
-                                                Height="30"
-                                                Margin="0,0,10,0"
+                                                Width="190"
+                                                Height="28"
+                                                Margin="0,0,5,0"
                                                 Background="#D4EDDA"
                                                 BorderBrush="#C3E6CB"
                                                 Content="Shared Mailbox erstellen"
                                                 Foreground="#155724" />
                                             <Button
                                                 x:Name="btnConvertToShared"
-                                                Width="195"
-                                                Height="30"
+                                                Width="190"
+                                                Height="28"
+                                                Margin="5,0,0,0"
                                                 Background="#CCE5FF"
                                                 BorderBrush="#B3D7FF"
                                                 Content="In Shared umwandeln"
                                                 Foreground="#004085"
                                                 ToolTip="Vorhandenes Benutzerpostfach in Shared Mailbox konvertieren" />
                                         </StackPanel>
+
+                                        <Separator Grid.Row="4" Grid.ColumnSpan="3" Margin="0,15,0,10" />
+
+                                        <TextBlock
+                                            Grid.Row="5"
+                                            Grid.Column="0"
+                                            Margin="0,2,10,2"
+                                            VerticalAlignment="Center"
+                                            Text="Shared Mailbox:" />
+                                        <ComboBox
+                                            x:Name="cmbSharedMailboxSelect"
+                                            Grid.Row="5"
+                                            Grid.Column="1"
+                                            Height="28"
+                                            Margin="0,2,5,2"
+                                            IsEditable="True"
+                                            ToolTip="Wählen Sie eine Mailbox aus oder geben Sie den Namen ein." />
+                                        <Button
+                                            x:Name="btnShowSharedMailboxes"
+                                            Grid.Row="5"
+                                            Grid.Column="2"
+                                            Width="30"
+                                            Height="30"
+                                            Margin="0,2,0,2"
+                                            Background="#E7F3FF"
+                                            BorderBrush="#B8DAFF"
+                                            Content="🔄"
+                                            Foreground="#0056B3"
+                                            ToolTip="Liste der Shared Mailboxes aktualisieren" />
                                     </Grid>
                                 </GroupBox>
 
-                                <!--  Shared Mailbox auswählen und verwalten  -->
+                                <!--  Berechtigungen verwalten  -->
                                 <GroupBox
                                     Margin="0,0,0,10"
                                     Background="#ffffff"
-                                    Header="Shared Mailbox auswählen und verwalten">
+                                    Header="Berechtigungen &amp; Sichtbarkeit">
                                     <Grid Margin="10">
                                         <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
@@ -4667,71 +4671,76 @@
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="90" />
                                         </Grid.ColumnDefinitions>
 
                                         <TextBlock
                                             Grid.Row="0"
                                             Grid.Column="0"
                                             Width="105"
-                                            Margin="0,5,10,5"
+                                            Margin="0,2,10,2"
                                             VerticalAlignment="Center"
-                                            Text="Shared Mailbox:" />
-                                        <ComboBox
-                                            x:Name="cmbSharedMailboxSelect"
+                                            Text="Benutzer:" />
+                                        <TextBox
+                                            x:Name="txtSharedMailboxPermUser"
                                             Grid.Row="0"
                                             Grid.Column="1"
-                                            Width="185"
-                                            Height="30"
-                                            Margin="0,5,0,5" />
-                                        <Button
-                                            x:Name="btnShowSharedMailboxes"
-                                            Grid.Row="0"
-                                            Grid.Column="2"
-                                            Width="90"
-                                            Height="35"
-                                            Margin="0,5,0,5"
-                                            Background="#E7F3FF"
-                                            BorderBrush="#B8DAFF"
-                                            Content="🔄"
-                                            Foreground="#0056B3" />
+                                            Height="28"
+                                            Margin="0,2" />
 
                                         <TextBlock
                                             Grid.Row="1"
                                             Grid.Column="0"
-                                            Width="105"
-                                            Margin="0,5,10,5"
+                                            Margin="0,2,10,2"
                                             VerticalAlignment="Center"
-                                            Text="Auto-Mapping:" />
-                                        <CheckBox
-                                            x:Name="chkAutoMapping"
+                                            Text="Berechtigungstyp:" />
+                                        <ComboBox
+                                            x:Name="cmbSharedMailboxPermType"
                                             Grid.Row="1"
                                             Grid.Column="1"
-                                            Margin="0,5,5,5"
-                                            VerticalAlignment="Center"
-                                            Content="Aktivieren" />
-                                        <Button
-                                            x:Name="btnUpdateAutoMapping"
-                                            Grid.Row="1"
-                                            Grid.Column="2"
-                                            Width="90"
-                                            Height="30"
-                                            Margin="0,5,0,5"
-                                            Background="#FFF3CD"
-                                            BorderBrush="#FFEAA7"
-                                            Content="Aktualisieren"
-                                            Foreground="#856404" />
+                                            Height="28"
+                                            Margin="0,2">
+                                            <ComboBoxItem Content="Full Access" IsSelected="True" />
+                                            <ComboBoxItem Content="Send As" />
+                                            <ComboBoxItem Content="Send on Behalf" />
+                                        </ComboBox>
 
                                         <StackPanel
                                             Grid.Row="2"
-                                            Grid.ColumnSpan="3"
-                                            Margin="0,25,0,0"
+                                            Grid.ColumnSpan="2"
+                                            Margin="0,8,0,0"
+                                            HorizontalAlignment="Center"
+                                            Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnAddSharedMailboxPermission"
+                                                Width="190"
+                                                Height="28"
+                                                Margin="0,0,5,0"
+                                                Background="#D4EDDA"
+                                                BorderBrush="#C3E6CB"
+                                                Content="Berechtigung hinzufügen"
+                                                Foreground="#155724" />
+                                            <Button
+                                                x:Name="btnRemoveSharedMailboxPermission"
+                                                Width="190"
+                                                Height="28"
+                                                Margin="5,0,0,0"
+                                                Background="#F8D7DA"
+                                                BorderBrush="#F5C6CB"
+                                                Content="Berechtigung entfernen"
+                                                Foreground="#721C24" />
+                                        </StackPanel>
+
+                                        <Separator Grid.Row="3" Grid.ColumnSpan="2" Margin="0,15,0,10" />
+
+                                        <StackPanel
+                                            Grid.Row="4"
+                                            Grid.ColumnSpan="2"
                                             HorizontalAlignment="Center"
                                             Orientation="Horizontal">
                                             <Button
                                                 x:Name="btnShowSharedMailboxPerms"
-                                                Width="130"
-                                                Height="30"
+                                                Width="125"
+                                                Height="28"
                                                 Margin="0,0,5,0"
                                                 Background="#E7F3FF"
                                                 BorderBrush="#B8DAFF"
@@ -4740,7 +4749,7 @@
                                             <Button
                                                 x:Name="btnHideFromGAL"
                                                 Width="125"
-                                                Height="30"
+                                                Height="28"
                                                 Margin="5,0,5,0"
                                                 Background="#F8D7DA"
                                                 BorderBrush="#F5C6CB"
@@ -4749,7 +4758,7 @@
                                             <Button
                                                 x:Name="btnShowInGAL"
                                                 Width="125"
-                                                Height="30"
+                                                Height="28"
                                                 Margin="5,0,0,0"
                                                 Background="#D4EDDA"
                                                 BorderBrush="#C3E6CB"
@@ -4759,102 +4768,11 @@
                                     </Grid>
                                 </GroupBox>
 
-                                <!--  Berechtigungen verwalten  -->
+                                <!--  Weiterleitungen & Auto-Mapping  -->
                                 <GroupBox
                                     Margin="0,0,0,10"
                                     Background="#ffffff"
-                                    Header="Berechtigungen verwalten">
-                                    <Grid Margin="10">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="Auto" />
-                                        </Grid.RowDefinitions>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-
-                                        <TextBlock
-                                            Grid.Row="0"
-                                            Grid.Column="0"
-                                            Width="105"
-                                            Margin="0,5,10,5"
-                                            VerticalAlignment="Center"
-                                            Text="Shared Mailbox:" />
-                                        <TextBox
-                                            x:Name="txtSharedMailboxPermSource"
-                                            Grid.Row="0"
-                                            Grid.Column="1"
-                                            Height="30"
-                                            Margin="0,5,0,5" />
-
-                                        <TextBlock
-                                            Grid.Row="1"
-                                            Grid.Column="0"
-                                            Width="105"
-                                            Margin="0,5,10,5"
-                                            VerticalAlignment="Center"
-                                            Text="Benutzer:" />
-                                        <TextBox
-                                            x:Name="txtSharedMailboxPermUser"
-                                            Grid.Row="1"
-                                            Grid.Column="1"
-                                            Height="30"
-                                            Margin="0,5,0,5" />
-
-                                        <TextBlock
-                                            Grid.Row="2"
-                                            Grid.Column="0"
-                                            Width="105"
-                                            Margin="0,5,10,5"
-                                            VerticalAlignment="Center"
-                                            Text="Berechtigungstyp:" />
-                                        <ComboBox
-                                            x:Name="cmbSharedMailboxPermType"
-                                            Grid.Row="2"
-                                            Grid.Column="1"
-                                            Height="30"
-                                            Margin="0,5,0,5">
-                                            <ComboBoxItem Content="Full Access" IsSelected="True" />
-                                            <ComboBoxItem Content="Send As" />
-                                            <ComboBoxItem Content="Send on Behalf" />
-                                        </ComboBox>
-
-                                        <StackPanel
-                                            Grid.Row="3"
-                                            Grid.ColumnSpan="2"
-                                            Margin="0,10,0,0"
-                                            HorizontalAlignment="Center"
-                                            Orientation="Horizontal">
-                                            <Button
-                                                x:Name="btnAddSharedMailboxPermission"
-                                                Width="195"
-                                                Height="30"
-                                                Margin="0,0,10,0"
-                                                Background="#D4EDDA"
-                                                BorderBrush="#C3E6CB"
-                                                Content="Berechtigung hinzufügen"
-                                                Foreground="#155724" />
-                                            <Button
-                                                x:Name="btnRemoveSharedMailboxPermission"
-                                                Width="195"
-                                                Height="30"
-                                                Background="#F8D7DA"
-                                                BorderBrush="#F5C6CB"
-                                                Content="Berechtigung entfernen"
-                                                Foreground="#721C24" />
-                                        </StackPanel>
-                                    </Grid>
-                                </GroupBox>
-
-                                <!--  Weiterleitungen  -->
-                                <GroupBox
-                                    Margin="0,0,0,10"
-                                    Background="#ffffff"
-                                    Header="Mailbox Weiterleitungen">
+                                    Header="Weiterleitungen &amp; Auto-Mapping">
                                     <Grid Margin="10">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto" />
@@ -4871,21 +4789,21 @@
                                             Grid.Row="0"
                                             Grid.Column="0"
                                             Width="105"
-                                            Margin="0,5,10,5"
+                                            Margin="0,2,10,2"
                                             VerticalAlignment="Center"
                                             Text="Weiterleiten an:" />
                                         <TextBox
                                             x:Name="txtForwardingAddress"
                                             Grid.Row="0"
                                             Grid.Column="1"
-                                            Height="30"
-                                            Margin="0,5,0,5" />
+                                            Height="28"
+                                            Margin="0,2" />
 
                                         <CheckBox
                                             x:Name="chkKeepCopy"
                                             Grid.Row="1"
-                                            Grid.ColumnSpan="2"
-                                            Margin="115,5,0,10"
+                                            Grid.Column="1"
+                                            Margin="0,5,0,8"
                                             Content="Kopie im Postfach behalten" />
 
                                         <StackPanel
@@ -4896,31 +4814,52 @@
                                             Orientation="Horizontal">
                                             <Button
                                                 x:Name="btnSetForwarding"
-                                                Width="130"
-                                                Height="30"
+                                                Width="125"
+                                                Height="28"
                                                 Margin="0,0,5,0"
                                                 Background="#D4EDDA"
                                                 BorderBrush="#C3E6CB"
-                                                Content="setzen"
+                                                Content="Setzen"
                                                 Foreground="#155724" />
                                             <Button
                                                 x:Name="btnRemoveForwarding"
-                                                Width="130"
-                                                Height="30"
-                                                Margin="0,0,0,0"
+                                                Width="125"
+                                                Height="28"
+                                                Margin="5,0,5,0"
                                                 Background="#F8D7DA"
                                                 BorderBrush="#F5C6CB"
-                                                Content="entfernen"
+                                                Content="Entfernen"
                                                 Foreground="#721C24" />
                                             <Button
                                                 x:Name="btnGetForwardingMailboxes"
-                                                Width="130"
-                                                Height="30"
+                                                Width="125"
+                                                Height="28"
                                                 Margin="5,0,0,0"
                                                 Background="#E7F3FF"
                                                 BorderBrush="#B8DAFF"
-                                                Content="Alle Weiterleitungen"
+                                                Content="Alle anzeigen"
                                                 Foreground="#0056B3" />
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Margin="0,10,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <TextBlock
+                                                Width="105"
+                                                Margin="0,2,10,2"
+                                                VerticalAlignment="Center"
+                                                Text="Auto-Mapping:" />
+                                            <CheckBox
+                                                x:Name="chkAutoMapping"
+                                                VerticalAlignment="Center"
+                                                Content="Aktivieren" />
+                                            <Button
+                                                x:Name="btnUpdateAutoMapping"
+                                                Width="125"
+                                                Height="28"
+                                                Margin="45,0,0,0"
+                                                Background="#FFF3CD"
+                                                BorderBrush="#FFEAA7"
+                                                Content="Aktualisieren"
+                                                Foreground="#856404" />
                                         </StackPanel>
                                     </Grid>
                                 </GroupBox>
@@ -6755,34 +6694,111 @@
                     <!--  Dashboard Tab  -->
                     <TabItem
                         x:Name="tabDashboard"
-                        Header="Dashboard">
+                        Header="Dashboard"
+                        Visibility="Visible">
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <StackPanel Margin="10">
+                            <StackPanel Margin="15" MaxWidth="1400" HorizontalAlignment="Center">
 
-                                <!--  Funktionsübersicht-Karte  -->
-                                <GroupBox Header="Willkommen bei easyEXO" Padding="10" Width="1400" Background="#FFF9F9F9" FontSize="14">
-                                    <TextBlock TextWrapping="Wrap"><Run Text="Dieses Tool bietet eine grafische Benutzeroberfläche zur einfachen Verwaltung Ihrer Exchange Online-Umgebung. Es bündelt häufig verwendete PowerShell-Cmdlets in einer intuitiven Oberfläche, um administrative Aufgaben zu beschleunigen." FontSize="12"/><LineBreak /><LineBreak /><Run FontWeight="SemiBold" Text="Hinweis:" FontSize="12" Foreground="#FFB71414"/><Run Text=" Dieses Skript ist ein Community-Projekt und steht in keiner Verbindung zu Microsoft. Die Nutzung erfolgt auf eigene Gefahr." FontSize="12"/></TextBlock>
+                                <!--  Statistik-Karten  -->
+                                <GroupBox Header="Exchange Online auf einen Blick" Padding="10" Margin="0,0,0,20" BorderBrush="#E0E0E0">
+                                    <WrapPanel HorizontalAlignment="Center">
+                                        <!--  Statistik-Karte Vorlage  -->
+                                        <Border Width="220" Height="120" Margin="10" Background="White" BorderBrush="#E0E0E0" BorderThickness="1">
+                                            <Border.Effect>
+                                                <DropShadowEffect ShadowDepth="1" Color="#CCCCCC" Opacity="0.3" BlurRadius="5"/>
+                                            </Border.Effect>
+                                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                <TextBlock x:Name="txtStatTotalMailboxes" Text="0" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#0078D4"/>
+                                                <TextBlock Text="Benutzerpostfächer" FontSize="14" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Width="220" Height="120" Margin="10" Background="White" BorderBrush="#E0E0E0" BorderThickness="1">
+                                            <Border.Effect>
+                                                <DropShadowEffect ShadowDepth="1" Color="#CCCCCC" Opacity="0.3" BlurRadius="5"/>
+                                            </Border.Effect>
+                                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                <TextBlock x:Name="txtStatSharedMailboxes" Text="0" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#107C10"/>
+                                                <TextBlock Text="Shared Mailboxes" FontSize="14" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Width="220" Height="120" Margin="10" Background="White" BorderBrush="#E0E0E0" BorderThickness="1">
+                                            <Border.Effect>
+                                                <DropShadowEffect ShadowDepth="1" Color="#CCCCCC" Opacity="0.3" BlurRadius="5"/>
+                                            </Border.Effect>
+                                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                <TextBlock x:Name="txtStatGroups" Text="0" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#D83B01"/>
+                                                <TextBlock Text="Gruppen &amp; Verteiler" FontSize="14" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Width="220" Height="120" Margin="10" Background="White" BorderBrush="#E0E0E0" BorderThickness="1">
+                                            <Border.Effect>
+                                                <DropShadowEffect ShadowDepth="1" Color="#CCCCCC" Opacity="0.3" BlurRadius="5"/>
+                                            </Border.Effect>
+                                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                <TextBlock x:Name="txtStatResources" Text="0" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#5C2D91"/>
+                                                <TextBlock Text="Ressourcen" FontSize="14" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Width="220" Height="120" Margin="10" Background="White" BorderBrush="#E0E0E0" BorderThickness="1">
+                                            <Border.Effect>
+                                                <DropShadowEffect ShadowDepth="1" Color="#CCCCCC" Opacity="0.3" BlurRadius="5"/>
+                                            </Border.Effect>
+                                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                <TextBlock x:Name="txtStatDomains" Text="0" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#008272"/>
+                                                <TextBlock Text="Domänen" FontSize="14" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </WrapPanel>
                                 </GroupBox>
 
-                                <Grid Margin="0,50,0,50">
+                                <!--  Funktionsübersicht & Bedienung  -->
+                                <Grid Margin="0,50,0,20">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="700" />
-                                        <ColumnDefinition Width="700" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
 
-                                    <GroupBox Grid.Column="0" Header="Funktionsübersicht" Margin="0,0,5,0" Padding="10">
-                                        <TextBlock TextWrapping="Wrap"><Run Text="easyEXO deckt eine Vielzahl von Verwaltungsaufgaben ab, die in die folgenden Hauptbereiche unterteilt sind:"/><LineBreak /><LineBreak /><Run FontWeight="SemiBold" Text="• Kalender- &amp; Postfachberechtigungen:"/><Run Text=" Verwalten Sie den Zugriff auf Kalender und Postfächer."/><LineBreak /><Run FontWeight="SemiBold" Text="• Shared Mailboxes &amp; Ressourcen:"/><Run Text=" Erstellen und konfigurieren Sie freigegebene Postfächer sowie Raum- und Gerätepostfächer."/><LineBreak /><Run FontWeight="SemiBold" Text="• Gruppen &amp; Kontakte:"/><Run Text=" Verwalten Sie Verteilergruppen, sicherheitsaktivierte Gruppen und externe Kontakte."/><LineBreak /><Run FontWeight="SemiBold" Text="• Transportregeln &amp; Nachrichtenverfolgung:"/><Run Text=" Erstellen und verwalten Sie E-Mail-Flussregeln und verfolgen Sie den Zustellstatus von Nachrichten."/><LineBreak /><Run FontWeight="SemiBold" Text="• Regionaleinstellungen:"/><Run Text=" Passen Sie Sprach-, Zeit- und Datumsformate für Postfächer an."/><LineBreak /><Run FontWeight="SemiBold" Text="• Berichte &amp; Audits:"/><Run Text=" Generieren Sie Berichte über Postfachnutzung, Berechtigungen und führen Sie Audit-Suchen durch."/></TextBlock>
+                                    <GroupBox Grid.Column="0" Header="Funktionsübersicht" Margin="0,0,10,0" Padding="15" BorderBrush="#E0E0E0">
+                                        <TextBlock TextWrapping="Wrap" FontSize="13">
+                                            <Run FontWeight="SemiBold" Text="  • Kalender- &amp; Postfachberechtigungen"/>
+                                            <LineBreak />
+                                            <Run FontWeight="SemiBold" Text="  • Shared Mailboxes &amp; Ressourcen"/>
+                                            <LineBreak />
+                                            <Run FontWeight="SemiBold" Text="  • Gruppen &amp; Kontakte"/>
+                                            <LineBreak />
+                                            <Run FontWeight="SemiBold" Text="  • Transportregeln &amp; Nachrichtenverfolgung"/>
+                                            <LineBreak />
+                                            <Run FontWeight="SemiBold" Text="  • Regionaleinstellungen"/>
+                                            <LineBreak />
+                                            <Run FontWeight="SemiBold" Text="  • Berichte &amp; Audits"/>
+                                        </TextBlock>
                                     </GroupBox>
 
-                                    <GroupBox Grid.Column="1" Header="Bedienungshinweise" Margin="5,0,0,0" Padding="10">
-                                        <TextBlock TextWrapping="Wrap"><Run Text="1. "/><Run FontWeight="SemiBold" Text="Verbindung herstellen:"/><LineBreak /><Run Text="* Klicken Sie im Hauptfenster auf &quot;Verbinden&quot;, um eine Verbindung zu EXO herzustellen."/><LineBreak /><LineBreak /><Run Text="2. "/><Run FontWeight="SemiBold" Text="Tab auswählen:"/><LineBreak /><Run Text="* Navigieren Sie über die Reiter zu dem gewünschten Verwaltungsbereich."/><LineBreak /><LineBreak /><Run Text="3. "/><Run FontWeight="SemiBold" Text="Aktionen durchführen:"/><LineBreak /><Run Text="* Nutzen Sie die entsprechenden Schaltflächen und Eingabefelder, um die gewünschten Aktionen auszuführen. Tooltips werden bei den Buttons durch längeres draufzeigen mit der Maus angezeigt."/></TextBlock>
+                                    <GroupBox Grid.Column="1" Header="Bedienungshinweise" Margin="10,0,0,0" Padding="15" BorderBrush="#E0E0E0">
+                                        <TextBlock TextWrapping="Wrap" FontSize="13">
+                                            <Run Text="1. "/>
+                                            <Run FontWeight="SemiBold" Text="Verbindung herstellen:"/>
+                                            <LineBreak />
+                                            <Run Text="  • Klicken Sie im Hauptfenster auf &quot;Verbinden&quot;, um eine Verbindung zu EXO herzustellen."/>
+                                            <LineBreak />
+                                            <Run Text="  • Nachdem die Verbindung erfolgreich hergestellt wurde, werden die Dashboard Statistiken aktualisiert!"/>
+                                            <LineBreak /><LineBreak />
+                                            <Run Text="2. "/>
+                                            <Run FontWeight="SemiBold" Text="Tab auswählen:"/>
+                                            <LineBreak />
+                                            <Run Text="  • Navigieren Sie über die Reiter zu dem gewünschten Verwaltungsbereich."/>
+                                            <LineBreak /><LineBreak />
+                                            <Run Text="3. "/>
+                                            <Run FontWeight="SemiBold" Text="Aktionen durchführen:"/>
+                                            <LineBreak />
+                                            <Run Text="  • Nutzen Sie die entsprechenden Schaltflächen und Eingabefelder, um die gewünschten Aktionen auszuführen."/>
+                                        </TextBlock>
                                     </GroupBox>
                                 </Grid>
-
-                                <GroupBox Header="Voraussetzungen" Margin="0,0,0,10" Padding="10" Width="1400">
-                                    <TextBlock TextWrapping="Wrap"><Run Text="Um dieses Tool nutzen zu können, muss das "/><Run FontWeight="SemiBold" Text="Exchange Online Management PowerShell-Modul"/><Run Text=" auf Ihrem System installiert sein."/><LineBreak /><LineBreak /><Run Text="Falls noch nicht geschehen, können Sie es mit dem folgenden Befehl in einer administrativen PowerShell-Sitzung installieren:"/><LineBreak /><Run FontFamily="Consolas" Foreground="#0056b3" Text="Install-Module -Name ExchangeOnlineManagement -Force"/></TextBlock>
-                                </GroupBox>
-
                             </StackPanel>
                         </ScrollViewer>
                     </TabItem>

@@ -1,4 +1,7054 @@
-﻿# # Globale Variablen für asynchrone Tab-Initialisierung initialisieren
+﻿# -------------------------------------------------
+# XAML-GUI
+# -------------------------------------------------
+$script:XamlContent = @"
+<Window
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Exchange Online Verwaltung"
+    Width="1700"
+    Height="1000"
+    MinWidth="950"
+    MinHeight="650"
+    Background="#FFFFFF"
+    FontFamily="Segoe UI"
+    FontSize="12"
+    WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <!--  Modern Button Style  -->
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Background" Value="#0078D4" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="18,8" />
+            <Setter Property="Margin" Value="6" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="MinWidth" Value="80" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4">
+                            <ContentPresenter
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#106EBE" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#005A9E" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  Modern Card Style  -->
+        <Style x:Key="ModernCard" TargetType="Border">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#E0E0E0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="20" />
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect 
+                        Color="#E0E0E0" 
+                        Direction="270" 
+                        ShadowDepth="2" 
+                        BlurRadius="8" 
+                        Opacity="0.3"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  Header2 Style  -->
+        <Style x:Key="Header2" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="#1C1C1C" />
+            <Setter Property="Margin" Value="0,0,0,10" />
+        </Style>
+
+
+        <!--  Navigation Button Style  -->
+        <Style x:Key="NavButton" TargetType="Button">
+            <Setter Property="Background" Value="#4A90E2" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Padding" Value="15,8" />
+            <Setter Property="Margin" Value="8,1,8,1" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="3">
+                            <ContentPresenter
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#60A0F0" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#0078D4" />
+                                <Setter Property="Foreground" Value="White" />
+                                <Setter TargetName="border" Property="BorderBrush" Value="#0078D4" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  Button Style anpassen für modernes Design  -->
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#0078D4" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderBrush" Value="#005A9E" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="MaxHeight" Value="35" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4">
+                            <ContentPresenter
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#106EBE" />
+                    <Setter Property="BorderBrush" Value="#004578" />
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#005A9E" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!--  Navigation Button Style  -->
+        <Style
+            x:Key="NavigationButtonStyle"
+            BasedOn="{StaticResource {x:Type Button}}"
+            TargetType="Button">
+            <Setter Property="MaxHeight" Value="38" />
+            <Setter Property="Height" Value="35" />
+            <Setter Property="Margin" Value="0,3" />
+            <Setter Property="Padding" Value="10,0" />
+        </Style>
+
+        <Style TargetType="GroupBox">
+            <Setter Property="BorderBrush" Value="#E0E0E0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="10" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GroupBox">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Border
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8" />
+                            <Border
+                                Grid.Row="0"
+                                Margin="10,0,0,0"
+                                Padding="5,0,5,0"
+                                Background="{TemplateBinding Background}">
+                                <ContentPresenter ContentSource="Header" TextBlock.FontWeight="SemiBold" />
+                            </Border>
+                            <ContentPresenter Grid.Row="1" Margin="{TemplateBinding Padding}" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="TextBox">
+            <Setter Property="BorderBrush" Value="#BFBFBF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="8,2" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4">
+                            <ScrollViewer
+                                x:Name="PART_ContentHost"
+                                Margin="{TemplateBinding Padding}"
+                                VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="#0078D4" />
+                                <Setter Property="BorderThickness" Value="2" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5" />
+                                <Setter Property="Background" Value="#F0F0F0" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <ControlTemplate x:Key="ComboBoxToggleButtonTemplate" TargetType="ToggleButton">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="200" />
+                </Grid.ColumnDefinitions>
+                <Border
+                    x:Name="Border"
+                    Grid.ColumnSpan="2"
+                    Background="White"
+                    BorderBrush="#BFBFBF"
+                    BorderThickness="1"
+                    CornerRadius="4" />
+                <Path
+                    x:Name="Arrow"
+                    Grid.Column="1"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Data="M 0 0 L 4 4 L 8 0 Z"
+                    Fill="#444444" />
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="true">
+                    <Setter TargetName="Border" Property="Background" Value="#F5F5F5" />
+                    <Setter TargetName="Border" Property="BorderBrush" Value="#0078D4" />
+                </Trigger>
+                <Trigger Property="IsChecked" Value="true">
+                    <Setter TargetName="Border" Property="Background" Value="#F0F0F0" />
+                    <Setter TargetName="Border" Property="BorderBrush" Value="#0078D4" />
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+
+        <ControlTemplate x:Key="ComboBoxTextBox" TargetType="TextBox">
+            <Border
+                x:Name="PART_ContentHost"
+                Background="{TemplateBinding Background}"
+                Focusable="False" />
+        </ControlTemplate>
+
+        <Style TargetType="ComboBox">
+            <Setter Property="BorderBrush" Value="#BFBFBF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="8,5" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton
+                                Name="ToggleButton"
+                                Grid.Column="2"
+                                ClickMode="Press"
+                                Focusable="false"
+                                IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                Template="{StaticResource ComboBoxToggleButtonTemplate}" />
+                            <ContentPresenter
+                                Name="ContentSite"
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Content="{TemplateBinding SelectionBoxItem}"
+                                ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                IsHitTestVisible="False" />
+                            <TextBox
+                                x:Name="PART_EditableTextBox"
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Focusable="True"
+                                IsReadOnly="{TemplateBinding IsReadOnly}"
+                                Style="{x:Null}"
+                                Template="{StaticResource ComboBoxTextBox}"
+                                Visibility="Hidden" />
+                            <Popup
+                                Name="Popup"
+                                AllowsTransparency="True"
+                                Focusable="False"
+                                IsOpen="{TemplateBinding IsDropDownOpen}"
+                                Placement="Bottom"
+                                PopupAnimation="Slide">
+
+                                <Grid
+                                    Name="DropDown"
+                                    MinWidth="{TemplateBinding ActualWidth}"
+                                    MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                    SnapsToDevicePixels="True">
+                                    <Border
+                                        x:Name="DropDownBorder"
+                                        Background="White"
+                                        BorderBrush="#BFBFBF"
+                                        BorderThickness="1"
+                                        CornerRadius="0,0,4,4" />
+                                    <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
+                                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                    </ScrollViewer>
+                                </Grid>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="DataGrid">
+            <Setter Property="BorderBrush" Value="#E0E0E0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="RowBackground" Value="#ffffff" />
+            <Setter Property="AlternatingRowBackground" Value="#f8f9fa" />
+            <Setter Property="HorizontalGridLinesBrush" Value="#e5e5e5" />
+            <Setter Property="VerticalGridLinesBrush" Value="#e5e5e5" />
+            <Setter Property="RowHeight" Value="28" />
+            <Setter Property="HeadersVisibility" Value="Column" />
+            <Setter Property="GridLinesVisibility" Value="All" />
+            <Setter Property="CanUserAddRows" Value="False" />
+            <Setter Property="CanUserDeleteRows" Value="False" />
+            <Setter Property="AutoGenerateColumns" Value="False" />
+            <Setter Property="IsReadOnly" Value="True" />
+        </Style>
+
+        <!--  TabControl-Style anpassen für modernes Design  -->
+        <Style TargetType="TabControl">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+
+        <Style TargetType="TabItem">
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="#1C1C1C" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border
+                            Name="Border"
+                            Margin="2,0"
+                            BorderBrush="Transparent"
+                            BorderThickness="1,1,1,0"
+                            CornerRadius="4,4,0,0">
+                            <ContentPresenter
+                                x:Name="ContentSite"
+                                Margin="10,5"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                ContentSource="Header" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#ffffff" />
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#E0E0E0" />
+                                <Setter Property="Foreground" Value="#0078D4" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="False">
+                                <Setter TargetName="Border" Property="Background" Value="#f8f9fa" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#e9ecef" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  ListBox-Style verbessern  -->
+        <Style TargetType="ListBox">
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="#E0E0E0" />
+            <Setter Property="Background" Value="#ffffff" />
+        </Style>
+
+        <!--  ListBoxItem-Style hinzufügen  -->
+        <Style TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="Margin" Value="0,1" />
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#e3f2fd" />
+                    <Setter Property="BorderBrush" Value="#90caf9" />
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#f5f5f5" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!--  TextBlock-Style verbessern  -->
+        <Style TargetType="TextBlock">
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <!--  ScrollViewer-Style verbessern  -->
+        <Style TargetType="ScrollViewer">
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
+            <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+
+        <!--  DatePicker Style  -->
+        <Style TargetType="DatePicker">
+            <Setter Property="Height" Value="30" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+
+        <!--  CheckBox Style  -->
+        <Style TargetType="CheckBox">
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,5" />
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="40" />
+        </Grid.RowDefinitions>
+
+        <!--  Header mit modernem Design  -->
+        <Border
+            Grid.Row="0"
+            Background="#142831"
+            BorderBrush="#E0E0E0"
+            BorderThickness="0,0,0,1">
+            <Grid Margin="20,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!--  Linker Bereich mit Logo/Icon  -->
+                <StackPanel
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+                    <TextBlock
+                        Margin="0,0,10,0"
+                        VerticalAlignment="Center"
+                        FontSize="32"
+                        Foreground="#e2e2e2"
+                        Text="🔄" />
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="18"
+                            FontWeight="SemiBold"
+                            Foreground="#e2e2e2"
+                            Text="PSscripts.de  |  easyIT - Exchange Online" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!--  Mittlerer Bereich - Status  -->
+                <Border
+                    x:Name="headerStatusContainer"
+                    Grid.Column="1"
+                    Margin="20,12,20,12"
+                    Background="#0078D7"
+                    CornerRadius="4"
+                    Visibility="Collapsed">
+                    <Grid Margin="10,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            Margin="0,0,10,0"
+                            VerticalAlignment="Center"
+                            FontSize="16"
+                            Foreground="White"
+                            Text="🔔" />
+                        <TextBlock
+                            x:Name="headerStatus"
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Foreground="White"
+                            Text="Status-Nachricht"
+                            TextTrimming="CharacterEllipsis" />
+                    </Grid>
+                </Border>
+
+                <!--  Rechter Bereich mit Buttons  -->
+                <StackPanel
+                    Grid.Column="2"
+                    Height="52"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+                    <Button
+                        x:Name="btnSettings"
+                        Width="48"
+                        Height="48"
+                        Margin="5,0"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Foreground="#e2e2e2"
+                        ToolTip="Einstellungen">
+                        <TextBlock
+                            FontSize="20"
+                            FontWeight="Bold"
+                            Text="⚙" />
+                    </Button>
+                    <Button
+                        x:Name="btnInfo"
+                        Width="48"
+                        Height="48"
+                        Margin="5,0"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        ToolTip="Info">
+                        <Grid>
+                            <Ellipse
+                                Width="20"
+                                Height="20"
+                                Fill="#e2e2e2" />
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Foreground="#142831"
+                                Text="i" />
+                        </Grid>
+                    </Button>
+                    <Button
+                        x:Name="btnClose"
+                        Width="48"
+                        Height="48"
+                        Margin="5,0"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        ToolTip="Schließen">
+                        <TextBlock
+                            FontSize="20"
+                            FontWeight="Bold"
+                            Foreground="#FF5252"
+                            Text="✕" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!--  Main Content mit moderner Navigation  -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220"/>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!--  Navigation Panel mit modernem Design  -->
+            <Border
+                Grid.Column="0"
+                Background="#2B3E50"
+                BorderBrush="#1E2A38"
+                BorderThickness="0,0,1,0">
+                <StackPanel Margin="0,10">
+                    <Button
+                        x:Name="btnConnect"
+                        Height="38"
+                        Margin="8,5,8,10"
+                        Padding="0,0"
+                        Background="#FFAB0404"
+                        BorderBrush="#E86C00"
+                        BorderThickness="1"
+                        Content="Mit Exchange verbinden"
+                        FontWeight="Bold"
+                        Foreground="White" />
+
+                    <GroupBox
+                        Margin="8,0,8,25"
+                        Padding="8"
+                        Background="#FF738AA0"
+                        BorderBrush="#FFAEC4DA"
+                        BorderThickness="1"
+                        Foreground="#E0E0E0"
+                        Header="Verbindungsstatus">
+                        <StackPanel>
+                            <TextBlock
+                                x:Name="txtConnectionStatus"
+                                Margin="8,0,8,0"
+                                FontWeight="SemiBold"
+                                Foreground="#FFF1FDCC"
+                                Text="Nicht verbunden" />
+                        </StackPanel>
+                    </GroupBox>
+                    <!--  Navigation Header  -->
+
+                    <Button
+                        x:Name="btnDashboard"
+                        Margin="0,5,0,25"
+                        Background="#FF738AA0"
+                        Content="Dashboard" Width="205"/>
+
+                    <!--  Grundlegende Verwaltung  -->
+                    <Expander
+                        Background="#FF738AA0"
+                        Header="Management"
+                        IsExpanded="True">
+                        <StackPanel>
+                            <Button
+                                x:Name="btnNavMailbox"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Mailbox Permissions" />
+                            <Button
+                                x:Name="btnNavCalendar"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Calendar Permissions" />
+                            <Button
+                                x:Name="btnNavSharedMailbox"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Shared Mailboxes" />
+                            <Button
+                                x:Name="btnNavGroups"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Groups / Distribution Lists" />
+                            <Button
+                                x:Name="btnNavResources"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Resources" />
+                            <Button
+                                x:Name="btnNavContacts"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Contacts" />
+                        </StackPanel>
+                    </Expander>
+
+
+                    <!--  Mail Flow  -->
+                    <Expander
+                        Background="#FF738AA0"
+                        Header="Mail-Flow"
+                        IsExpanded="False">
+                        <StackPanel>
+                            <Button
+                                x:Name="btnNavMailFlowRules"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Transport Rules" />
+                            <Button
+                                x:Name="btnNavInboxRules"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Inbox Rules" />
+                            <Button
+                                x:Name="btnNavMessageTrace"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Message Trace" />
+                            <Button
+                                x:Name="btnNavAutoReply"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Auto Reply" />
+                            <Button
+                                x:Name="btnNavCrossPremises"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Cross-Premises Routing" />
+                            <!-- <Button
+                                x:Name="btnNavHybridExchange"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Hybrid Exchange Config" />
+                            <Button
+                                x:Name="btnNavMultiForest"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Multi-Forest Management" /> -->
+                        </StackPanel>
+                    </Expander>
+
+
+                    <!--  Systemkonfiguration  -->
+                    <Expander
+                        Background="#FF738AA0"
+                        Header="Konfiguration"
+                        IsExpanded="False">
+                        <StackPanel>
+                            <Button
+                                x:Name="btnNavEXOSettings"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Exchange Online" />
+                            <Button
+                                x:Name="btnNavRegion"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Language / Time Zone" />
+                        </StackPanel>
+                    </Expander>
+
+                    <!--  Sicherheit & Compliance  -->
+                    <Expander
+                        Background="#FF738AA0"
+                        Header="Sicherheit &amp; Compliance"
+                        IsExpanded="False">
+                        <StackPanel>
+                            <Button
+                                x:Name="btnNavATP"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Advanced Threat Protection" />
+                            <!--     <Button
+                                x:Name="btnNavDLP"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Data Loss Prevention" />
+                            <Button
+                                x:Name="btnNavEDiscovery"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* eDiscovery &amp; Legal Hold" /> -->
+                            <Button
+                                x:Name="btnNavMDM"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Mobile Device Management" />
+                        </StackPanel>
+                    </Expander>
+
+                    <!--  Monitoring & Support  -->
+                    <Expander
+                        Background="#FF738AA0"
+                        Header="Monitoring &amp; Support"
+                        IsExpanded="False">
+                        <StackPanel>
+                            <Button
+                                x:Name="btnNavHealthCheck"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Health Check" />
+                            <Button
+                                x:Name="btnNavAudit"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Audit" />
+                            <Button
+                                x:Name="btnNavReports"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Reports" />
+                            <Button
+                                x:Name="btnNavTroubleshooting"
+                                HorizontalAlignment="Left"
+                                Background="#FF738AA0"
+                                Content="* Troubleshooting" />
+                        </StackPanel>
+                    </Expander>
+                </StackPanel>
+            </Border>
+
+            <!--  Content Tabs mit modernem Design  -->
+            <Border
+                Grid.Column="1"
+                Padding="20"
+                Background="#FFFFFF">
+                <TabControl
+                    x:Name="tabContent"
+                    Background="Transparent"
+                    BorderThickness="0">
+                    <TabItem
+                        x:Name="tabCalendar"
+                        Header="Kalenderberechtigungen"
+                        Visibility="Collapsed">
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="420" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!--  Hilfe Link  -->
+                            <TextBlock
+                                x:Name="helpLinkCalendar"
+                                Grid.Row="0"
+                                Grid.ColumnSpan="2"
+                                Margin="0,0,0,10"
+                                HorizontalAlignment="Right"
+                                Cursor="Hand"
+                                Foreground="#0067c0"
+                                Text="Hilfe zu Kalenderberechtigungen"
+                                TextDecorations="Underline" />
+
+                            <!--  Linke Spalte - Verwaltung  -->
+                            <StackPanel
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Margin="0,0,10,0">
+
+                                <!--  Berechtigung hinzufügen/entfernen  -->
+                                <GroupBox
+                                    Margin="0,0,0,10"
+                                    Background="#ffffff"
+                                    Header="Berechtigungen verwalten">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Width="120"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Kalender-Besitzer:" />
+                                            <TextBox
+                                                x:Name="txtCalendarSource"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Width="120"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Ziel-Benutzer:" />
+                                            <TextBox
+                                                x:Name="txtCalendarTarget"
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Grid.Column="0"
+                                                Width="120"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Berechtigungsstufe:" />
+                                            <ComboBox
+                                                x:Name="cmbCalendarPermission"
+                                                Grid.Row="2"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,10" />
+
+                                            <StackPanel
+                                                Grid.Row="3"
+                                                Grid.ColumnSpan="2"
+                                                Margin="0,0,0,0"
+                                                HorizontalAlignment="Center"
+                                                Orientation="Horizontal">
+                                                <Button
+                                                    x:Name="btnAddCalendarPermission"
+                                                    Width="180"
+                                                    Height="30"
+                                                    Margin="0,0,10,0"
+                                                    Background="#D4EDDA"
+                                                    BorderBrush="#C3E6CB"
+                                                    Content="Hinzufügen"
+                                                    Foreground="#155724" />
+                                                <Button
+                                                    x:Name="btnRemoveCalendarPermission"
+                                                    Width="180"
+                                                    Height="30"
+                                                    Background="#F8D7DA"
+                                                    BorderBrush="#F5C6CB"
+                                                    Content="Entfernen"
+                                                    Foreground="#721C24" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Standard-Berechtigungen  -->
+                                <GroupBox
+                                    Margin="0,0,0,10"
+                                    Background="#ffffff"
+                                    Header="Standardberechtigungen">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Width="120"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Berechtigungsstufe:" />
+                                            <ComboBox
+                                                x:Name="cmbDefaultPermission"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,10" />
+
+                                            <StackPanel
+                                                Grid.Row="1"
+                                                Grid.ColumnSpan="2"
+                                                HorizontalAlignment="Center"
+                                                Orientation="Horizontal">
+                                                <Button
+                                                    x:Name="btnSetDefaultPermission"
+                                                    Width="110"
+                                                    Height="30"
+                                                    Margin="0,0,5,0"
+                                                    Background="#CCE5FF"
+                                                    BorderBrush="#B3D7FF"
+                                                    Content="Default setzen"
+                                                    Foreground="#004085" />
+                                                <Button
+                                                    x:Name="btnSetAnonymousPermission"
+                                                    Width="120"
+                                                    Height="30"
+                                                    Margin="5,0,5,0"
+                                                    Background="#CCE5FF"
+                                                    BorderBrush="#B3D7FF"
+                                                    Content="Anonym setzen"
+                                                    Foreground="#004085" />
+                                                <Button
+                                                    x:Name="btnSetAllCalPermission"
+                                                    Width="120"
+                                                    Height="30"
+                                                    Margin="5,0,0,0"
+                                                    Background="#FFF3CD"
+                                                    BorderBrush="#FFEAA7"
+                                                    Content="Alle Postfächer"
+                                                    Foreground="#856404"
+                                                    ToolTip="Setzt die ausgewählte Berechtigungsstufe für ALLE Postfächer (Default oder Anonym)." />
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Berechtigungen anzeigen  -->
+                                <GroupBox Background="#ffffff" Header="Berechtigungen anzeigen">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Width="120"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Postfach:" />
+                                            <TextBox
+                                                x:Name="txtCalendarMailboxUser"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,10" />
+
+                                            <Button
+                                                x:Name="btnShowCalendarPermissions"
+                                                Grid.Row="1"
+                                                Grid.ColumnSpan="2"
+                                                Width="240"
+                                                Height="30"
+                                                Margin="130,5,0,10"
+                                                HorizontalAlignment="Center"
+                                                Background="#E7F3FF"
+                                                BorderBrush="#B8DAFF"
+                                                Content="Berechtigungen anzeigen"
+                                                Foreground="#0056B3" />
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+                            </StackPanel>
+
+                            <!--  Rechte Spalte - Ausgaben  -->
+                            <GroupBox
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Background="#ffffff"
+                                Header="Aktuelle Berechtigungen für das angezeigte Postfach">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <DataGrid
+                                        x:Name="lstCalendarPermissions"
+                                        Grid.Row="0"
+                                        Margin="8,8,8,0"
+                                        AutoGenerateColumns="False"
+                                        IsReadOnly="True">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn
+                                                Width="1.5*"
+                                                Binding="{Binding User}"
+                                                Header="Benutzer" />
+                                            <DataGridTextColumn
+                                                Width="2*"
+                                                Binding="{Binding AccessRights}"
+                                                Header="Berechtigungen" />
+                                            <DataGridTextColumn
+                                                Width="1*"
+                                                Binding="{Binding IsInherited}"
+                                                Header="Geerbt" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <Button
+                                        x:Name="btnExportCalendarPermissions"
+                                        Grid.Row="1"
+                                        Width="180"
+                                        Height="30"
+                                        Margin="0,8,8,8"
+                                        HorizontalAlignment="Right"
+                                        Background="#E8F4FD"
+                                        BorderBrush="#B8DAFF"
+                                        Content="Liste exportieren (CSV)"
+                                        Foreground="#0056B3" />
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
+                    </TabItem>
+
+                    <!--  Mailbox Tab  -->
+                    <TabItem
+                        x:Name="tabMailbox"
+                        Header="Postfachberechtigungen"
+                        Visibility="Collapsed">
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="420" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!--  Hilfe Link  -->
+                            <TextBlock
+                                x:Name="helpLinkMailbox"
+                                Grid.Row="0"
+                                Grid.ColumnSpan="2"
+                                Margin="0,0,0,10"
+                                HorizontalAlignment="Right"
+                                Cursor="Hand"
+                                Foreground="#0067c0"
+                                Text="Hilfe zu Postfachberechtigungen"
+                                TextDecorations="Underline" />
+
+                            <!--  Linke Spalte - Verwaltung  -->
+                            <StackPanel
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Margin="0,0,10,0">
+
+                                <!--  Postfach und Benutzer auswählen  -->
+                                <GroupBox
+                                    Margin="0,0,0,10"
+                                    Background="#ffffff"
+                                    Header="Postfach und Benutzer auswählen">
+                                    <Grid Margin="10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock
+                                            Grid.Row="0"
+                                            Grid.Column="0"
+                                            Width="120"
+                                            Margin="0,5,10,5"
+                                            VerticalAlignment="Center"
+                                            Text="Postfach:" />
+                                        <TextBox
+                                            x:Name="txtMailboxSource"
+                                            Grid.Row="0"
+                                            Grid.Column="1"
+                                            Height="30"
+                                            Margin="0,5,0,5"
+                                            ToolTip="Das Postfach, dessen Berechtigungen verwaltet werden sollen." />
+
+                                        <TextBlock
+                                            Grid.Row="1"
+                                            Grid.Column="0"
+                                            Width="120"
+                                            Margin="0,5,10,5"
+                                            VerticalAlignment="Center"
+                                            Text="Ziel-Benutzer:" />
+                                        <TextBox
+                                            x:Name="txtMailboxTarget"
+                                            Grid.Row="1"
+                                            Grid.Column="1"
+                                            Height="30"
+                                            Margin="0,5,0,5"
+                                            ToolTip="Der Benutzer, der Berechtigungen erhalten oder verlieren soll." />
+                                    </Grid>
+                                </GroupBox>
+
+                                <!--  Berechtigungen verwalten  -->
+                                <GroupBox
+                                    Margin="0,0,0,10"
+                                    Background="#ffffff"
+                                    Header="Berechtigungen verwalten">
+                                    <StackPanel Margin="10">
+                                        <!--  FullAccess Berechtigungen  -->
+                                        <TextBlock FontWeight="SemiBold" Text="FullAccess:" />
+                                        <StackPanel Margin="0,5,0,15" Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnAddMailboxPermission"
+                                                Width="180"
+                                                Height="30"
+                                                Margin="0,0,10,0"
+                                                Background="#D4EDDA"
+                                                BorderBrush="#C3E6CB"
+                                                Content="Hinzufügen"
+                                                Foreground="#155724" />
+                                            <Button
+                                                x:Name="btnRemoveMailboxPermission"
+                                                Width="180"
+                                                Height="30"
+                                                Background="#F8D7DA"
+                                                BorderBrush="#F5C6CB"
+                                                Content="Entfernen"
+                                                Foreground="#721C24" />
+                                        </StackPanel>
+
+                                        <!--  SendAs Berechtigungen  -->
+                                        <TextBlock FontWeight="SemiBold" Text="SendAs:" />
+                                        <StackPanel Margin="0,5,0,15" Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnAddSendAs"
+                                                Width="180"
+                                                Height="30"
+                                                Margin="0,0,10,0"
+                                                Background="#D4EDDA"
+                                                BorderBrush="#C3E6CB"
+                                                Content="Hinzufügen"
+                                                Foreground="#155724" />
+                                            <Button
+                                                x:Name="btnRemoveSendAs"
+                                                Width="180"
+                                                Height="30"
+                                                Background="#F8D7DA"
+                                                BorderBrush="#F5C6CB"
+                                                Content="Entfernen"
+                                                Foreground="#721C24" />
+                                        </StackPanel>
+
+                                        <!--  SendOnBehalf Berechtigungen  -->
+                                        <TextBlock FontWeight="SemiBold" Text="SendOnBehalf:" />
+                                        <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnAddSendOnBehalf"
+                                                Width="180"
+                                                Height="30"
+                                                Margin="0,0,10,0"
+                                                Background="#D4EDDA"
+                                                BorderBrush="#C3E6CB"
+                                                Content="Hinzufügen"
+                                                Foreground="#155724" />
+                                            <Button
+                                                x:Name="btnRemoveSendOnBehalf"
+                                                Width="180"
+                                                Height="30"
+                                                Background="#F8D7DA"
+                                                BorderBrush="#F5C6CB"
+                                                Content="Entfernen"
+                                                Foreground="#721C24" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Berechtigungen anzeigen  -->
+                                <GroupBox
+                                    Margin="0,15,0,10"
+                                    Background="#ffffff"
+                                    Header="Berechtigungen für ein Postfach anzeigen">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Width="120"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Postfach:" />
+                                            <TextBox
+                                                x:Name="txtMailboxShowPermissions"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,10"
+                                                ToolTip="Das Postfach, dessen Berechtigungen angezeigt werden sollen." />
+
+                                            <Button
+                                                x:Name="btnShowMailboxPermissions"
+                                                Grid.Row="1"
+                                                Grid.ColumnSpan="2"
+                                                Width="240"
+                                                Height="30"
+                                                Margin="130,5,0,10"
+                                                HorizontalAlignment="Center"
+                                                Background="#E7F3FF"
+                                                BorderBrush="#B8DAFF"
+                                                Content="Berechtigungen anzeigen"
+                                                Foreground="#0056B3" />
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+                            </StackPanel>
+
+                            <!--  Rechte Spalte - Ausgaben  -->
+                            <GroupBox
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Background="#ffffff"
+                                Header="Aktuelle Berechtigungen für das angezeigte Postfach">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <DataGrid
+                                        x:Name="lstMailboxPermissions"
+                                        Grid.Row="0"
+                                        Margin="8,8,8,0"
+                                        AutoGenerateColumns="False"
+                                        IsReadOnly="True">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn
+                                                Width="1.5*"
+                                                Binding="{Binding Identity}"
+                                                Header="Postfach" />
+                                            <DataGridTextColumn
+                                                Width="1.5*"
+                                                Binding="{Binding User}"
+                                                Header="Benutzer" />
+                                            <DataGridTextColumn
+                                                Width="1*"
+                                                Binding="{Binding AccessType}"
+                                                Header="Berechtigungstyp" />
+                                            <DataGridTextColumn
+                                                Width="1.5*"
+                                                Binding="{Binding AccessRights}"
+                                                Header="Berechtigungen" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <Button
+                                        x:Name="btnExportMailboxPermissions"
+                                        Grid.Row="1"
+                                        Width="180"
+                                        Height="30"
+                                        Margin="0,8,8,8"
+                                        HorizontalAlignment="Right"
+                                        Background="#E8F4FD"
+                                        BorderBrush="#B8DAFF"
+                                        Content="Liste exportieren (CSV)"
+                                        Foreground="#0056B3" />
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
+                    </TabItem>
+
+                    <!--  Audit Tab  -->
+                    <TabItem
+                        x:Name="tabMailboxAudit"
+                        Header="Audit &amp; Information"
+                        Visibility="Collapsed">
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="420" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!--  Hilfe Link  -->
+                            <TextBlock
+                                x:Name="helpLinkAudit"
+                                Grid.Row="0"
+                                Grid.ColumnSpan="2"
+                                Margin="0,0,0,10"
+                                HorizontalAlignment="Right"
+                                Cursor="Hand"
+                                Foreground="#0067c0"
+                                Text="Hilfe zu Audit &amp; Information"
+                                TextDecorations="Underline" />
+
+                            <!--  Linke Spalte - Verwaltung  -->
+                            <GroupBox
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Margin="0,0,10,0"
+                                Background="#ffffff"
+                                Header="Exchange Audit &amp; Information">
+                                <StackPanel Margin="10">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock
+                                            Grid.Row="0"
+                                            Grid.Column="0"
+                                            Width="120"
+                                            Margin="0,5,10,25"
+                                            VerticalAlignment="Center"
+                                            Text="Postfach/Benutzer:" />
+                                        <TextBox
+                                            x:Name="txtAuditMailbox"
+                                            Grid.Row="0"
+                                            Grid.Column="1"
+                                            Height="30"
+                                            Margin="0,5,20,25" />
+
+                                        <TextBlock
+                                            Grid.Row="1"
+                                            Grid.Column="0"
+                                            Width="120"
+                                            Margin="0,5,10,5"
+                                            VerticalAlignment="Center"
+                                            Text="Kategorie:" />
+                                        <ComboBox
+                                            x:Name="cmbAuditCategory"
+                                            Grid.Row="1"
+                                            Grid.Column="1"
+                                            Height="30"
+                                            Margin="0,5,0,5" />
+
+                                        <TextBlock
+                                            Grid.Row="2"
+                                            Grid.Column="0"
+                                            Width="120"
+                                            Margin="0,5,10,5"
+                                            VerticalAlignment="Center"
+                                            Text="Typ:" />
+                                        <ComboBox
+                                            x:Name="cmbAuditType"
+                                            Grid.Row="2"
+                                            Grid.Column="1"
+                                            Height="30"
+                                            Margin="0,5,0,10" />
+
+                                        <Button
+                                            x:Name="btnRunAudit"
+                                            Grid.Row="3"
+                                            Grid.ColumnSpan="2"
+                                            Width="370"
+                                            Height="30"
+                                            Margin="0,30,0,0"
+                                            HorizontalAlignment="Center"
+                                            Background="#E7F3FF"
+                                            BorderBrush="#B8DAFF"
+                                            Content="Audit ausführen"
+                                            Foreground="#0056B3" />
+                                    </Grid>
+                                </StackPanel>
+                            </GroupBox>
+
+                            <!--  Rechte Spalte - Ausgaben  -->
+                            <GroupBox
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Background="#ffffff"
+                                Header="Audit-Ergebnisse">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <TextBox
+                                        x:Name="txtAuditResult"
+                                        Grid.Row="0"
+                                        MinHeight="400"
+                                        Margin="8,8,8,0"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        IsReadOnly="True"
+                                        TextWrapping="Wrap"
+                                        VerticalScrollBarVisibility="Auto" />
+                                    <Button
+                                        x:Name="btnExportAuditResult"
+                                        Grid.Row="1"
+                                        Width="200"
+                                        Height="30"
+                                        Margin="0,8,8,8"
+                                        HorizontalAlignment="Right"
+                                        Background="#E8F4FD"
+                                        BorderBrush="#B8DAFF"
+                                        Content="Ergebnisse exportieren (CSV)"
+                                        Foreground="#0056B3" />
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
+                    </TabItem>
+
+                    <!--  Troubleshooting Tab  -->
+                    <TabItem
+                        x:Name="tabTroubleshooting"
+                        Header="Troubleshooting"
+                        Visibility="Collapsed">
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="420" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!--  Hilfe Link  -->
+                            <TextBlock
+                                x:Name="helpLinkTroubleshooting"
+                                Grid.Row="0"
+                                Grid.ColumnSpan="2"
+                                Margin="0,0,0,10"
+                                HorizontalAlignment="Right"
+                                Cursor="Hand"
+                                Foreground="#0067c0"
+                                Text="Hilfe zum Troubleshooting"
+                                TextDecorations="Underline" />
+
+                            <!--  Linke Spalte - Verwaltung  -->
+                            <StackPanel
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Margin="0,0,10,0">
+                                <GroupBox
+                                    Margin="0,0,0,10"
+                                    Background="#ffffff"
+                                    Header="Diagnose-Optionen">
+                                    <Grid Margin="10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock
+                                            Grid.Row="0"
+                                            Margin="0,0,0,10"
+                                            FontWeight="SemiBold"
+                                            Text="Verfügbare Diagnosefunktionen:" />
+                                        <ListBox
+                                            x:Name="lstDiagnostics"
+                                            Grid.Row="1"
+                                            Height="440"
+                                            Margin="0,0,0,0"
+                                            BorderBrush="#e4e4e4"
+                                            BorderThickness="1" />
+                                    </Grid>
+                                </GroupBox>
+
+                                <GroupBox
+                                    Margin="0,0,0,10"
+                                    Background="#ffffff"
+                                    Header="Parameter">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Width="120"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Benutzer 1:" />
+                                            <TextBox
+                                                x:Name="txtDiagnosticUser"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Width="120"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Benutzer 2:" />
+                                            <TextBox
+                                                x:Name="txtDiagnosticUser2"
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Grid.Column="0"
+                                                Width="120"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="E-Mail:" />
+                                            <TextBox
+                                                x:Name="txtDiagnosticEmail"
+                                                Grid.Row="2"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,10" />
+
+                                            <StackPanel
+                                                Grid.Row="3"
+                                                Grid.ColumnSpan="2"
+                                                Margin="0,10,0,0"
+                                                HorizontalAlignment="Center"
+                                                Orientation="Horizontal">
+                                                <Button
+                                                    x:Name="btnRunDiagnostic"
+                                                    Width="180"
+                                                    Height="30"
+                                                    Margin="0,0,10,0"
+                                                    Background="#D4EDDA"
+                                                    BorderBrush="#C3E6CB"
+                                                    Content="Diagnose ausführen"
+                                                    Foreground="#155724" />
+                                                <Button
+                                                    x:Name="btnAdminCenter"
+                                                    Width="180"
+                                                    Height="30"
+                                                    Background="#CCE5FF"
+                                                    BorderBrush="#B3D7FF"
+                                                    Content="Admin Center"
+                                                    Foreground="#004085" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+                            </StackPanel>
+
+                            <!--  Rechte Spalte - Ausgaben  -->
+                            <GroupBox
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Background="#ffffff"
+                                Header="Diagnose-Ergebnisse">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <TextBox
+                                        x:Name="txtDiagnosticResult"
+                                        Grid.Row="0"
+                                        MinHeight="400"
+                                        Margin="8,8,8,0"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        IsReadOnly="True"
+                                        TextWrapping="Wrap"
+                                        VerticalScrollBarVisibility="Auto" />
+                                    <Button
+                                        x:Name="btnExportDiagnosticResult"
+                                        Grid.Row="1"
+                                        Width="220"
+                                        Height="40"
+                                        Margin="0,8,8,8"
+                                        HorizontalAlignment="Right"
+                                        Background="#E8F4FD"
+                                        BorderBrush="#B8DAFF"
+                                        Content="Ergebnisse exportieren (CSV)"
+                                        Foreground="#0056B3" />
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
+                    </TabItem>
+
+                    <!--  EXO Settings Tab  -->
+                    <TabItem
+                        x:Name="tabEXOSettings"
+                        Header="Allg. EXO Settings"
+                        Visibility="Collapsed">
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <!--  helpLinkEXOSettings  -->
+                                <RowDefinition Height="*" />
+                                <!--  GroupBox with TabControl  -->
+                                <RowDefinition Height="Auto" />
+                                <!--  gridOrgButtons  -->
+                            </Grid.RowDefinitions>
+
+                            <!--  Hilfe Link  -->
+                            <TextBlock
+                                x:Name="helpLinkEXOSettings"
+                                Grid.Row="0"
+                                Margin="0,0,0,10"
+                                HorizontalAlignment="Right"
+                                Cursor="Hand"
+                                Foreground="#0067c0"
+                                Text="Hilfe zu Exchange Online Organisationseinstellungen"
+                                TextDecorations="Underline" />
+
+                            <!--  OrganizationConfig Einstellungen  -->
+                            <GroupBox
+                                Grid.Row="1"
+                                Background="#ffffff"
+                                Header="EXO Organisationseinstellungen (Get-OrganizationConfig and Set-OrganizationConfig)">
+                                <Grid Margin="12">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <!--  TabControl fills this row  -->
+                                    </Grid.RowDefinitions>
+
+                                    <!--  TabControl für die Kategorien  -->
+                                    <TabControl x:Name="tabOrgSettings" Grid.Row="0">
+                                        <!--  Benutzereinstellungen Tab  -->
+                                        <TabItem Header="Benutzereinstellungen">
+                                            <Grid Margin="10">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <!--  Linke Spalte  -->
+                                                <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                                                    <GroupBox
+                                                        Margin="0,0,0,10"
+                                                        Background="#ffffff"
+                                                        Header="Outlook - Kernfunktionen">
+                                                        <StackPanel Margin="10">
+                                                            <CheckBox
+                                                                x:Name="chkAppsForOfficeEnabled"
+                                                                Margin="0,5"
+                                                                Content="Apps für Outlook erlauben"
+                                                                ToolTip="Erlaubt die Verwendung von Apps für Outlook in der Organisation." />
+                                                            <CheckBox
+                                                                x:Name="chkFocusedInboxOn"
+                                                                Margin="0,5"
+                                                                Content="Focused Inbox einschalten"
+                                                                ToolTip="Aktiviert den Posteingang mit Fokus/Andere-Trennung." />
+                                                            <CheckBox
+                                                                x:Name="chkReadTrackingEnabled"
+                                                                Margin="0,5"
+                                                                Content="Lesebestätigungs-Tracking aktivieren"
+                                                                ToolTip="Aktiviert das Tracking von Lesebestätigungen." />
+                                                            <CheckBox
+                                                                x:Name="chkSendFromAliasEnabled"
+                                                                Margin="0,5"
+                                                                Content="Senden von Alias-Adressen erlauben"
+                                                                ToolTip="Erlaubt Benutzern, E-Mails von Alias-Adressen zu senden." />
+                                                            <CheckBox
+                                                                x:Name="chkLinkPreviewEnabled"
+                                                                Margin="0,5"
+                                                                Content="Link-Vorschau aktivieren"
+                                                                ToolTip="Aktiviert die Vorschau von URLs in E-Mail-Nachrichten." />
+                                                            <CheckBox
+                                                                x:Name="chkMessageRecallEnabled"
+                                                                Margin="0,5"
+                                                                Content="Nachrichtenrückruf aktivieren"
+                                                                ToolTip="Ermöglicht Benutzern das Zurückrufen gesendeter Nachrichten." />
+                                                            <CheckBox
+                                                                x:Name="chkRecallReadMessagesEnabled"
+                                                                Margin="0,5"
+                                                                Content="Nachrichtenrückruf für gelesene Nachrichten"
+                                                                ToolTip="Ermöglicht den Rückruf auch von bereits gelesenen Nachrichten." />
+                                                        </StackPanel>
+                                                    </GroupBox>
+                                                    <GroupBox
+                                                        Margin="0,0,0,10"
+                                                        Background="#ffffff"
+                                                        Header="Kalenderoptionen">
+                                                        <StackPanel Margin="10">
+                                                            <TextBlock
+                                                                Margin="0,0,0,5"
+                                                                FontWeight="SemiBold"
+                                                                Text="Ereignisse verkürzen/verzögern:" />
+                                                            <StackPanel Margin="0,0,0,5" Orientation="Horizontal">
+                                                                <TextBlock
+                                                                    Margin="0,0,5,0"
+                                                                    VerticalAlignment="Center"
+                                                                    Text="Modus:" />
+                                                                <ComboBox
+                                                                    x:Name="cmbShortenEventScopeDefault"
+                                                                    Width="120"
+                                                                    Height="26"
+                                                                    ToolTip="Standardverhalten für das Verkürzen oder Verzögern von Kalenderereignissen.">
+                                                                    <ComboBoxItem Content="None" />
+                                                                    <ComboBoxItem Content="EndEarly" />
+                                                                    <ComboBoxItem Content="StartLate" />
+                                                                </ComboBox>
+                                                            </StackPanel>
+                                                            <StackPanel Margin="0,0,0,5" Orientation="Horizontal">
+                                                                <TextBlock
+                                                                    Margin="0,0,5,0"
+                                                                    VerticalAlignment="Center"
+                                                                    Text="Min. für kurze Termine (&lt;60 Min):" />
+                                                                <TextBox
+                                                                    x:Name="txtDefaultMinutesToReduceShortEventsBy"
+                                                                    Width="50"
+                                                                    Height="26"
+                                                                    ToolTip="Anzahl Minuten, um die kurze Termine verkürzt/verzögert werden." />
+                                                            </StackPanel>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock
+                                                                    Margin="0,0,5,0"
+                                                                    VerticalAlignment="Center"
+                                                                    Text="Min. für lange Termine (≥60 Min):" />
+                                                                <TextBox
+                                                                    x:Name="txtDefaultMinutesToReduceLongEventsBy"
+                                                                    Width="50"
+                                                                    Height="26"
+                                                                    ToolTip="Anzahl Minuten, um die lange Termine verkürzt/verzögert werden." />
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                    </GroupBox>
+                                                </StackPanel>
+                                                <!--  Rechte Spalte  -->
+                                                <StackPanel Grid.Column="1" Margin="5,0,0,0">
+                                                    <GroupBox
+                                                        Margin="0,0,0,10"
+                                                        Background="#ffffff"
+                                                        Header="Outlook Web App (OWA) - Verhalten">
+                                                        <StackPanel Margin="10">
+                                                            <CheckBox
+                                                                x:Name="chkAsyncSendEnabled"
+                                                                Margin="0,5"
+                                                                Content="Asynchrones Senden (OWA) aktivieren"
+                                                                ToolTip="Aktiviert das asynchrone Senden von E-Mails in OWA." />
+                                                            <CheckBox
+                                                                x:Name="chkOutlookGifPickerDisabled"
+                                                                Margin="0,5"
+                                                                Content="GIF-Auswahl in Outlook deaktivieren"
+                                                                ToolTip="Deaktiviert die GIF-Suchfunktion (via Bing) in Outlook on the web." />
+                                                            <CheckBox
+                                                                x:Name="chkWebPushNotificationsDisabled"
+                                                                Margin="0,5"
+                                                                Content="Web Push-Benachrichtigungen (OWA) deaktivieren"
+                                                                ToolTip="Deaktiviert Desktop Push-Benachrichtigungen für Outlook on the Web." />
+                                                            <CheckBox
+                                                                x:Name="chkWebSuggestedRepliesDisabled"
+                                                                Margin="0,5"
+                                                                Content="Vorgeschlagene Antworten (OWA) deaktivieren"
+                                                                ToolTip="Deaktiviert die Funktion für vorgeschlagene Antworten in Outlook on the Web." />
+                                                        </StackPanel>
+                                                    </GroupBox>
+                                                    <GroupBox
+                                                        Margin="0,0,0,10"
+                                                        Background="#ffffff"
+                                                        Header="Weitere Outlook &amp; OWA Features">
+                                                        <StackPanel Margin="10">
+                                                            <CheckBox
+                                                                x:Name="chkMessageRemindersEnabled"
+                                                                Margin="0,5"
+                                                                Content="Nachrichtenerinnerungen aktivieren"
+                                                                ToolTip="Aktiviert Erinnerungen für zu beantwortende Nachrichten (Nudges)." />
+                                                            <CheckBox
+                                                                x:Name="chkOutlookPayEnabled"
+                                                                Margin="0,5"
+                                                                Content="Outlook Payments aktivieren"
+                                                                ToolTip="Aktiviert die Zahlungsfunktion in Outlook." />
+                                                            <CheckBox
+                                                                x:Name="chkOutlookTextPredictionDisabled"
+                                                                Margin="0,5"
+                                                                Content="Textvorhersage in Outlook deaktivieren"
+                                                                ToolTip="Deaktiviert Textvorhersagen beim Verfassen von E-Mails." />
+                                                            <CheckBox
+                                                                x:Name="chkEnableOutlookEvents"
+                                                                Margin="0,5"
+                                                                Content="Outlook-Ereignisse aktivieren"
+                                                                ToolTip="Aktiviert die Verarbeitung von Ereignissen aus E-Mails in Outlook (z.B. Flugbuchungen)." />
+                                                        </StackPanel>
+                                                    </GroupBox>
+                                                    <GroupBox
+                                                        Margin="0,0,0,10"
+                                                        Background="#ffffff"
+                                                        Header="Sitzungs-Timeout (OWA)">
+                                                        <StackPanel Margin="10">
+                                                            <CheckBox
+                                                                x:Name="chkActivityBasedAuthenticationTimeoutEnabled"
+                                                                Margin="0,5"
+                                                                Content="Inaktive Sitzungs-Timeout aktivieren"
+                                                                ToolTip="Aktiviert ein Timeout für inaktive Sitzungen in Outlook auf dem Web." />
+                                                            <StackPanel Margin="20,0,0,5" Orientation="Horizontal">
+                                                                <TextBlock
+                                                                    Margin="0,0,10,0"
+                                                                    VerticalAlignment="Center"
+                                                                    Text="Timeout-Intervall (hh:mm:ss):" />
+                                                                <TextBox
+                                                                    x:Name="txtActivityBasedAuthenticationTimeoutInterval"
+                                                                    Width="100"
+                                                                    Height="26"
+                                                                    ToolTip="Format: hh:mm:ss, z.B. 06:00:00 für 6 Stunden." />
+                                                            </StackPanel>
+                                                            <CheckBox
+                                                                x:Name="chkActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled"
+                                                                Margin="0,5"
+                                                                Content="SSO-Sitzung trotz Timeout beibehalten"
+                                                                ToolTip="Behält die SSO-Sitzung bei, auch wenn die Outlook Web App-Sitzung abgelaufen ist." />
+                                                            <CheckBox
+                                                                x:Name="chkOwaRedirectToOD4BThisUserEnabled"
+                                                                Margin="0,5"
+                                                                Content="OWA: Umleitung zu OneDrive für diesen Benutzer aktivieren"
+                                                                ToolTip="Aktiviert die automatische Umleitung zu OneDrive for Business für den aktuellen Benutzer in OWA, wenn Anhänge gespeichert werden." />
+                                                            <CheckBox
+                                                                x:Name="chkPublicComputersDetectionEnabled"
+                                                                Margin="0,5"
+                                                                Content="OWA: Erkennung öffentlicher Computer aktivieren"
+                                                                ToolTip="Aktiviert die Erkennung, ob OWA auf einem öffentlichen oder privaten Computer verwendet wird, um Sicherheitseinstellungen (z.B. Timeout) anzupassen." />
+                                                        </StackPanel>
+                                                    </GroupBox>
+                                                </StackPanel>
+                                            </Grid>
+                                        </TabItem>
+
+                                        <!--  Bookings - Grundeinstellungen Tab  -->
+                                        <TabItem Header="Bookings - Grundeinstellungen">
+                                            <Grid Margin="10">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <!--  Linke Spalte für Bookings-Einstellungen  -->
+                                                <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                                                    <GroupBox
+                                                        Margin="0,0,0,10"
+                                                        Background="#ffffff"
+                                                        Header="Bookings - Aktivierung &amp; Zugriff">
+                                                        <StackPanel Margin="10">
+                                                            <CheckBox
+                                                                x:Name="chkBookingsEnabled"
+                                                                Margin="0,5"
+                                                                Content="Microsoft Bookings aktivieren"
+                                                                ToolTip="Aktiviert Microsoft Bookings in der Organisation." />
+                                                            <CheckBox
+                                                                x:Name="chkBookingsAddressEntryRestricted"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Adresseingabe einschränken"
+                                                                ToolTip="Schränkt die Adresseinträge in Microsoft Bookings ein." />
+                                                            <CheckBox
+                                                                x:Name="chkBookingsAuthEnabled"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Authentifizierung erzwingen"
+                                                                ToolTip="Erfordert Authentifizierung für den Zugriff auf Bookings-Seiten." />
+                                                            <CheckBox
+                                                                x:Name="chkBookingsCreationOfCustomQuestionsRestricted"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Erstellung benutzerdef. Fragen einschränken"
+                                                                ToolTip="Beschränkt, wer benutzerdefinierte Fragen in Bookings erstellen kann." />
+                                                            <CheckBox
+                                                                x:Name="chkBookingsExposureOfStaffDetailsRestricted"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Anzeige von Mitarbeiterdetails einschränken"
+                                                                ToolTip="Kontrolliert, welche Mitarbeiterdetails öffentlich in Bookings sichtbar sind." />
+                                                            <CheckBox
+                                                                x:Name="chkBookingsMembershipApprovalRequired"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Zustimmung für Mitgliedschaft erforderlich"
+                                                                ToolTip="Erfordert Genehmigung für neue Mitgliedschaften in Bookings." />
+                                                            <CheckBox
+                                                                x:Name="chkBookingsNotesEntryRestricted"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Notizeingabe einschränken"
+                                                                ToolTip="Beschränkt, wer Notizen in Bookings-Einträgen hinterlassen kann." />
+                                                            <CheckBox
+                                                                x:Name="chkBookingsPhoneNumberEntryRestricted"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Telefonnummereingabe einschränken"
+                                                                ToolTip="Spezifiziert, ob Telefonnummern von Bookings-Kunden erfasst werden können." />
+                                                            <CheckBox
+                                                                x:Name="chkBookingsSearchEngineIndexDisabled"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Suchmaschinenindexierung deaktivieren"
+                                                                ToolTip="Deaktiviert die Indexierung von Bookings-Seiten durch Suchmaschinen." />
+                                                            <CheckBox
+                                                                x:Name="chkBookingsStaffControlEnabled"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Mitarbeiterkontrolle aktivieren"
+                                                                ToolTip="Ermöglicht detaillierte Kontrolle über Mitarbeiterverfügbarkeit und -zuweisungen in Bookings." />
+                                                        </StackPanel>
+                                                    </GroupBox>
+                                                </StackPanel>
+                                                <!--  Rechte Spalte für Bookings-Einstellungen  -->
+                                                <StackPanel Grid.Column="1" Margin="5,0,0,0">
+                                                    <GroupBox
+                                                        Margin="0,0,0,10"
+                                                        Background="#ffffff"
+                                                        Header="Bookings - Features &amp; Integration">
+                                                        <StackPanel Margin="10">
+                                                            <CheckBox
+                                                                x:Name="chkBookingsPaymentsEnabled"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Zahlungen aktivieren"
+                                                                ToolTip="Aktiviert Zahlungsfunktionen in Microsoft Bookings." />
+                                                            <CheckBox
+                                                                x:Name="chkBookingsSmsMicrosoftEnabled"
+                                                                Margin="0,5"
+                                                                Content="Bookings: SMS-Benachrichtigungen (Microsoft) aktivieren"
+                                                                ToolTip="Aktiviert SMS-Benachrichtigungen über Microsoft-Dienste für Bookings." />
+                                                            <CheckBox
+                                                                x:Name="chkBookingsSocialSharingRestricted"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Social Sharing einschränken"
+                                                                ToolTip="Beschränkt das Teilen von Bookings-Inhalten in sozialen Medien." />
+                                                            <CheckBox
+                                                                x:Name="chkBookingsAvailabilityAndPricingEnabled"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Verfügbarkeit &amp; Preisgestaltung aktivieren"
+                                                                ToolTip="Aktiviert Funktionen zur Verwaltung von Verfügbarkeit und Preisen für Dienstleistungen in Bookings." />
+                                                            <CheckBox
+                                                                x:Name="chkBookingsCustomizationEnabled"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Anpassungsoptionen aktivieren"
+                                                                ToolTip="Ermöglicht erweiterte Anpassungen der Bookings-Seite (z.B. Logo, Farbschema)." />
+                                                            <CheckBox
+                                                                x:Name="chkBookingsInternalSharingEnabled"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Internes Teilen aktivieren"
+                                                                ToolTip="Erlaubt das interne Teilen von Bookings-Kalendern und -Informationen innerhalb der Organisation." />
+                                                            <CheckBox
+                                                                x:Name="chkBookingsExternalSharingEnabled"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Externes Teilen aktivieren"
+                                                                ToolTip="Erlaubt das externe Teilen von Bookings-Seiten und -Kalendern mit Personen außerhalb der Organisation." />
+                                                            <CheckBox
+                                                                x:Name="chkBookingsOnlinePaymentEnabled"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Online-Zahlungen (erweitert) aktivieren"
+                                                                ToolTip="Aktiviert erweiterte Online-Zahlungsoptionen und -Integrationen für Bookings." />
+                                                            <CheckBox
+                                                                x:Name="chkBookingsBusinessHoursEnabled"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Geschäftszeiten-Management aktivieren"
+                                                                ToolTip="Aktiviert die detaillierte Verwaltung von Geschäftszeiten für Dienste und Mitarbeiter in Bookings." />
+                                                            <CheckBox
+                                                                x:Name="chkBookingsCustomerDataUsageEnabled"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Kundendatennutzung verfolgen"
+                                                                ToolTip="Aktiviert die Nachverfolgung und Analyse der Nutzung von Kundendaten in Bookings." />
+                                                            <CheckBox
+                                                                x:Name="chkBookingsDataExportEnabled"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Datenexport aktivieren"
+                                                                ToolTip="Ermöglicht den Export von Bookings-Daten (z.B. Termine, Kundeninformationen)." />
+                                                            <CheckBox
+                                                                x:Name="chkBookingsPersonalDataCollectionAndUseConsentRequired"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Zustimmung zur Datenerfassung erforderlich"
+                                                                ToolTip="Erfordert die explizite Zustimmung der Kunden zur Erfassung und Nutzung ihrer personenbezogenen Daten durch Bookings." />
+                                                        </StackPanel>
+                                                    </GroupBox>
+                                                </StackPanel>
+                                            </Grid>
+                                        </TabItem>
+
+                                        <!--  Bookings - Richtlinien Tab  -->
+                                        <TabItem Header="Bookings - Richtlinien">
+                                            <Grid Margin="10">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                                                    <GroupBox
+                                                        Margin="0,0,0,10"
+                                                        Background="#ffffff"
+                                                        Header="Bookings - Benennungsrichtlinie &amp; Blockierte Wörter">
+                                                        <StackPanel Margin="10">
+                                                            <CheckBox
+                                                                x:Name="chkBookingsBlockedWordsEnabled"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Liste blockierter Wörter aktivieren"
+                                                                ToolTip="Aktiviert eine Liste von Wörtern, die in Bookings nicht verwendet werden dürfen." />
+                                                            <CheckBox
+                                                                x:Name="chkBookingsNamingPolicyEnabled"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Benennungsrichtlinie aktivieren"
+                                                                ToolTip="Aktiviert Benennungsrichtlinien für Bookings-Kalender." />
+                                                            <CheckBox
+                                                                x:Name="chkBookingsNamingPolicyPrefixEnabled"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Präfix für Benennungsrichtlinie aktivieren"
+                                                                ToolTip="Aktiviert die Verwendung eines Präfixes in der Benennungsrichtlinie." />
+                                                            <StackPanel Margin="20,0,0,5" Orientation="Horizontal">
+                                                                <TextBlock
+                                                                    Margin="0,0,5,0"
+                                                                    VerticalAlignment="Center"
+                                                                    Text="Präfix:" />
+                                                                <TextBox
+                                                                    x:Name="txtBookingsNamingPolicyPrefix"
+                                                                    Width="150"
+                                                                    Height="26"
+                                                                    ToolTip="Der Präfix-String für die Bookings-Benennungsrichtlinie." />
+                                                            </StackPanel>
+                                                            <CheckBox
+                                                                x:Name="chkBookingsNamingPolicySuffixEnabled"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Suffix für Benennungsrichtlinie aktivieren"
+                                                                ToolTip="Aktiviert die Verwendung eines Suffixes in der Benennungsrichtlinie." />
+                                                            <StackPanel Margin="20,0,0,5" Orientation="Horizontal">
+                                                                <TextBlock
+                                                                    Margin="0,0,5,0"
+                                                                    VerticalAlignment="Center"
+                                                                    Text="Suffix:" />
+                                                                <TextBox
+                                                                    x:Name="txtBookingsNamingPolicySuffix"
+                                                                    Width="150"
+                                                                    Height="26"
+                                                                    ToolTip="Der Suffix-String für die Bookings-Benennungsrichtlinie." />
+                                                            </StackPanel>
+                                                            <CheckBox
+                                                                x:Name="chkBookingsSchedulingPolicyEnabled"
+                                                                Margin="0,5"
+                                                                Content="Bookings: Planungsrichtlinie aktivieren"
+                                                                ToolTip="Aktiviert die Anwendung von Planungsrichtlinien für Termine in Bookings." />
+                                                            <StackPanel Margin="20,0,0,5" Orientation="Vertical">
+                                                                <TextBlock
+                                                                    Margin="0,0,5,2"
+                                                                    VerticalAlignment="Center"
+                                                                    Text="Planungsrichtlinie (JSON/XML):" />
+                                                                <TextBox
+                                                                    x:Name="txtBookingsSchedulingPolicy"
+                                                                    Width="250"
+                                                                    Height="50"
+                                                                    AcceptsReturn="True"
+                                                                    TextWrapping="Wrap"
+                                                                    ToolTip="Die Planungsrichtlinie im JSON- oder XML-Format."
+                                                                    VerticalScrollBarVisibility="Auto" />
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                    </GroupBox>
+                                                </StackPanel>
+                                                <!--  Rechte Spalte für ggf. weitere Richtlinien-Einstellungen  -->
+                                                <StackPanel Grid.Column="1" Margin="5,0,0,0" />
+                                            </Grid>
+                                        </TabItem>
+
+                                        <!--  Administration & Sicherheit Tab  -->
+                                        <TabItem Header="Administration &amp; Sicherheit">
+                                            <Grid Margin="10">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <!--  Linke Spalte  -->
+                                                <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                                                    <GroupBox
+                                                        Margin="0,0,0,10"
+                                                        Background="#ffffff"
+                                                        Header="MailTips">
+                                                        <StackPanel Margin="10">
+                                                            <CheckBox
+                                                                x:Name="chkMailTipsAllTipsEnabled"
+                                                                Margin="0,5"
+                                                                Content="Alle MailTips aktivieren"
+                                                                ToolTip="Aktiviert alle MailTips-Funktionen." />
+                                                            <CheckBox
+                                                                x:Name="chkMailTipsExternalRecipientsTipsEnabled"
+                                                                Margin="0,5"
+                                                                Content="MailTips für externe Empfänger aktivieren"
+                                                                ToolTip="Aktiviert MailTips, die beim Senden an externe Empfänger angezeigt werden." />
+                                                            <CheckBox
+                                                                x:Name="chkMailTipsGroupMetricsEnabled"
+                                                                Margin="0,5"
+                                                                Content="MailTips für Gruppenmetriken aktivieren"
+                                                                ToolTip="Aktiviert MailTips basierend auf Gruppenmetriken." />
+                                                            <CheckBox
+                                                                x:Name="chkMailTipsMailboxSourcedTipsEnabled"
+                                                                Margin="0,5"
+                                                                Content="MailTips aus Postfachdaten aktivieren"
+                                                                ToolTip="Aktiviert MailTips, die auf Postfachdaten basieren (z.B. Abwesenheitsnotizen)." />
+                                                            <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
+                                                                <TextBlock
+                                                                    Margin="0,0,10,0"
+                                                                    VerticalAlignment="Center"
+                                                                    Text="Schwellenwert für große Zielgruppe:" />
+                                                                <ComboBox
+                                                                    x:Name="cmbLargeAudienceThreshold"
+                                                                    Width="80"
+                                                                    Height="26"
+                                                                    ToolTip="Definiert die Mindestanzahl von Empfängern, ab der eine Zielgruppe als groß gilt für MailTips.">
+                                                                    <ComboBoxItem Content="25" IsSelected="True" />
+                                                                    <ComboBoxItem Content="50" />
+                                                                    <ComboBoxItem Content="100" />
+                                                                    <ComboBoxItem Content="200" />
+                                                                </ComboBox>
+                                                            </StackPanel>
+                                                            <CheckBox
+                                                                x:Name="chkMailTipsLargeAudienceThreshold"
+                                                                Margin="0,5,0,0"
+                                                                Content="Benutzerdefinierter Schwellenwert für große Zielgruppe"
+                                                                ToolTip="Aktiviert die Festlegung eines benutzerdefinierten Schwellenwerts für MailTips bei großen Zielgruppen." />
+                                                            <StackPanel Margin="20,0,0,5" Orientation="Horizontal">
+                                                                <TextBlock
+                                                                    Margin="0,0,10,0"
+                                                                    VerticalAlignment="Center"
+                                                                    Text="Benutzerdefinierter Schwellenwert:" />
+                                                                <TextBox
+                                                                    x:Name="txtMailTipsLargeAudienceThreshold"
+                                                                    Width="80"
+                                                                    Height="26"
+                                                                    ToolTip="Numerischer Wert für den benutzerdefinierten Schwellenwert." />
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                    </GroupBox>
+                                                    <GroupBox
+                                                        Margin="0,0,0,10"
+                                                        Background="#ffffff"
+                                                        Header="Sicherheit">
+                                                        <StackPanel Margin="10">
+                                                            <CheckBox
+                                                                x:Name="chkAuditDisabled"
+                                                                Margin="0,5"
+                                                                Content="Überwachungsprotokollierung deaktivieren"
+                                                                ToolTip="Deaktiviert die Administrator-Überwachungsprotokollierung. Standardmäßig ist sie aktiviert." />
+                                                            <CheckBox
+                                                                x:Name="chkCustomerLockboxEnabled"
+                                                                Margin="0,5"
+                                                                Content="Customer Lockbox aktivieren"
+                                                                ToolTip="Aktiviert die Customer Lockbox-Funktion für Microsoft Support-Zugriffe." />
+                                                            <CheckBox
+                                                                x:Name="chkMaskClientIpInReceivedHeadersEnabled"
+                                                                Margin="0,5"
+                                                                Content="Client-IP in Received-Headern maskieren"
+                                                                ToolTip="Maskiert die Client-IP-Adresse in den Received-Headern von E-Mails." />
+                                                            <CheckBox
+                                                                x:Name="chkComplianceMLBgdCrawlEnabled"
+                                                                Margin="0,5"
+                                                                Content="Compliance MLBgd Crawl aktivieren"
+                                                                ToolTip="Aktiviert den Mailbox-Hintergrund-Crawl für Compliance-Zwecke." />
+                                                            <CheckBox
+                                                                x:Name="chkAutoEnableArchiveMailbox"
+                                                                Margin="0,5"
+                                                                Content="Archivpostfach automatisch für neue Benutzer aktivieren"
+                                                                ToolTip="Aktiviert automatisch ein Archivpostfach, wenn ein neues Benutzerpostfach erstellt wird." />
+                                                            <CheckBox
+                                                                x:Name="chkAutoExpandingArchive"
+                                                                Margin="0,5"
+                                                                Content="Automatisch erweiterndes Archiv aktivieren (global)"
+                                                                ToolTip="Aktiviert die Funktion für automatisch erweiternde Archive für alle berechtigten Postfächer in der Organisation." />
+                                                            <CheckBox
+                                                                x:Name="chkComplianceEnabled"
+                                                                Margin="0,5"
+                                                                Content="Allgemeine Compliance-Funktionen aktivieren"
+                                                                ToolTip="Aktiviert grundlegende Compliance-Funktionen für die Organisation." />
+                                                            <CheckBox
+                                                                x:Name="chkElcProcessingDisabled"
+                                                                Margin="0,5"
+                                                                Content="ELC-Verarbeitung (Aufbewahrungsrichtlinien) deaktivieren"
+                                                                ToolTip="Deaktiviert die Verarbeitung von E-Mail-Lebenszyklusrichtlinien (Aufbewahrungsrichtlinien) für die Organisation." />
+                                                            <TextBlock Margin="0,5,0,0" Text="Blockierte IP-Adressen (kommasepariert):" />
+                                                            <TextBox
+                                                                x:Name="txtIPListBlocked"
+                                                                Height="50"
+                                                                TextWrapping="Wrap"
+                                                                ToolTip="Liste der IP-Adressen, die blockiert werden sollen. Mehrere IPs durch Komma trennen."
+                                                                VerticalScrollBarVisibility="Auto" />
+                                                        </StackPanel>
+                                                    </GroupBox>
+                                                </StackPanel>
+
+                                                <!--  Rechte Spalte  -->
+                                                <StackPanel Grid.Column="1" Margin="5,0,0,0">
+                                                    <GroupBox
+                                                        Margin="0,0,0,10"
+                                                        Background="#ffffff"
+                                                        Header="Öffentliche Ordner">
+                                                        <StackPanel Margin="10">
+                                                            <StackPanel Margin="0,0,0,5" Orientation="Horizontal">
+                                                                <TextBlock
+                                                                    Margin="0,0,5,0"
+                                                                    VerticalAlignment="Center"
+                                                                    Text="Öffentliche Ordner aktiviert:" />
+                                                                <ComboBox
+                                                                    x:Name="cmbPublicFoldersEnabled"
+                                                                    Width="120"
+                                                                    Height="26"
+                                                                    ToolTip="Status der öffentlichen Ordner in der Organisation.">
+                                                                    <ComboBoxItem Content="None" />
+                                                                    <ComboBoxItem Content="Local" />
+                                                                    <ComboBoxItem Content="Remote" />
+                                                                </ComboBox>
+                                                            </StackPanel>
+                                                            <TextBlock Margin="0,5,0,0" Text="Standard-Alterslimit (Tage.Stunden:Minuten:Sekunden):" />
+                                                            <TextBox
+                                                                x:Name="txtDefaultPublicFolderAgeLimit"
+                                                                Height="26"
+                                                                ToolTip="z.B. 365.00:00:00 für 365 Tage" />
+
+                                                            <TextBlock Margin="0,5,0,0" Text="Aufbewahrung gelöschter Elemente (Tage.Stunden:Minuten:Sekunden):" />
+                                                            <TextBox
+                                                                x:Name="txtDefaultPublicFolderDeletedItemRetention"
+                                                                Height="26"
+                                                                ToolTip="z.B. 30.00:00:00 für 30 Tage" />
+
+                                                            <TextBlock Margin="0,5,0,0" Text="Aufbewahrung verschobener Elemente (Tage.Stunden:Minuten:Sekunden):" />
+                                                            <TextBox
+                                                                x:Name="txtDefaultPublicFolderMovedItemRetention"
+                                                                Height="26"
+                                                                ToolTip="z.B. 7.00:00:00 für 7 Tage" />
+
+                                                            <TextBlock Margin="0,5,0,0" Text="Warnquote für Postfachgröße (KB/MB/GB):" />
+                                                            <TextBox
+                                                                x:Name="txtDefaultPublicFolderIssueWarningQuota"
+                                                                Height="26"
+                                                                ToolTip="z.B. 10GB oder 'Unlimited'" />
+
+                                                            <TextBlock Margin="0,5,0,0" Text="Verbot Posteingang bei Überschreitung Quote (KB/MB/GB):" />
+                                                            <TextBox
+                                                                x:Name="txtDefaultPublicFolderProhibitPostQuota"
+                                                                Height="26"
+                                                                ToolTip="z.B. 12GB oder 'Unlimited'" />
+
+                                                            <TextBlock Margin="0,5,0,0" Text="Maximale Elementgröße (KB/MB/GB):" />
+                                                            <TextBox
+                                                                x:Name="txtDefaultPublicFolderMaxItemSize"
+                                                                Height="26"
+                                                                ToolTip="z.B. 25MB oder 'Unlimited'" />
+
+                                                            <TextBlock Margin="0,5,0,0" Text="Remote Public Folder Mailboxes (kommasepariert):" />
+                                                            <TextBox
+                                                                x:Name="txtRemotePublicFolderMailboxes"
+                                                                Height="50"
+                                                                TextWrapping="Wrap"
+                                                                ToolTip="Liste der Remote Public Folder Mailboxen. Mehrere durch Komma trennen."
+                                                                VerticalScrollBarVisibility="Auto" />
+
+                                                        </StackPanel>
+                                                    </GroupBox>
+                                                </StackPanel>
+                                            </Grid>
+                                        </TabItem>
+
+                                        <!--  Authentifizierung Tab  -->
+                                        <TabItem Header="Authentifizierung">
+                                            <Grid Margin="10">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <!--  Linke Spalte  -->
+                                                <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                                                    <GroupBox
+                                                        Margin="0,0,0,10"
+                                                        Background="#ffffff"
+                                                        Header="OAuth &amp; Standardauthentifizierung">
+                                                        <StackPanel Margin="10">
+                                                            <CheckBox
+                                                                x:Name="chkOAuth2ClientProfileEnabled"
+                                                                Margin="0,5"
+                                                                Content="OAuth 2.0 Client Profile aktivieren"
+                                                                ToolTip="Aktiviert das OAuth 2.0 Client Profile für moderne Authentifizierung." />
+                                                            <TextBlock Margin="0,5,0,0" Text="Standard-Authentifizierungsrichtlinie:" />
+                                                            <TextBox
+                                                                x:Name="txtDefaultAuthPolicy"
+                                                                Height="26"
+                                                                ToolTip="Name der Standard-Authentifizierungsrichtlinie, die auf Benutzer angewendet wird." />
+                                                            <CheckBox
+                                                                x:Name="chkPerTenantSwitchToESTSEnabled"
+                                                                Margin="0,5"
+                                                                Content="Tenant-Umstellung auf ESTS für Authentifizierung aktivieren"
+                                                                ToolTip="Aktiviert die Umstellung des Tenants auf Exchange Server Token Service (ESTS) für die Authentifizierung." />
+                                                            <CheckBox
+                                                                x:Name="chkRefreshSessionEnabled"
+                                                                Margin="0,5"
+                                                                Content="Sitzungsaktualisierung aktivieren"
+                                                                ToolTip="Ermöglicht die automatische Aktualisierung von Benutzersitzungen." />
+                                                        </StackPanel>
+                                                    </GroupBox>
+                                                    <GroupBox
+                                                        Margin="0,0,0,10"
+                                                        Background="#ffffff"
+                                                        Header="WAC (Office Online Server)">
+                                                        <StackPanel Margin="10">
+                                                            <TextBlock Margin="0,5,0,0" Text="WAC Discovery Endpoint:" />
+                                                            <TextBox
+                                                                x:Name="txtWACDiscoveryEndpoint"
+                                                                Height="26"
+                                                                ToolTip="URL des WAC (Office Online Server) Discovery Endpoints." />
+                                                        </StackPanel>
+                                                    </GroupBox>
+                                                </StackPanel>
+
+                                                <!--  Rechte Spalte  -->
+                                                <StackPanel Grid.Column="1" Margin="5,0,0,0">
+                                                    <GroupBox
+                                                        Margin="0,0,0,10"
+                                                        Background="#ffffff"
+                                                        Header="Exchange Web Services (EWS)">
+                                                        <StackPanel Margin="10">
+                                                            <CheckBox
+                                                                x:Name="chkEwsEnabled"
+                                                                Margin="0,5"
+                                                                Content="EWS aktivieren"
+                                                                ToolTip="Aktiviert Exchange Web Services für die Organisation." />
+                                                            <StackPanel Margin="0,0,0,5" Orientation="Horizontal">
+                                                                <TextBlock
+                                                                    Margin="0,0,5,0"
+                                                                    VerticalAlignment="Center"
+                                                                    Text="EWS-Anwendungszugriffsrichtlinie:" />
+                                                                <ComboBox
+                                                                    x:Name="cmbEwsAppAccessPolicy"
+                                                                    Width="150"
+                                                                    Height="26"
+                                                                    ToolTip="Legt fest, ob die EWS-Zulassungs- oder Sperrliste erzwungen wird.">
+                                                                    <ComboBoxItem Content="" />
+                                                                    <ComboBoxItem Content="EnforceAllowList" />
+                                                                    <ComboBoxItem Content="EnforceBlockList" />
+                                                                </ComboBox>
+                                                            </StackPanel>
+                                                            <CheckBox
+                                                                x:Name="chkEwsAllowEntourage"
+                                                                Margin="0,5"
+                                                                Content="EWS-Zugriff für Entourage erlauben"
+                                                                ToolTip="Erlaubt EWS-Zugriff für Microsoft Entourage Clients." />
+                                                            <CheckBox
+                                                                x:Name="chkEwsAllowMacOutlook"
+                                                                Margin="0,5"
+                                                                Content="EWS-Zugriff für Mac Outlook erlauben"
+                                                                ToolTip="Erlaubt EWS-Zugriff für Outlook für Mac Clients." />
+                                                            <CheckBox
+                                                                x:Name="chkEwsAllowOutlook"
+                                                                Margin="0,5"
+                                                                Content="EWS-Zugriff für Outlook (Windows) erlauben"
+                                                                ToolTip="Erlaubt EWS-Zugriff für Outlook für Windows Clients." />
+                                                            <TextBlock Margin="0,5,0,0" Text="EWS Zulassungsliste (kommasepariert):" />
+                                                            <TextBox
+                                                                x:Name="txtEwsAllowList"
+                                                                Height="50"
+                                                                TextWrapping="Wrap"
+                                                                ToolTip="Liste der Anwendungen, die EWS verwenden dürfen. Mehrere durch Komma trennen."
+                                                                VerticalScrollBarVisibility="Auto" />
+                                                            <TextBlock Margin="0,5,0,0" Text="EWS Sperrliste (kommasepariert):" />
+                                                            <TextBox
+                                                                x:Name="txtEwsBlockList"
+                                                                Height="50"
+                                                                TextWrapping="Wrap"
+                                                                ToolTip="Liste der Anwendungen, denen die EWS-Verwendung verboten ist. Mehrere durch Komma trennen."
+                                                                VerticalScrollBarVisibility="Auto" />
+                                                        </StackPanel>
+                                                    </GroupBox>
+                                                </StackPanel>
+                                            </Grid>
+                                        </TabItem>
+
+                                        <!--  Mobile & Zugriff Tab  -->
+                                        <TabItem Header="Mobile &amp; Zugriff">
+                                            <Grid Margin="10">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <!--  Linke Spalte  -->
+                                                <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                                                    <GroupBox
+                                                        Margin="0,0,0,10"
+                                                        Background="#ffffff"
+                                                        Header="Mobiler Zugriff">
+                                                        <StackPanel Margin="10">
+                                                            <CheckBox
+                                                                x:Name="chkMobileAppEducationEnabled"
+                                                                Margin="0,5"
+                                                                Content="Mobile App-Schulung aktivieren"
+                                                                ToolTip="Aktiviert In-App-Schulungsinhalte für mobile Outlook-Apps." />
+                                                            <CheckBox
+                                                                x:Name="chkOutlookMobileGCCRestrictionsEnabled"
+                                                                Margin="0,5"
+                                                                Content="Outlook Mobile GCC-Einschränkungen aktivieren"
+                                                                ToolTip="Aktiviert spezifische Einschränkungen für Outlook Mobile in GCC High-Umgebungen." />
+                                                        </StackPanel>
+                                                    </GroupBox>
+                                                    <GroupBox
+                                                        Margin="0,0,0,10"
+                                                        Background="#ffffff"
+                                                        Header="Konnektoren &amp; Integrationen">
+                                                        <StackPanel Margin="10">
+                                                            <CheckBox
+                                                                x:Name="chkConnectorsEnabled"
+                                                                Margin="0,5"
+                                                                Content="Connectors für Microsoft 365 aktivieren"
+                                                                ToolTip="Aktiviert die Verwendung von Connectors in Microsoft 365-Diensten." />
+                                                            <CheckBox
+                                                                x:Name="chkConnectorsActionableMessagesEnabled"
+                                                                Margin="0,5"
+                                                                Content="Aktionsfähige Nachrichten für Connectors aktivieren"
+                                                                ToolTip="Ermöglicht aktionsfähige Nachrichten über Connectors." />
+                                                            <CheckBox
+                                                                x:Name="chkConnectorsEnabledForOutlook"
+                                                                Margin="0,5"
+                                                                Content="Connectors für Outlook aktivieren"
+                                                                ToolTip="Aktiviert Connectors speziell für Outlook." />
+                                                            <CheckBox
+                                                                x:Name="chkConnectorsEnabledForSharepoint"
+                                                                Margin="0,5"
+                                                                Content="Connectors für SharePoint aktivieren"
+                                                                ToolTip="Aktiviert Connectors speziell für SharePoint Online." />
+                                                            <CheckBox
+                                                                x:Name="chkConnectorsEnabledForTeams"
+                                                                Margin="0,5"
+                                                                Content="Connectors für Microsoft Teams aktivieren"
+                                                                ToolTip="Aktiviert Connectors speziell für Microsoft Teams." />
+                                                            <CheckBox
+                                                                x:Name="chkConnectorsEnabledForYammer"
+                                                                Margin="0,5"
+                                                                Content="Connectors für Yammer aktivieren"
+                                                                ToolTip="Aktiviert Connectors speziell für Yammer." />
+                                                            <CheckBox
+                                                                x:Name="chkSmtpActionableMessagesEnabled"
+                                                                Margin="0,5"
+                                                                Content="Aktionsfähige Nachrichten über SMTP aktivieren"
+                                                                ToolTip="Ermöglicht das Senden und Empfangen von aktionsfähigen Nachrichten über SMTP." />
+                                                        </StackPanel>
+                                                    </GroupBox>
+                                                </StackPanel>
+
+                                                <!--  Rechte Spalte  -->
+                                                <StackPanel Grid.Column="1" Margin="5,0,0,0">
+                                                    <GroupBox
+                                                        Margin="0,0,0,10"
+                                                        Background="#ffffff"
+                                                        Header="Zugriffskontrolle &amp; Weiterleitung">
+                                                        <StackPanel Margin="10">
+                                                            <CheckBox
+                                                                x:Name="chkPublicFolderShowClientControl"
+                                                                Margin="0,5"
+                                                                Content="Öffentliche Ordner-Zugriff in Clients erlauben"
+                                                                ToolTip="Steuert, ob Benutzer in Outlook auf öffentliche Ordner zugreifen können." />
+                                                            <CheckBox
+                                                                x:Name="chkAutodiscoverPartialDirSync"
+                                                                Margin="0,5"
+                                                                Content="Autodiscover für partielle Verzeichnissynchronisierung"
+                                                                ToolTip="Leitet Autodiscover-Anfragen für unbekannte Benutzer an den lokalen Endpunkt weiter, wenn DirSync partiell ist." />
+                                                            <CheckBox
+                                                                x:Name="chkWorkspaceTenantEnabled"
+                                                                Margin="0,5"
+                                                                Content="Arbeitsbereichs-Mandant aktivieren"
+                                                                ToolTip="Aktiviert Funktionen für Arbeitsbereichs-Mandanten (Bookings, Places etc.)." />
+                                                            <CheckBox
+                                                                x:Name="chkAdditionalStorageProvidersBlocked"
+                                                                Margin="0,5"
+                                                                Content="Zusätzliche Cloud-Speicheranbieter blockieren"
+                                                                ToolTip="Blockiert die Nutzung von Drittanbieter-Cloud-Speicherdiensten (z.B. Google Drive, Dropbox) in Outlook-Clients." />
+                                                        </StackPanel>
+                                                    </GroupBox>
+                                                </StackPanel>
+                                            </Grid>
+                                        </TabItem>
+
+                                        <!--  Erweitert Tab  -->
+                                        <TabItem Header="Erweitert">
+                                            <Grid Margin="10">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <!--  Linke Spalte  -->
+                                                <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                                                    <GroupBox
+                                                        Margin="0,0,0,10"
+                                                        Background="#ffffff"
+                                                        Header="Protokolle &amp; Leistung">
+                                                        <StackPanel Margin="10">
+                                                            <CheckBox
+                                                                x:Name="chkSIPEnabled"
+                                                                Margin="0,5"
+                                                                Content="SIP aktivieren"
+                                                                ToolTip="Aktiviert Session Initiation Protocol für Kommunikation" />
+                                                            <CheckBox
+                                                                x:Name="chkRemotePublicFolderBlobsEnabled"
+                                                                Margin="0,5"
+                                                                Content="Remote Public Folder Blobs aktivieren"
+                                                                ToolTip="Aktiviert Remote Public Folder Blobs für bessere Leistung" />
+                                                            <CheckBox
+                                                                x:Name="chkMapiHttpEnabled"
+                                                                Margin="0,5"
+                                                                Content="MAPI über HTTP aktivieren"
+                                                                ToolTip="Aktiviert MAPI über HTTP statt RPC über HTTP" />
+                                                            <CheckBox
+                                                                x:Name="chkCalendarVersionStoreEnabled"
+                                                                Margin="0,5"
+                                                                Content="Kalenderversionsspeicher aktivieren"
+                                                                ToolTip="Aktiviert den Versionsspeicher für Kalenderelemente, um die Wiederherstellung von Änderungen zu erleichtern." />
+                                                            <CheckBox
+                                                                x:Name="chkEcRequiresTls"
+                                                                Margin="0,5"
+                                                                Content="TLS für interne Exchange-Kommunikation erzwingen"
+                                                                ToolTip="Erzwingt die Verwendung von TLS für die Kommunikation zwischen internen Exchange-Serverkomponenten." />
+                                                        </StackPanel>
+                                                    </GroupBox>
+                                                    <GroupBox
+                                                        Margin="0,0,0,10"
+                                                        Background="#ffffff"
+                                                        Header="Internationalisierung &amp; Suche">
+                                                        <StackPanel Margin="10">
+                                                            <CheckBox
+                                                                x:Name="chkPreferredInternetCodePageForShiftJis"
+                                                                Margin="0,5"
+                                                                Content="Bevorzugte Internet-Codeseite für ShiftJis"
+                                                                ToolTip="Legt die bevorzugte Internet-Codeseite für ShiftJis-Kodierung fest" />
+                                                            <StackPanel Margin="20,0,0,10" Orientation="Horizontal">
+                                                                <TextBlock
+                                                                    Margin="0,0,10,0"
+                                                                    VerticalAlignment="Center"
+                                                                    Text="Codeseite:" />
+                                                                <TextBox
+                                                                    x:Name="txtPreferredInternetCodePageForShiftJis"
+                                                                    Width="100"
+                                                                    Height="26" />
+                                                            </StackPanel>
+                                                            <CheckBox
+                                                                x:Name="chkSearchQueryLanguage"
+                                                                Margin="0,5"
+                                                                Content="Suchabfragesprache festlegen"
+                                                                ToolTip="Legt die Sprache für Suchabfragen fest" />
+                                                            <StackPanel Margin="20,0,0,10" Orientation="Horizontal">
+                                                                <TextBlock
+                                                                    Margin="0,0,10,0"
+                                                                    VerticalAlignment="Center"
+                                                                    Text="Sprache:" />
+                                                                <ComboBox
+                                                                    x:Name="cmbSearchQueryLanguage"
+                                                                    Width="150"
+                                                                    Height="26">
+                                                                    <ComboBoxItem Content="de-DE" IsSelected="True" />
+                                                                    <ComboBoxItem Content="en-US" />
+                                                                    <ComboBoxItem Content="fr-FR" />
+                                                                    <ComboBoxItem Content="es-ES" />
+                                                                </ComboBox>
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                    </GroupBox>
+                                                </StackPanel>
+
+                                                <!--  Rechte Spalte  -->
+                                                <StackPanel Grid.Column="1" Margin="5,0,0,0">
+                                                    <GroupBox
+                                                        Margin="0,0,0,10"
+                                                        Background="#ffffff"
+                                                        Header="Diverse Features">
+                                                        <StackPanel Margin="10">
+                                                            <CheckBox
+                                                                x:Name="chkVisibilityEnabled"
+                                                                Margin="0,5"
+                                                                Content="Sichtbarkeit aktivieren"
+                                                                ToolTip="Aktiviert erweiterte Sichtbarkeitseinstellungen" />
+                                                            <CheckBox
+                                                                x:Name="chkOnlineMeetingsByDefaultEnabled"
+                                                                Margin="0,5"
+                                                                Content="Online-Meetings standardmäßig aktivieren"
+                                                                ToolTip="Aktiviert standardmäßig Online-Meetings bei Kalenderereignissen" />
+                                                            <CheckBox
+                                                                x:Name="chkDirectReportsGroupAutoCreationEnabled"
+                                                                Margin="0,5"
+                                                                Content="Auto-Erstellung von Gruppen für direkte Vorgesetzte"
+                                                                ToolTip="Erstellt automatisch Gruppen für direkte Vorgesetzte" />
+                                                            <CheckBox
+                                                                x:Name="chkUnblockUnsafeSenderPromptEnabled"
+                                                                Margin="0,5"
+                                                                Content="Aufforderung zum Entsperren unsicherer Absender aktivieren"
+                                                                ToolTip="Aktiviert Benutzerabfragen zum Entsperren unsicherer Absender" />
+                                                            <CheckBox
+                                                                x:Name="chkExecutiveAttestation"
+                                                                Margin="0,5"
+                                                                Content="Executive Attestation aktivieren"
+                                                                ToolTip="Aktiviert die Executive Attestation-Funktion" />
+                                                            <CheckBox
+                                                                x:Name="chkPDPLocationEnabled"
+                                                                Margin="0,5"
+                                                                Content="PDP-Standort aktivieren"
+                                                                ToolTip="Aktiviert den Policy Decision Point-Standort" />
+                                                        </StackPanel>
+                                                    </GroupBox>
+                                                    <GroupBox
+                                                        Margin="0,0,0,10"
+                                                        Background="#ffffff"
+                                                        Header="Ratelimiting">
+                                                        <StackPanel Margin="10">
+                                                            <TextBlock
+                                                                Margin="0,0,0,5"
+                                                                FontWeight="SemiBold"
+                                                                Text="PowerShell Ratelimit-Einstellungen" />
+                                                            <StackPanel Margin="0,5" Orientation="Horizontal">
+                                                                <TextBlock
+                                                                    Width="150"
+                                                                    VerticalAlignment="Center"
+                                                                    Text="Max Concurrency:"
+                                                                    ToolTip="Maximale Anzahl gleichzeitiger PowerShell-Verbindungen" />
+                                                                <TextBox
+                                                                    x:Name="txtPowerShellMaxConcurrency"
+                                                                    Width="70"
+                                                                    Height="26" />
+                                                            </StackPanel>
+                                                            <StackPanel Margin="0,5" Orientation="Horizontal">
+                                                                <TextBlock
+                                                                    Width="150"
+                                                                    VerticalAlignment="Center"
+                                                                    Text="Max Cmdlet Queue:"
+                                                                    ToolTip="Maximale Tiefe der PowerShell-Cmdlet-Warteschlange" />
+                                                                <TextBox
+                                                                    x:Name="txtPowerShellMaxCmdletQueueDepth"
+                                                                    Width="70"
+                                                                    Height="26" />
+                                                            </StackPanel>
+                                                            <StackPanel Margin="0,5" Orientation="Horizontal">
+                                                                <TextBlock
+                                                                    Width="150"
+                                                                    VerticalAlignment="Center"
+                                                                    Text="Max Execution Duration:"
+                                                                    ToolTip="Maximale Ausführungsdauer für PowerShell-Cmdlets in Sekunden" />
+                                                                <TextBox
+                                                                    x:Name="txtPowerShellMaxCmdletsExecutionDuration"
+                                                                    Width="70"
+                                                                    Height="26" />
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                    </GroupBox>
+                                                </StackPanel>
+                                            </Grid>
+                                        </TabItem>
+                                    </TabControl>
+                                    <!--  Ende von tabOrgSettings  -->
+                                </Grid>
+                            </GroupBox>
+                            <!--  Buttons für Aktionen  -->
+                            <Grid
+                                x:Name="gridOrgButtons"
+                                Grid.Row="3"
+                                Margin="0,20,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Button
+                                    x:Name="btnGetOrganizationConfig"
+                                    Grid.Column="1"
+                                    Width="205"
+                                    Height="30"
+                                    Margin="0,0,10,0"
+                                    Background="#FF40678C"
+                                    Content="Aktuelle Einstellungen laden" />
+                                <Button
+                                    x:Name="btnSetOrganizationConfig"
+                                    Grid.Column="2"
+                                    Width="205"
+                                    Height="30"
+                                    Background="#FF4E8434"
+                                    Content="Neue Einstellungen speichern" />
+                                <Button
+                                    x:Name="btnExportOrganizationConfig"
+                                    Grid.Column="3"
+                                    Width="250"
+                                    Height="30"
+                                    Margin="25,0,0,0"
+                                    Background="#FF7D3838"
+                                    Content="Einstellungen exportieren (html)" />
+                            </Grid>
+                        </Grid>
+                    </TabItem>
+
+                    <!--  Gruppen / Verteiler Tab  -->
+                    <TabItem
+                        x:Name="tabGroups"
+                        Header="Gruppen / Verteiler"
+                        Visibility="Collapsed">
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="420" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!--  Hilfe Link  -->
+                            <TextBlock
+                                x:Name="helpLinkGroups"
+                                Grid.Row="0"
+                                Grid.ColumnSpan="2"
+                                Margin="0,0,0,10"
+                                HorizontalAlignment="Right"
+                                Cursor="Hand"
+                                Foreground="#0067c0"
+                                Text="Hilfe zu Gruppen &amp; Verteilern"
+                                TextDecorations="Underline" />
+
+                            <!--  Linke Spalte - Verwaltung  -->
+                            <StackPanel
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Margin="0,0,10,0">
+
+                                <!--  Neue Gruppe erstellen  -->
+                                <GroupBox
+                                    Margin="0,0,0,10"
+                                    Background="#ffffff"
+                                    Header="Neue Gruppe erstellen">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Width="95"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Typ:" />
+                                            <ComboBox
+                                                x:Name="cmbGroupType"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,5">
+                                                <ComboBoxItem Content="Verteilergruppe" />
+                                                <ComboBoxItem Content="Sicherheitsgruppe" />
+                                                <ComboBoxItem Content="Microsoft 365-Gruppe" />
+                                                <ComboBoxItem Content="E-Mail-aktivierte Sicherheitsgruppe" />
+                                            </ComboBox>
+
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Width="95"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Name:" />
+                                            <TextBox
+                                                x:Name="txtGroupName"
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Grid.Column="0"
+                                                Width="95"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="E-Mail:" />
+                                            <TextBox
+                                                x:Name="txtGroupEmail"
+                                                Grid.Row="2"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="3"
+                                                Grid.Column="0"
+                                                Width="95"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Top"
+                                                Text="Mitglieder:" />
+                                            <TextBox
+                                                x:Name="txtGroupMembers"
+                                                Grid.Row="3"
+                                                Grid.Column="1"
+                                                Height="56"
+                                                Margin="0,5,0,5"
+                                                TextWrapping="Wrap"
+                                                ToolTip="Mehrere E-Mail-Adressen durch Semikolon (;) trennen"
+                                                VerticalScrollBarVisibility="Auto" />
+
+                                            <TextBlock
+                                                Grid.Row="4"
+                                                Grid.Column="0"
+                                                Width="95"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Top"
+                                                Text="Beschreibung:" />
+                                            <TextBox
+                                                x:Name="txtGroupDescription"
+                                                Grid.Row="4"
+                                                Grid.Column="1"
+                                                Height="56"
+                                                Margin="0,5,0,5"
+                                                TextWrapping="Wrap" />
+
+                                            <StackPanel
+                                                Grid.Row="5"
+                                                Grid.ColumnSpan="2"
+                                                Margin="0,10,0,0"
+                                                HorizontalAlignment="Center"
+                                                Orientation="Horizontal">
+                                                <Button
+                                                    x:Name="btnCreateGroup"
+                                                    Width="180"
+                                                    Height="30"
+                                                    Margin="0,0,10,0"
+                                                    Background="#D4EDDA"
+                                                    BorderBrush="#C3E6CB"
+                                                    Content="Gruppe erstellen"
+                                                    Foreground="#155724" />
+                                                <Button
+                                                    x:Name="btnDeleteGroup"
+                                                    Width="180"
+                                                    Height="30"
+                                                    Background="#F8D7DA"
+                                                    BorderBrush="#F5C6CB"
+                                                    Content="Gruppe löschen"
+                                                    Foreground="#721C24" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Gruppenmitglieder verwalten  -->
+                                <GroupBox
+                                    Margin="0,0,0,10"
+                                    Background="#ffffff"
+                                    Header="Gruppenmitglieder verwalten">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Width="95"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Gruppe:" />
+                                            <ComboBox
+                                                x:Name="cmbSelectExistingGroup"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                ToolTip="Wählen Sie eine bestehende Gruppe aus oder geben Sie einen Namen ein." />
+                                            <Button
+                                                x:Name="btnRefreshExistingGroups"
+                                                Grid.Row="0"
+                                                Grid.Column="2"
+                                                Width="45"
+                                                Height="35"
+                                                Margin="0,5,0,5"
+                                                VerticalAlignment="Center"
+                                                Background="#CCE5FF"
+                                                BorderBrush="#B3D7FF"
+                                                Content="🔄"
+                                                Foreground="#004085"
+                                                ToolTip="Gruppenliste aktualisieren" />
+
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Width="95"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Benutzer:" />
+                                            <TextBox
+                                                x:Name="txtGroupUser"
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Grid.ColumnSpan="2"
+                                                Height="30"
+                                                Margin="0,5,0,5" />
+
+                                            <StackPanel
+                                                Grid.Row="2"
+                                                Grid.ColumnSpan="3"
+                                                Margin="0,10,0,0"
+                                                HorizontalAlignment="Center"
+                                                Orientation="Horizontal">
+                                                <Button
+                                                    x:Name="btnAddUserToGroup"
+                                                    Width="180"
+                                                    Height="30"
+                                                    Margin="0,0,10,0"
+                                                    Background="#D4EDDA"
+                                                    BorderBrush="#C3E6CB"
+                                                    Content="Benutzer hinzufügen"
+                                                    Foreground="#155724" />
+                                                <Button
+                                                    x:Name="btnRemoveUserFromGroup"
+                                                    Width="180"
+                                                    Height="30"
+                                                    Background="#F8D7DA"
+                                                    BorderBrush="#F5C6CB"
+                                                    Content="Benutzer entfernen"
+                                                    Foreground="#721C24" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Gruppeneinstellungen  -->
+                                <GroupBox Background="#ffffff" Header="Gruppeneinstellungen">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <CheckBox
+                                                x:Name="chkHiddenFromGAL"
+                                                Grid.Row="0"
+                                                Margin="0,5"
+                                                Content="Aus GAL ausblenden" />
+                                            <CheckBox
+                                                x:Name="chkRequireSenderAuth"
+                                                Grid.Row="1"
+                                                Margin="0,5"
+                                                Content="Absender-Authentifizierung" />
+                                            <CheckBox
+                                                x:Name="chkAllowExternalSenders"
+                                                Grid.Row="2"
+                                                Margin="0,5"
+                                                Content="Externe Absender zulassen" />
+
+                                            <StackPanel
+                                                Grid.Row="3"
+                                                Margin="0,10,0,0"
+                                                HorizontalAlignment="Center"
+                                                Orientation="Horizontal">
+                                                <Button
+                                                    x:Name="btnUpdateGroupSettings"
+                                                    Width="370"
+                                                    Height="30"
+                                                    Background="#D1ECF1"
+                                                    BorderBrush="#BEE5EB"
+                                                    Content="Einstellungen aktualisieren"
+                                                    Foreground="#0C5460" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+                            </StackPanel>
+
+                            <!--  Rechte Spalte - Ausgaben  -->
+                            <GroupBox
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Background="#ffffff"
+                                Header="Aktuelle Gruppeninformationen / Mitglieder">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <DataGrid
+                                        x:Name="lstGroupMembers"
+                                        Grid.Row="0"
+                                        MinHeight="400"
+                                        Margin="8,8,8,0"
+                                        AutoGenerateColumns="False"
+                                        IsReadOnly="True">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn
+                                                Width="*"
+                                                Binding="{Binding DisplayName}"
+                                                Header="Name" />
+                                            <DataGridTextColumn
+                                                Width="*"
+                                                Binding="{Binding PrimarySmtpAddress}"
+                                                Header="E-Mail" />
+                                            <DataGridTextColumn
+                                                Width="0.7*"
+                                                Binding="{Binding RecipientType}"
+                                                Header="Typ" />
+                                            <DataGridTextColumn
+                                                Width="0.5*"
+                                                Binding="{Binding HiddenFromAddressListsEnabled}"
+                                                Header="Versteckt" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <Button
+                                        x:Name="btnExportGroupMembers"
+                                        Grid.Row="1"
+                                        Width="220"
+                                        Height="30"
+                                        Margin="0,8,8,8"
+                                        HorizontalAlignment="Right"
+                                        Background="#E8F4FD"
+                                        BorderBrush="#B8DAFF"
+                                        Content="Mitgliederliste exportieren (CSV)"
+                                        Foreground="#0056B3" />
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
+                    </TabItem>
+
+                    <!--  Hybrid Exchange-Konfiguration Tab  -->
+                    <TabItem
+                        x:Name="tab_HybridExchange"
+                        Header="Hybrid Exchange-Konfiguration"
+                        Visibility="Collapsed">
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="420" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!--  Hilfe Link  -->
+                            <TextBlock
+                                x:Name="helpLinkHybridExchange"
+                                Grid.Row="0"
+                                Grid.ColumnSpan="2"
+                                Margin="0,0,0,10"
+                                HorizontalAlignment="Right"
+                                Cursor="Hand"
+                                Foreground="#0067c0"
+                                Text="Hilfe zu Hybrid Exchange-Konfiguration"
+                                TextDecorations="Underline" />
+
+                            <!--  Linke Spalte - Verwaltung  -->
+                            <StackPanel
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Margin="0,0,10,0">
+
+                                <!--  Hybrid-Konfigurations-Assistent  -->
+                                <GroupBox
+                                    Margin="0,0,0,15"
+                                    Background="#ffffff"
+                                    Header="Hybrid-Konfigurations-Assistent (HCW)">
+                                    <StackPanel Margin="10">
+                                        <TextBlock
+                                            Margin="0,0,0,15"
+                                            Text="Führen Sie den Hybrid-Konfigurations-Assistenten aus, um Ihre On-Premises- und Exchange Online-Organisationen zu verbinden."
+                                            TextWrapping="Wrap" />
+                                        <Button
+                                            x:Name="btnRunHCW"
+                                            Width="370"
+                                            Height="30"
+                                            HorizontalAlignment="Center"
+                                            Background="#0078D7"
+                                            BorderBrush="#0067B8"
+                                            Content="Hybrid-Assistenten -&gt; starten / herunterladen"
+                                            Foreground="White" />
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Status-Überprüfung  -->
+                                <GroupBox
+                                    Margin="0,0,0,15"
+                                    Background="#ffffff"
+                                    Header="Status-Überprüfung">
+                                    <StackPanel Margin="10">
+                                        <TextBlock
+                                            Margin="0,0,0,15"
+                                            Text="Prüfen Sie den aktuellen Status Ihrer Hybrid-Konfiguration und Verbundvertrauensstellungen."
+                                            TextWrapping="Wrap" />
+                                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnGetHybridStatus"
+                                                Width="150"
+                                                Height="35"
+                                                Margin="0,0,10,0"
+                                                Background="#E7F3FF"
+                                                BorderBrush="#B8DAFF"
+                                                Content="Hybrid-Status prüfen"
+                                                Foreground="#0056B3" />
+                                            <Button
+                                                x:Name="btnGetFederationTrust"
+                                                Width="210"
+                                                Height="35"
+                                                Background="#E7F3FF"
+                                                BorderBrush="#B8DAFF"
+                                                Content="Vertrauensstellung prüfen"
+                                                Foreground="#0056B3" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Informationen  -->
+                                <GroupBox Background="#ffffff" Header="Wichtige Informationen">
+                                    <StackPanel Margin="10">
+                                        <TextBlock
+                                            Margin="0,0,0,5"
+                                            FontWeight="SemiBold"
+                                            Text="Voraussetzungen:" />
+                                        <TextBlock Margin="0,0,0,3" Text="• Exchange Server On-Premises" />
+                                        <TextBlock Margin="0,0,0,3" Text="• Exchange Online (Office 365)" />
+                                        <TextBlock Margin="0,0,0,10" Text="• Domänen-Verbund konfiguriert" />
+
+                                        <TextBlock
+                                            Margin="0,0,0,5"
+                                            FontWeight="SemiBold"
+                                            Text="Konfigurierte Features:" />
+                                        <TextBlock Margin="0,0,0,3" Text="• Frei/Gebucht-Informationen" />
+                                        <TextBlock Margin="0,0,0,3" Text="• Sichere E-Mail-Übertragung" />
+                                        <TextBlock Margin="0,0,0,3" Text="• Postfachverschiebungen" />
+                                    </StackPanel>
+                                </GroupBox>
+                            </StackPanel>
+
+                            <!--  Rechte Spalte - Ausgaben  -->
+                            <GroupBox
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Background="#ffffff"
+                                Header="Hybrid-Konfigurationsstatus">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <!--  Tab-Auswahl  -->
+                                    <TabControl
+                                        Grid.Row="0"
+                                        Grid.RowSpan="3"
+                                        Margin="8">
+                                        <TabItem Header="Hybrid-Status">
+                                            <Grid Margin="10">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="*" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <DataGrid
+                                                    x:Name="dgHybridStatus"
+                                                    Grid.Row="0"
+                                                    Margin="0,0,0,8"
+                                                    AutoGenerateColumns="True"
+                                                    IsReadOnly="True" />
+                                                <Button
+                                                    x:Name="btnExportHybridStatus"
+                                                    Grid.Row="1"
+                                                    Width="180"
+                                                    Height="30"
+                                                    HorizontalAlignment="Right"
+                                                    Background="#E8F4FD"
+                                                    BorderBrush="#B8DAFF"
+                                                    Content="Status exportieren (CSV)"
+                                                    Foreground="#0056B3" />
+                                            </Grid>
+                                        </TabItem>
+                                        <TabItem Header="Verbundvertrauensstellungen">
+                                            <Grid Margin="10">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="*" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <DataGrid
+                                                    x:Name="dgFederationTrust"
+                                                    Grid.Row="0"
+                                                    Margin="0,0,0,8"
+                                                    AutoGenerateColumns="True"
+                                                    IsReadOnly="True" />
+                                                <Button
+                                                    x:Name="btnExportFederationTrust"
+                                                    Grid.Row="1"
+                                                    Width="180"
+                                                    Height="30"
+                                                    HorizontalAlignment="Right"
+                                                    Background="#E8F4FD"
+                                                    BorderBrush="#B8DAFF"
+                                                    Content="Vertrauensstellungen exportieren (CSV)"
+                                                    Foreground="#0056B3" />
+                                            </Grid>
+                                        </TabItem>
+                                    </TabControl>
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
+                    </TabItem>
+
+                    <TabItem
+                        Name="tab_MultiForest"
+                        Header="Multi-Forest-Verwaltung"
+                        Visibility="Collapsed">
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="420" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!--  Hilfe Link  -->
+                            <TextBlock
+                                x:Name="helpLinkMultiForest"
+                                Grid.Row="0"
+                                Grid.ColumnSpan="2"
+                                Margin="0,0,0,10"
+                                HorizontalAlignment="Right"
+                                Cursor="Hand"
+                                Foreground="#0067c0"
+                                Text="Hilfe zu Multi-Forest-Verwaltung"
+                                TextDecorations="Underline" />
+
+                            <!--  Linke Spalte - Verwaltung  -->
+                            <StackPanel
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Margin="0,0,10,0">
+
+                                <!--  Forest-Auswahl  -->
+                                <GroupBox
+                                    Margin="0,0,0,10"
+                                    Background="#ffffff"
+                                    Header="Forest-Auswahl und Verbindung">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Width="120"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Verfügbare Forests:" />
+                                            <ComboBox
+                                                x:Name="cmbForests"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,5" />
+
+                                            <Button
+                                                x:Name="btnConnectForest"
+                                                Grid.Row="1"
+                                                Grid.ColumnSpan="2"
+                                                Width="350"
+                                                Height="30"
+                                                Margin="0,10,0,0"
+                                                HorizontalAlignment="Center"
+                                                Background="#D4EDDA"
+                                                BorderBrush="#C3E6CB"
+                                                Content="Mit Forest verbinden"
+                                                Foreground="#155724" />
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Cross-Forest Aktionen  -->
+                                <GroupBox
+                                    Margin="0,0,0,10"
+                                    Background="#ffffff"
+                                    Header="Cross-Forest Aktionen">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Width="120"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Objekttyp:" />
+                                            <ComboBox
+                                                x:Name="cmbObjectType"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,5">
+                                                <ComboBoxItem Content="Alle Objekte" />
+                                                <ComboBoxItem Content="Benutzer" />
+                                                <ComboBoxItem Content="Gruppen" />
+                                                <ComboBoxItem Content="Postfächer" />
+                                            </ComboBox>
+
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Width="120"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Suchfilter:" />
+                                            <TextBox
+                                                x:Name="txtForestFilter"
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,5" />
+
+                                            <StackPanel
+                                                Grid.Row="2"
+                                                Grid.ColumnSpan="2"
+                                                Margin="0,10,0,0"
+                                                HorizontalAlignment="Center"
+                                                Orientation="Horizontal">
+                                                <Button
+                                                    x:Name="btnSearchForestObjects"
+                                                    Width="170"
+                                                    Height="30"
+                                                    Margin="0,0,10,0"
+                                                    Background="#E7F3FF"
+                                                    BorderBrush="#B8DAFF"
+                                                    Content="Objekte suchen"
+                                                    Foreground="#0056B3" />
+                                                <Button
+                                                    x:Name="btnRefreshForestObjects"
+                                                    Width="170"
+                                                    Height="30"
+                                                    Background="#CCE5FF"
+                                                    BorderBrush="#B3D7FF"
+                                                    Content="Aktualisieren"
+                                                    Foreground="#004085" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Forest-Synchronisation  -->
+                                <GroupBox Background="#ffffff" Header="Forest-Synchronisation Optionen">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <CheckBox
+                                                x:Name="chkSyncUsers"
+                                                Grid.Row="1"
+                                                Margin="0,0,30,5"
+                                                Content="Benutzer synchronisieren" />
+
+                                            <CheckBox
+                                                x:Name="chkSyncGroups"
+                                                Grid.Row="1"
+                                                Margin="180,0,0,5"
+                                                Content="Gruppen synchronisieren" />
+
+                                            <StackPanel
+                                                Grid.Row="2"
+                                                Margin="0,15,0,0"
+                                                HorizontalAlignment="Center"
+                                                Orientation="Horizontal">
+                                                <Button
+                                                    x:Name="btnStartSync"
+                                                    Width="170"
+                                                    Height="30"
+                                                    Margin="0,0,10,0"
+                                                    Background="#D4EDDA"
+                                                    BorderBrush="#C3E6CB"
+                                                    Content="Synchronisation starten"
+                                                    Foreground="#155724" />
+                                                <Button
+                                                    x:Name="btnStopSync"
+                                                    Width="170"
+                                                    Height="30"
+                                                    Background="#F8D7DA"
+                                                    BorderBrush="#F5C6CB"
+                                                    Content="Synchronisation stoppen"
+                                                    Foreground="#721C24" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+                            </StackPanel>
+
+                            <!--  Rechte Spalte - Ausgaben  -->
+                            <GroupBox
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Background="#ffffff"
+                                Header="Cross-Forest Objekte">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <DataGrid
+                                        x:Name="dgCrossForestObjects"
+                                        Grid.Row="0"
+                                        Margin="8,8,8,0"
+                                        AutoGenerateColumns="False"
+                                        IsReadOnly="True">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn
+                                                Width="*"
+                                                Binding="{Binding DisplayName}"
+                                                Header="Anzeigename" />
+                                            <DataGridTextColumn
+                                                Width="150"
+                                                Binding="{Binding ObjectType}"
+                                                Header="Objekttyp" />
+                                            <DataGridTextColumn
+                                                Width="200"
+                                                Binding="{Binding Forest}"
+                                                Header="Forest" />
+                                            <DataGridTextColumn
+                                                Width="*"
+                                                Binding="{Binding Email}"
+                                                Header="E-Mail" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <Button
+                                        x:Name="btnExportForestObjects"
+                                        Grid.Row="1"
+                                        Width="180"
+                                        Height="30"
+                                        Margin="0,8,8,8"
+                                        HorizontalAlignment="Right"
+                                        Background="#E8F4FD"
+                                        BorderBrush="#B8DAFF"
+                                        Content="Objekte exportieren (CSV)"
+                                        Foreground="#0056B3" />
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
+                    </TabItem>
+                    <!--  Advanced Threat Protection Tab  -->
+                    <TabItem
+                        x:Name="tab_ATP"
+                        Header="Advanced Threat Protection"
+                        Visibility="Collapsed">
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <!--  Hilfe Link  -->
+                            <TextBlock
+                                x:Name="helpLinkATP"
+                                Grid.Row="0"
+                                Margin="0,0,0,10"
+                                HorizontalAlignment="Right"
+                                Cursor="Hand"
+                                Foreground="#0067c0"
+                                Text="Hilfe zu Advanced Threat Protection"
+                                TextDecorations="Underline" />
+
+                            <TabControl Grid.Row="1">
+                                <!--  Anti-Phishing Tab  -->
+                                <TabItem Header="Anti-Phishing">
+                                    <Grid Margin="10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="420" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!--  Linke Spalte - Verwaltung  -->
+                                        <GroupBox
+                                            Grid.Row="0"
+                                            Grid.RowSpan="2"
+                                            Grid.Column="0"
+                                            Margin="0,0,10,0"
+                                            Background="#ffffff"
+                                            Header="Anti-Phishing Richtlinien verwalten">
+                                            <StackPanel Margin="10">
+                                                <TextBlock
+                                                    Margin="0,0,0,15"
+                                                    FontSize="12"
+                                                    Foreground="#666666"
+                                                    Text="Verwalten Sie Anti-Phishing-Richtlinien zum Schutz vor Phishing-Angriffen."
+                                                    TextWrapping="Wrap" />
+
+                                                <StackPanel
+                                                    Margin="0,0,0,15"
+                                                    HorizontalAlignment="Center"
+                                                    Orientation="Horizontal">
+                                                    <Button
+                                                        x:Name="btnGetAntiPhishing"
+                                                        Width="170"
+                                                        Height="30"
+                                                        Margin="0,0,10,0"
+                                                        Background="#E7F3FF"
+                                                        BorderBrush="#B8DAFF"
+                                                        Content="Richtlinien laden"
+                                                        Foreground="#0056B3" />
+                                                    <Button
+                                                        x:Name="btnNewAntiPhishing"
+                                                        Width="170"
+                                                        Height="30"
+                                                        Background="#D4EDDA"
+                                                        BorderBrush="#C3E6CB"
+                                                        Content="Neue Richtlinie"
+                                                        Foreground="#155724" />
+                                                </StackPanel>
+
+                                                <Button
+                                                    x:Name="btnSetAntiPhishing"
+                                                    Width="350"
+                                                    Height="30"
+                                                    HorizontalAlignment="Center"
+                                                    Background="#FFF3CD"
+                                                    BorderBrush="#FFEAA7"
+                                                    Content="Ausgewählte Richtlinie bearbeiten"
+                                                    Foreground="#856404" />
+                                            </StackPanel>
+                                        </GroupBox>
+
+                                        <!--  Rechte Spalte - Ausgaben  -->
+                                        <GroupBox
+                                            Grid.Row="0"
+                                            Grid.RowSpan="2"
+                                            Grid.Column="1"
+                                            Background="#ffffff"
+                                            Header="Aktuelle Anti-Phishing Richtlinien">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="*" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <DataGrid
+                                                    x:Name="dgAntiPhishingPolicies"
+                                                    Grid.Row="0"
+                                                    Margin="8,8,8,0"
+                                                    AutoGenerateColumns="False"
+                                                    IsReadOnly="True">
+                                                    <DataGrid.Columns>
+                                                        <DataGridTextColumn
+                                                            Width="*"
+                                                            Binding="{Binding Name}"
+                                                            Header="Name" />
+                                                        <DataGridCheckBoxColumn
+                                                            Width="100"
+                                                            Binding="{Binding Enabled}"
+                                                            Header="Aktiviert" />
+                                                        <DataGridTextColumn
+                                                            Width="100"
+                                                            Binding="{Binding Priority}"
+                                                            Header="Priorität" />
+                                                    </DataGrid.Columns>
+                                                </DataGrid>
+                                                <Button
+                                                    x:Name="btnExportAntiPhishing"
+                                                    Grid.Row="1"
+                                                    Width="180"
+                                                    Height="30"
+                                                    Margin="0,8,8,8"
+                                                    HorizontalAlignment="Right"
+                                                    Background="#E8F4FD"
+                                                    BorderBrush="#B8DAFF"
+                                                    Content="Richtlinien exportieren (CSV)"
+                                                    Foreground="#0056B3" />
+                                            </Grid>
+                                        </GroupBox>
+                                    </Grid>
+                                </TabItem>
+
+                                <!--  Safe Attachments Tab  -->
+                                <TabItem Header="Safe Attachments">
+                                    <Grid Margin="10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="400" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!--  Linke Spalte - Verwaltung  -->
+                                        <GroupBox
+                                            Grid.Row="0"
+                                            Grid.RowSpan="2"
+                                            Grid.Column="0"
+                                            Margin="0,0,10,0"
+                                            Background="#ffffff"
+                                            Header="Safe Attachments Richtlinien verwalten">
+                                            <StackPanel Margin="10">
+                                                <TextBlock
+                                                    Margin="0,0,0,15"
+                                                    FontSize="12"
+                                                    Foreground="#666666"
+                                                    Text="Verwalten Sie Richtlinien für sichere Anhänge zum Schutz vor schädlichen Dateien."
+                                                    TextWrapping="Wrap" />
+
+                                                <StackPanel
+                                                    Margin="0,0,0,15"
+                                                    HorizontalAlignment="Center"
+                                                    Orientation="Horizontal">
+                                                    <Button
+                                                        x:Name="btnGetSafeAttachment"
+                                                        Width="170"
+                                                        Height="30"
+                                                        Margin="0,0,10,0"
+                                                        Background="#E7F3FF"
+                                                        BorderBrush="#B8DAFF"
+                                                        Content="Richtlinien laden"
+                                                        Foreground="#0056B3" />
+                                                    <Button
+                                                        x:Name="btnNewSafeAttachment"
+                                                        Width="170"
+                                                        Height="30"
+                                                        Background="#D4EDDA"
+                                                        BorderBrush="#C3E6CB"
+                                                        Content="Neue Richtlinie"
+                                                        Foreground="#155724" />
+                                                </StackPanel>
+
+                                                <Button
+                                                    x:Name="btnSetSafeAttachment"
+                                                    Width="350"
+                                                    Height="30"
+                                                    HorizontalAlignment="Center"
+                                                    Background="#FFF3CD"
+                                                    BorderBrush="#FFEAA7"
+                                                    Content="Ausgewählte Richtlinie bearbeiten"
+                                                    Foreground="#856404" />
+                                            </StackPanel>
+                                        </GroupBox>
+
+                                        <!--  Rechte Spalte - Ausgaben  -->
+                                        <GroupBox
+                                            Grid.Row="0"
+                                            Grid.RowSpan="2"
+                                            Grid.Column="1"
+                                            Background="#ffffff"
+                                            Header="Aktuelle Safe Attachments Richtlinien">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="*" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <DataGrid
+                                                    x:Name="dgSafeAttachmentPolicies"
+                                                    Grid.Row="0"
+                                                    Margin="8,8,8,0"
+                                                    AutoGenerateColumns="False"
+                                                    IsReadOnly="True">
+                                                    <DataGrid.Columns>
+                                                        <DataGridTextColumn
+                                                            Width="*"
+                                                            Binding="{Binding Name}"
+                                                            Header="Name" />
+                                                        <DataGridCheckBoxColumn
+                                                            Width="100"
+                                                            Binding="{Binding Enabled}"
+                                                            Header="Aktiviert" />
+                                                        <DataGridTextColumn
+                                                            Width="150"
+                                                            Binding="{Binding Action}"
+                                                            Header="Aktion" />
+                                                    </DataGrid.Columns>
+                                                </DataGrid>
+                                                <Button
+                                                    x:Name="btnExportSafeAttachment"
+                                                    Grid.Row="1"
+                                                    Width="180"
+                                                    Height="30"
+                                                    Margin="0,8,8,8"
+                                                    HorizontalAlignment="Right"
+                                                    Background="#E8F4FD"
+                                                    BorderBrush="#B8DAFF"
+                                                    Content="Richtlinien exportieren (CSV)"
+                                                    Foreground="#0056B3" />
+                                            </Grid>
+                                        </GroupBox>
+                                    </Grid>
+                                </TabItem>
+
+                                <!--  Safe Links Tab  -->
+                                <TabItem Header="Safe Links">
+                                    <Grid Margin="10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="400" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!--  Linke Spalte - Verwaltung  -->
+                                        <GroupBox
+                                            Grid.Row="0"
+                                            Grid.RowSpan="2"
+                                            Grid.Column="0"
+                                            Margin="0,0,10,0"
+                                            Background="#ffffff"
+                                            Header="Safe Links Richtlinien verwalten">
+                                            <StackPanel Margin="10">
+                                                <TextBlock
+                                                    Margin="0,0,0,15"
+                                                    FontSize="12"
+                                                    Foreground="#666666"
+                                                    Text="Verwalten Sie Richtlinien für sichere Links zum Schutz vor schädlichen URLs."
+                                                    TextWrapping="Wrap" />
+
+                                                <StackPanel
+                                                    Margin="0,0,0,15"
+                                                    HorizontalAlignment="Center"
+                                                    Orientation="Horizontal">
+                                                    <Button
+                                                        x:Name="btnGetSafeLinks"
+                                                        Width="170"
+                                                        Height="30"
+                                                        Margin="0,0,10,0"
+                                                        Background="#E7F3FF"
+                                                        BorderBrush="#B8DAFF"
+                                                        Content="Richtlinien laden"
+                                                        Foreground="#0056B3" />
+                                                    <Button
+                                                        x:Name="btnNewSafeLinks"
+                                                        Width="170"
+                                                        Height="30"
+                                                        Background="#D4EDDA"
+                                                        BorderBrush="#C3E6CB"
+                                                        Content="Neue Richtlinie"
+                                                        Foreground="#155724" />
+                                                </StackPanel>
+
+                                                <Button
+                                                    x:Name="btnSetSafeLinks"
+                                                    Width="350"
+                                                    Height="30"
+                                                    HorizontalAlignment="Center"
+                                                    Background="#FFF3CD"
+                                                    BorderBrush="#FFEAA7"
+                                                    Content="Ausgewählte Richtlinie bearbeiten"
+                                                    Foreground="#856404" />
+                                            </StackPanel>
+                                        </GroupBox>
+
+                                        <!--  Rechte Spalte - Ausgaben  -->
+                                        <GroupBox
+                                            Grid.Row="0"
+                                            Grid.RowSpan="2"
+                                            Grid.Column="1"
+                                            Background="#ffffff"
+                                            Header="Aktuelle Safe Links Richtlinien">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="*" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <DataGrid
+                                                    x:Name="dgSafeLinksPolicies"
+                                                    Grid.Row="0"
+                                                    Margin="8,8,8,0"
+                                                    AutoGenerateColumns="False"
+                                                    IsReadOnly="True">
+                                                    <DataGrid.Columns>
+                                                        <DataGridTextColumn
+                                                            Width="*"
+                                                            Binding="{Binding Name}"
+                                                            Header="Name" />
+                                                        <DataGridCheckBoxColumn
+                                                            Width="100"
+                                                            Binding="{Binding Enabled}"
+                                                            Header="Aktiviert" />
+                                                    </DataGrid.Columns>
+                                                </DataGrid>
+                                                <Button
+                                                    x:Name="btnExportSafeLinks"
+                                                    Grid.Row="1"
+                                                    Width="180"
+                                                    Height="30"
+                                                    Margin="0,8,8,8"
+                                                    HorizontalAlignment="Right"
+                                                    Background="#E8F4FD"
+                                                    BorderBrush="#B8DAFF"
+                                                    Content="Richtlinien exportieren (CSV)"
+                                                    Foreground="#0056B3" />
+                                            </Grid>
+                                        </GroupBox>
+                                    </Grid>
+                                </TabItem>
+
+                                <!--  Quarantäne Tab  -->
+                                <TabItem Header="Quarantäne">
+                                    <Grid Margin="10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="400" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!--  Linke Spalte - Verwaltung  -->
+                                        <GroupBox
+                                            Grid.Row="0"
+                                            Grid.RowSpan="2"
+                                            Grid.Column="0"
+                                            Margin="0,0,10,0"
+                                            Background="#ffffff"
+                                            Header="Quarantäne-Nachrichten verwalten">
+                                            <StackPanel Margin="10">
+                                                <TextBlock
+                                                    Margin="0,0,0,15"
+                                                    FontSize="12"
+                                                    Foreground="#666666"
+                                                    Text="Verwalten Sie Nachrichten, die in der Quarantäne gehalten werden."
+                                                    TextWrapping="Wrap" />
+
+                                                <Button
+                                                    x:Name="btnGetQuarantineMessages"
+                                                    Width="350"
+                                                    Height="30"
+                                                    Margin="0,0,0,15"
+                                                    HorizontalAlignment="Center"
+                                                    Background="#E7F3FF"
+                                                    BorderBrush="#B8DAFF"
+                                                    Content="Quarantäne-Nachrichten abrufen"
+                                                    Foreground="#0056B3" />
+
+                                                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                                    <Button
+                                                        x:Name="btnReleaseQuarantine"
+                                                        Width="170"
+                                                        Height="30"
+                                                        Margin="0,0,10,0"
+                                                        Background="#D4EDDA"
+                                                        BorderBrush="#C3E6CB"
+                                                        Content="Ausgewählte freigeben"
+                                                        Foreground="#155724" />
+                                                    <Button
+                                                        x:Name="btnDeleteQuarantine"
+                                                        Width="170"
+                                                        Height="30"
+                                                        Background="#F8D7DA"
+                                                        BorderBrush="#F5C6CB"
+                                                        Content="Ausgewählte löschen"
+                                                        Foreground="#721C24" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </GroupBox>
+
+                                        <!--  Rechte Spalte - Ausgaben  -->
+                                        <GroupBox
+                                            Grid.Row="0"
+                                            Grid.RowSpan="2"
+                                            Grid.Column="1"
+                                            Background="#ffffff"
+                                            Header="Quarantäne-Nachrichten">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="*" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <DataGrid
+                                                    x:Name="dgQuarantineMessages"
+                                                    Grid.Row="0"
+                                                    Margin="8,8,8,0"
+                                                    AutoGenerateColumns="True"
+                                                    IsReadOnly="True" />
+                                                <Button
+                                                    x:Name="btnExportQuarantine"
+                                                    Grid.Row="1"
+                                                    Width="180"
+                                                    Height="30"
+                                                    Margin="0,8,8,8"
+                                                    HorizontalAlignment="Right"
+                                                    Background="#E8F4FD"
+                                                    BorderBrush="#B8DAFF"
+                                                    Content="Quarantäne exportieren (CSV)"
+                                                    Foreground="#0056B3" />
+                                            </Grid>
+                                        </GroupBox>
+                                    </Grid>
+                                </TabItem>
+                            </TabControl>
+                        </Grid>
+                    </TabItem>
+                    <!--  Data Loss Prevention (DLP) Tab  -->
+                    <TabItem
+                        x:Name="tab_DLP"
+                        Header="Data Loss Prevention (DLP)"
+                        Visibility="Collapsed">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Label
+                                Margin="5"
+                                Content="Data Loss Prevention (DLP)"
+                                FontSize="16"
+                                FontWeight="Bold" />
+                            <Grid Grid.Row="1" Margin="5">
+                                <!--  Inhalt für DLP hier einfügen  -->
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Text="Hier werden die Tools für die Verwaltung von Data Loss Prevention (DLP) Regeln zur Verfügung gestellt." />
+                            </Grid>
+                        </Grid>
+                    </TabItem>
+                    <!--  eDiscovery & Legal Hold Tab  -->
+                    <TabItem
+                        Name="tab_eDiscovery"
+                        Header="eDiscovery &amp; Legal Hold"
+                        Visibility="Collapsed">
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock
+                                Margin="0,0,0,15"
+                                FontSize="18"
+                                FontWeight="SemiBold"
+                                Text="eDiscovery &amp; Legal Hold Management" />
+
+                            <TabControl Grid.Row="1">
+                                <!--  eDiscovery Cases  -->
+                                <TabItem Header="eDiscovery-Fälle">
+                                    <Grid Margin="10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <StackPanel Margin="0,0,0,10" Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnGeteDiscoveryCases"
+                                                Width="150"
+                                                Margin="0,0,10,0"
+                                                Content="Fälle laden" />
+                                            <Button
+                                                x:Name="btnNeweDiscoveryCase"
+                                                Width="150"
+                                                Content="Neuer Fall" />
+                                        </StackPanel>
+                                        <DataGrid
+                                            x:Name="dgeDiscoveryCases"
+                                            Grid.Row="1"
+                                            Margin="0,0,0,10"
+                                            AutoGenerateColumns="False"
+                                            IsReadOnly="True">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn
+                                                    Width="*"
+                                                    Binding="{Binding Name}"
+                                                    Header="Fallname" />
+                                                <DataGridTextColumn
+                                                    Width="200"
+                                                    Binding="{Binding CreatedBy}"
+                                                    Header="Erstellt von" />
+                                                <DataGridTextColumn
+                                                    Width="120"
+                                                    Binding="{Binding Status}"
+                                                    Header="Status" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                        <GroupBox Grid.Row="2" Header="Details zum ausgewählten Fall">
+                                            <Grid Margin="5">
+                                                <TextBlock
+                                                    x:Name="txtSelectedCaseDetails"
+                                                    Text="Bitte wählen Sie einen Fall aus, um Details anzuzeigen."
+                                                    TextWrapping="Wrap" />
+                                            </Grid>
+                                        </GroupBox>
+                                    </Grid>
+                                </TabItem>
+                                <!--  Legal Hold  -->
+                                <TabItem Header="Legal Hold">
+                                    <Grid Margin="10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+                                        <TextBlock
+                                            Grid.Row="0"
+                                            Margin="0,0,0,10"
+                                            FontWeight="SemiBold"
+                                            Text="Postfächer unter Legal Hold" />
+                                        <StackPanel
+                                            Grid.Row="1"
+                                            Margin="0,0,0,10"
+                                            Orientation="Horizontal">
+                                            <TextBox
+                                                x:Name="txtSearchLegalHoldMailbox"
+                                                Width="250"
+                                                Margin="0,0,10,0" />
+                                            <Button
+                                                x:Name="btnSearchLegalHoldMailbox"
+                                                Width="100"
+                                                Margin="0,0,10,0"
+                                                Content="Suchen" />
+                                            <Button
+                                                x:Name="btnAddLegalHold"
+                                                Width="150"
+                                                Margin="0,0,10,0"
+                                                Content="Hold hinzufügen" />
+                                            <Button
+                                                x:Name="btnRemoveLegalHold"
+                                                Width="150"
+                                                Content="Hold entfernen" />
+                                        </StackPanel>
+                                        <DataGrid
+                                            x:Name="dgLegalHoldMailboxes"
+                                            Grid.Row="2"
+                                            AutoGenerateColumns="False"
+                                            IsReadOnly="True">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn
+                                                    Width="*"
+                                                    Binding="{Binding DisplayName}"
+                                                    Header="Anzeigename" />
+                                                <DataGridTextColumn
+                                                    Width="*"
+                                                    Binding="{Binding UserPrincipalName}"
+                                                    Header="Benutzerprinzipalname" />
+                                                <DataGridCheckBoxColumn
+                                                    Width="150"
+                                                    Binding="{Binding LitigationHoldEnabled}"
+                                                    Header="Legal Hold aktiv" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </Grid>
+                                </TabItem>
+                            </TabControl>
+                        </Grid>
+                    </TabItem>
+                    <!--  Mobile Device Management Tab  -->
+                    <TabItem
+                        Name="tab_MDM"
+                        Header="Mobile Device Management"
+                        Visibility="Collapsed">
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock
+                                Margin="0,0,0,15"
+                                FontSize="18"
+                                FontWeight="SemiBold"
+                                Text="Mobile Device Management (ActiveSync)" />
+
+                            <TabControl Grid.Row="1">
+                                <!--  ActiveSync Policies  -->
+                                <TabItem Header="ActiveSync-Richtlinien">
+                                    <Grid Margin="10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <StackPanel Margin="0,0,0,10" Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnGetMobileDevicePolicies"
+                                                Width="150"
+                                                Margin="0,0,10,0"
+                                                Content="Richtlinien laden" />
+                                            <Button
+                                                x:Name="btnNewMobileDevicePolicy"
+                                                Width="150"
+                                                Margin="0,0,10,0"
+                                                Content="Neue Richtlinie" />
+                                            <Button
+                                                x:Name="btnRemoveMobileDevicePolicy"
+                                                Width="150"
+                                                Content="Richtlinie entfernen" />
+                                        </StackPanel>
+                                        <DataGrid
+                                            x:Name="dgMobileDevicePolicies"
+                                            Grid.Row="1"
+                                            Margin="0,0,0,10"
+                                            AutoGenerateColumns="False"
+                                            IsReadOnly="True">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn
+                                                    Width="*"
+                                                    Binding="{Binding Name}"
+                                                    Header="Name" />
+                                                <DataGridCheckBoxColumn
+                                                    Width="100"
+                                                    Binding="{Binding IsDefault}"
+                                                    Header="Standard" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                        <GroupBox Grid.Row="2" Header="Details zur ausgewählten Richtlinie">
+                                            <ScrollViewer MaxHeight="250" VerticalScrollBarVisibility="Auto">
+                                                <TextBlock
+                                                    x:Name="txtMobilePolicyDetails"
+                                                    Margin="5"
+                                                    Text="Bitte wählen Sie eine Richtlinie aus, um Details anzuzeigen."
+                                                    TextWrapping="Wrap" />
+                                            </ScrollViewer>
+                                        </GroupBox>
+                                    </Grid>
+                                </TabItem>
+                                <!--  Quarantined Devices  -->
+                                <TabItem Header="Gequarantänte Geräte">
+                                    <Grid Margin="10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+                                        <StackPanel Margin="0,0,0,10" Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnGetQuarantinedDevices"
+                                                Width="150"
+                                                Margin="0,0,10,0"
+                                                Content="Geräte laden" />
+                                            <Button
+                                                x:Name="btnAllowDevice"
+                                                Width="150"
+                                                Margin="0,0,10,0"
+                                                Content="Gerät zulassen" />
+                                            <Button
+                                                x:Name="btnBlockDevice"
+                                                Width="150"
+                                                Content="Gerät blockieren" />
+                                        </StackPanel>
+                                        <DataGrid
+                                            x:Name="dgQuarantinedDevices"
+                                            Grid.Row="1"
+                                            AutoGenerateColumns="False"
+                                            IsReadOnly="True">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn
+                                                    Width="*"
+                                                    Binding="{Binding DeviceId}"
+                                                    Header="Geräte-ID" />
+                                                <DataGridTextColumn
+                                                    Width="200"
+                                                    Binding="{Binding User}"
+                                                    Header="Benutzer" />
+                                                <DataGridTextColumn
+                                                    Width="150"
+                                                    Binding="{Binding DeviceType}"
+                                                    Header="Gerätetyp" />
+                                                <DataGridTextColumn
+                                                    Width="120"
+                                                    Binding="{Binding Status}"
+                                                    Header="Status" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </Grid>
+                                </TabItem>
+                            </TabControl>
+                        </Grid>
+                    </TabItem>
+
+                    <!--  Cross-Premises Mail Routing Tab  -->
+                    <TabItem
+                        Name="tab_MailRouting"
+                        Header="Cross-Premises Mail Routing"
+                        Visibility="Collapsed">
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock
+                                Margin="0,0,0,15"
+                                FontSize="18"
+                                FontWeight="SemiBold"
+                                Text="Standortübergreifendes Mail-Routing" />
+
+                            <TabControl Grid.Row="1">
+                                <TabItem Header="Connectors">
+                                    <Grid Margin="10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+                                        <StackPanel Margin="0,0,0,10" Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnGetConnectors"
+                                                Width="150"
+                                                Margin="0,0,10,0"
+                                                Content="Connectors laden" />
+                                            <Button
+                                                x:Name="btnAddConnector"
+                                                Width="220"
+                                                Margin="30,0,10,0"
+                                                Content="Connector anlegen" />
+                                            <Button
+                                                x:Name="btnSetConnectorStatus"
+                                                Width="220"
+                                                Content="Connector aktivieren/deaktivieren" />
+                                        </StackPanel>
+                                        <DataGrid
+                                            x:Name="dgConnectors"
+                                            Grid.Row="1"
+                                            AutoGenerateColumns="False"
+                                            IsReadOnly="True">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn
+                                                    Width="*"
+                                                    Binding="{Binding Name}"
+                                                    Header="Name" />
+                                                <DataGridTextColumn
+                                                    Width="120"
+                                                    Binding="{Binding ConnectorType}"
+                                                    Header="Typ" />
+                                                <DataGridCheckBoxColumn
+                                                    Width="100"
+                                                    Binding="{Binding Enabled}"
+                                                    Header="Aktiviert" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </Grid>
+                                </TabItem>
+                                <TabItem Header="Akzeptierte Domänen">
+                                    <Grid Margin="10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+                                        <Button
+                                            x:Name="btnGetAcceptedDomains"
+                                            Width="150"
+                                            Margin="0,0,0,10"
+                                            HorizontalAlignment="Left"
+                                            Content="Domänen laden" />
+                                        <DataGrid
+                                            x:Name="dgAcceptedDomains"
+                                            Grid.Row="1"
+                                            AutoGenerateColumns="False"
+                                            IsReadOnly="True">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn
+                                                    Width="*"
+                                                    Binding="{Binding DomainName}"
+                                                    Header="Domänenname" />
+                                                <DataGridTextColumn
+                                                    Width="150"
+                                                    Binding="{Binding DomainType}"
+                                                    Header="Domänentyp" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </Grid>
+                                </TabItem>
+                                <TabItem Header="Remote-Domänen">
+                                    <Grid Margin="10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+                                        <Button
+                                            x:Name="btnGetRemoteDomains"
+                                            Width="150"
+                                            Margin="0,0,0,10"
+                                            HorizontalAlignment="Left"
+                                            Content="Domänen laden" />
+                                        <DataGrid
+                                            x:Name="dgRemoteDomains"
+                                            Grid.Row="1"
+                                            AutoGenerateColumns="False"
+                                            IsReadOnly="True">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn
+                                                    Width="*"
+                                                    Binding="{Binding DomainName}"
+                                                    Header="Domänenname" />
+                                                <DataGridCheckBoxColumn
+                                                    Width="150"
+                                                    Binding="{Binding AutoForwardEnabled}"
+                                                    Header="Auto-Weiterleitung" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </Grid>
+                                </TabItem>
+                            </TabControl>
+                        </Grid>
+                    </TabItem>
+                    <!--  Exchange Health Check Tab  -->
+                    <TabItem
+                        Name="tab_HealthCheck"
+                        Header="Exchange Health Check"
+                        Visibility="Collapsed">
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!--  Ausgaben  -->
+                            <GroupBox
+                                Grid.Row="0"
+                                Header="Prüfergebnisse">
+                                <ListView
+                                    x:Name="lvHealthCheckResults"
+                                    Margin="10"
+                                    Height="550">
+                                    <ListView.View>
+                                        <GridView>
+                                            <GridViewColumn
+                                                Width="200"
+                                                DisplayMemberBinding="{Binding CheckName}"
+                                                Header="Prüfung" />
+                                            <GridViewColumn Width="100" Header="Status">
+                                                <GridViewColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock FontWeight="Bold" Text="{Binding Status}">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Status}" Value="OK">
+                                                                            <Setter Property="Foreground" Value="Green" />
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Status}" Value="Fehler">
+                                                                            <Setter Property="Foreground" Value="Red" />
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Status}" Value="Warnung">
+                                                                            <Setter Property="Foreground" Value="Orange" />
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                    </DataTemplate>
+                                                </GridViewColumn.CellTemplate>
+                                            </GridViewColumn>
+                                            <GridViewColumn
+                                                Width="400"
+                                                DisplayMemberBinding="{Binding Details}"
+                                                Header="Details" />
+                                        </GridView>
+                                    </ListView.View>
+                                </ListView>
+                            </GroupBox>
+
+                            <!--  Progress Bar  -->
+                            <ProgressBar
+                                x:Name="pbHealthCheck"
+                                Grid.Row="1"
+                                Height="10"
+                                Margin="0,0,0,10"
+                                IsIndeterminate="False" />
+
+                            <!--  Dienst- & Konnektivitätsprüfung  -->
+                            <GroupBox 
+                                Grid.Row="2"
+                                Header="Dienst- &amp; Konnektivitätsprüfung"
+                                Margin="0,10,0,0">
+                                <StackPanel Margin="10">
+                                    <TextBlock
+                                        Margin="0,0,0,10"
+                                        Text="Führt eine Grundlegende Prüfung der Exchange Online Dienste und Konnektivität durch."
+                                        TextWrapping="Wrap" />
+
+                                    <Button
+                                        x:Name="btnRunHealthCheck"
+                                        Width="200"
+                                        HorizontalAlignment="Left"
+                                        Background="#4CAF50"
+                                        BorderBrush="#4CAF50"
+                                        Foreground="White"
+                                        Content="Health Check durchführen" />
+                                </StackPanel>
+                            </GroupBox>
+                        </Grid>
+                    </TabItem>
+
+                    <!--  Shared Mailbox Tab  -->
+                    <TabItem
+                        x:Name="tabSharedMailbox"
+                        Header="Shared Mailboxes"
+                        Visibility="Collapsed">
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="420" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!--  Hilfe Link  -->
+                            <TextBlock
+                                x:Name="helpLinkShared"
+                                Grid.Row="0"
+                                Grid.ColumnSpan="2"
+                                Margin="0,0,0,10"
+                                HorizontalAlignment="Right"
+                                Cursor="Hand"
+                                Foreground="#0067c0"
+                                Text="Hilfe zu Shared Mailboxes"
+                                TextDecorations="Underline" />
+
+                            <!--  Linke Spalte - Verwaltung  -->
+                            <StackPanel
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Margin="0,0,10,0">
+
+                                <!--  Neue Shared Mailbox erstellen & verwalten  -->
+                                <GroupBox
+                                    Margin="0,0,0,10"
+                                    Background="#ffffff"
+                                    Header="Shared Mailbox erstellen &amp; verwalten">
+                                    <Grid Margin="10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock
+                                            Grid.Row="0"
+                                            Grid.Column="0"
+                                            Width="105"
+                                            Margin="0,2,10,2"
+                                            VerticalAlignment="Center"
+                                            Text="Name:" />
+                                        <TextBox
+                                            x:Name="txtSharedMailboxName"
+                                            Grid.Row="0"
+                                            Grid.Column="1"
+                                            Grid.ColumnSpan="2"
+                                            Height="28"
+                                            Margin="0,2" />
+
+                                        <TextBlock
+                                            Grid.Row="1"
+                                            Grid.Column="0"
+                                            Margin="0,2,10,2"
+                                            VerticalAlignment="Center"
+                                            Text="E-Mail-Adresse:" />
+                                        <TextBox
+                                            x:Name="txtSharedMailboxEmail"
+                                            Grid.Row="1"
+                                            Grid.Column="1"
+                                            Grid.ColumnSpan="2"
+                                            Height="28"
+                                            Margin="0,2" />
+
+                                        <TextBlock
+                                            Grid.Row="2"
+                                            Grid.Column="0"
+                                            Margin="0,2,10,2"
+                                            VerticalAlignment="Center"
+                                            Text="SMTP-Domain:" />
+                                        <ComboBox
+                                            x:Name="cmbSharedMailboxDomain"
+                                            Grid.Row="2"
+                                            Grid.Column="1"
+                                            Grid.ColumnSpan="2"
+                                            Height="28"
+                                            Margin="0,2" />
+
+                                        <StackPanel
+                                            Grid.Row="3"
+                                            Grid.ColumnSpan="3"
+                                            Margin="0,8,0,0"
+                                            HorizontalAlignment="Center"
+                                            Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnCreateSharedMailbox"
+                                                Width="190"
+                                                Height="28"
+                                                Margin="0,0,5,0"
+                                                Background="#D4EDDA"
+                                                BorderBrush="#C3E6CB"
+                                                Content="Shared Mailbox erstellen"
+                                                Foreground="#155724" />
+                                            <Button
+                                                x:Name="btnConvertToShared"
+                                                Width="190"
+                                                Height="28"
+                                                Margin="5,0,0,0"
+                                                Background="#CCE5FF"
+                                                BorderBrush="#B3D7FF"
+                                                Content="In Shared umwandeln"
+                                                Foreground="#004085"
+                                                ToolTip="Vorhandenes Benutzerpostfach in Shared Mailbox konvertieren" />
+                                        </StackPanel>
+
+                                        <Separator Grid.Row="4" Grid.ColumnSpan="3" Margin="0,15,0,10" />
+
+                                        <TextBlock
+                                            Grid.Row="5"
+                                            Grid.Column="0"
+                                            Margin="0,2,10,2"
+                                            VerticalAlignment="Center"
+                                            Text="Shared Mailbox:" />
+                                        <ComboBox
+                                            x:Name="cmbSharedMailboxSelect"
+                                            Grid.Row="5"
+                                            Grid.Column="1"
+                                            Height="28"
+                                            Margin="0,2,5,2"
+                                            IsEditable="True"
+                                            ToolTip="Wählen Sie eine Mailbox aus oder geben Sie den Namen ein." />
+                                        <Button
+                                            x:Name="btnShowSharedMailboxes"
+                                            Grid.Row="5"
+                                            Grid.Column="2"
+                                            Width="30"
+                                            Height="30"
+                                            Margin="0,2,0,2"
+                                            Background="#E7F3FF"
+                                            BorderBrush="#B8DAFF"
+                                            Content="🔄"
+                                            Foreground="#0056B3"
+                                            ToolTip="Liste der Shared Mailboxes aktualisieren" />
+                                    </Grid>
+                                </GroupBox>
+
+                                <!--  Berechtigungen verwalten  -->
+                                <GroupBox
+                                    Margin="0,0,0,10"
+                                    Background="#ffffff"
+                                    Header="Berechtigungen &amp; Sichtbarkeit">
+                                    <Grid Margin="10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock
+                                            Grid.Row="0"
+                                            Grid.Column="0"
+                                            Width="105"
+                                            Margin="0,2,10,2"
+                                            VerticalAlignment="Center"
+                                            Text="Benutzer:" />
+                                        <TextBox
+                                            x:Name="txtSharedMailboxPermUser"
+                                            Grid.Row="0"
+                                            Grid.Column="1"
+                                            Height="28"
+                                            Margin="0,2" />
+
+                                        <TextBlock
+                                            Grid.Row="1"
+                                            Grid.Column="0"
+                                            Margin="0,2,10,2"
+                                            VerticalAlignment="Center"
+                                            Text="Berechtigungstyp:" />
+                                        <ComboBox
+                                            x:Name="cmbSharedMailboxPermType"
+                                            Grid.Row="1"
+                                            Grid.Column="1"
+                                            Height="28"
+                                            Margin="0,2">
+                                            <ComboBoxItem Content="Full Access" IsSelected="True" />
+                                            <ComboBoxItem Content="Send As" />
+                                            <ComboBoxItem Content="Send on Behalf" />
+                                        </ComboBox>
+
+                                        <StackPanel
+                                            Grid.Row="2"
+                                            Grid.ColumnSpan="2"
+                                            Margin="0,8,0,0"
+                                            HorizontalAlignment="Center"
+                                            Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnAddSharedMailboxPermission"
+                                                Width="190"
+                                                Height="28"
+                                                Margin="0,0,5,0"
+                                                Background="#D4EDDA"
+                                                BorderBrush="#C3E6CB"
+                                                Content="Berechtigung hinzufügen"
+                                                Foreground="#155724" />
+                                            <Button
+                                                x:Name="btnRemoveSharedMailboxPermission"
+                                                Width="190"
+                                                Height="28"
+                                                Margin="5,0,0,0"
+                                                Background="#F8D7DA"
+                                                BorderBrush="#F5C6CB"
+                                                Content="Berechtigung entfernen"
+                                                Foreground="#721C24" />
+                                        </StackPanel>
+
+                                        <Separator Grid.Row="3" Grid.ColumnSpan="2" Margin="0,15,0,10" />
+
+                                        <StackPanel
+                                            Grid.Row="4"
+                                            Grid.ColumnSpan="2"
+                                            HorizontalAlignment="Center"
+                                            Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnShowSharedMailboxPerms"
+                                                Width="125"
+                                                Height="28"
+                                                Margin="0,0,5,0"
+                                                Background="#E7F3FF"
+                                                BorderBrush="#B8DAFF"
+                                                Content="Berechtigungen"
+                                                Foreground="#0056B3" />
+                                            <Button
+                                                x:Name="btnHideFromGAL"
+                                                Width="125"
+                                                Height="28"
+                                                Margin="5,0,5,0"
+                                                Background="#F8D7DA"
+                                                BorderBrush="#F5C6CB"
+                                                Content="Aus GAL verbergen"
+                                                Foreground="#721C24" />
+                                            <Button
+                                                x:Name="btnShowInGAL"
+                                                Width="125"
+                                                Height="28"
+                                                Margin="5,0,0,0"
+                                                Background="#D4EDDA"
+                                                BorderBrush="#C3E6CB"
+                                                Content="In GAL anzeigen"
+                                                Foreground="#155724" />
+                                        </StackPanel>
+                                    </Grid>
+                                </GroupBox>
+
+                                <!--  Weiterleitungen & Auto-Mapping  -->
+                                <GroupBox
+                                    Margin="0,0,0,10"
+                                    Background="#ffffff"
+                                    Header="Weiterleitungen &amp; Auto-Mapping">
+                                    <Grid Margin="10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock
+                                            Grid.Row="0"
+                                            Grid.Column="0"
+                                            Width="105"
+                                            Margin="0,2,10,2"
+                                            VerticalAlignment="Center"
+                                            Text="Weiterleiten an:" />
+                                        <TextBox
+                                            x:Name="txtForwardingAddress"
+                                            Grid.Row="0"
+                                            Grid.Column="1"
+                                            Height="28"
+                                            Margin="0,2" />
+
+                                        <CheckBox
+                                            x:Name="chkKeepCopy"
+                                            Grid.Row="1"
+                                            Grid.Column="1"
+                                            Margin="0,5,0,8"
+                                            Content="Kopie im Postfach behalten" />
+
+                                        <StackPanel
+                                            Grid.Row="2"
+                                            Grid.ColumnSpan="2"
+                                            Margin="0,0,0,5"
+                                            HorizontalAlignment="Center"
+                                            Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnSetForwarding"
+                                                Width="125"
+                                                Height="28"
+                                                Margin="0,0,5,0"
+                                                Background="#D4EDDA"
+                                                BorderBrush="#C3E6CB"
+                                                Content="Setzen"
+                                                Foreground="#155724" />
+                                            <Button
+                                                x:Name="btnRemoveForwarding"
+                                                Width="125"
+                                                Height="28"
+                                                Margin="5,0,5,0"
+                                                Background="#F8D7DA"
+                                                BorderBrush="#F5C6CB"
+                                                Content="Entfernen"
+                                                Foreground="#721C24" />
+                                            <Button
+                                                x:Name="btnGetForwardingMailboxes"
+                                                Width="125"
+                                                Height="28"
+                                                Margin="5,0,0,0"
+                                                Background="#E7F3FF"
+                                                BorderBrush="#B8DAFF"
+                                                Content="Alle anzeigen"
+                                                Foreground="#0056B3" />
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Margin="0,10,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <TextBlock
+                                                Width="105"
+                                                Margin="0,2,10,2"
+                                                VerticalAlignment="Center"
+                                                Text="Auto-Mapping:" />
+                                            <CheckBox
+                                                x:Name="chkAutoMapping"
+                                                VerticalAlignment="Center"
+                                                Content="Aktivieren" />
+                                            <Button
+                                                x:Name="btnUpdateAutoMapping"
+                                                Width="125"
+                                                Height="28"
+                                                Margin="45,0,0,0"
+                                                Background="#FFF3CD"
+                                                BorderBrush="#FFEAA7"
+                                                Content="Aktualisieren"
+                                                Foreground="#856404" />
+                                        </StackPanel>
+                                    </Grid>
+                                </GroupBox>
+                            </StackPanel>
+
+                            <!--  Rechte Spalte - Ausgaben  -->
+                            <GroupBox
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Background="#ffffff"
+                                Header="Aktuelle Berechtigungen für ausgewählte Shared Mailbox">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <DataGrid
+                                        x:Name="lstCurrentPermissions"
+                                        Grid.Row="0"
+                                        Margin="8,8,8,0"
+                                        AutoGenerateColumns="False"
+                                        IsReadOnly="True">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn
+                                                Width="*"
+                                                Binding="{Binding Mailbox}"
+                                                Header="Mailbox" />
+                                            <DataGridTextColumn
+                                                Width="*"
+                                                Binding="{Binding User}"
+                                                Header="Benutzer" />
+                                            <DataGridTextColumn
+                                                Width="*"
+                                                Binding="{Binding PermissionType}"
+                                                Header="Berechtigungstyp" />
+                                            <DataGridTextColumn
+                                                Width="0.5*"
+                                                Binding="{Binding AutoMapping}"
+                                                Header="AutoMapping" />
+                                            <DataGridTextColumn
+                                                Width="*"
+                                                Binding="{Binding AddedDate}"
+                                                Header="Hinzugefügt am" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <Button
+                                        x:Name="btnExportSharedPermissions"
+                                        Grid.Row="1"
+                                        Width="230"
+                                        Height="30"
+                                        Margin="0,8,8,8"
+                                        HorizontalAlignment="Right"
+                                        Background="#E8F4FD"
+                                        BorderBrush="#B8DAFF"
+                                        Content="Berechtigungsliste exportieren (CSV)"
+                                        Foreground="#0056B3" />
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
+                    </TabItem>
+
+                    <!--  Ressourcen Tab  -->
+                    <TabItem
+                        x:Name="tabResources"
+                        Header="Ressourcen"
+                        Visibility="Collapsed">
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="420" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!--  Hilfe Link  -->
+                            <TextBlock
+                                x:Name="helpLinkResources"
+                                Grid.Row="0"
+                                Grid.ColumnSpan="2"
+                                Margin="0,0,0,10"
+                                HorizontalAlignment="Right"
+                                Cursor="Hand"
+                                Foreground="#0067c0"
+                                Text="Hilfe zu Ressourcen"
+                                TextDecorations="Underline" />
+
+                            <!--  Linke Spalte - Verwaltung  -->
+                            <StackPanel
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Margin="0,0,10,0">
+
+                                <!--  Neue Ressource erstellen  -->
+                                <GroupBox
+                                    Margin="0,0,0,10"
+                                    Background="#ffffff"
+                                    Header="Neue Ressource erstellen">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Width="80"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Typ:" />
+                                            <ComboBox
+                                                x:Name="cmbResourceType"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,5">
+                                                <ComboBoxItem Content="Raum" IsSelected="True" />
+                                                <ComboBoxItem Content="Ausstattung" />
+                                            </ComboBox>
+
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Width="80"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Name:" />
+                                            <TextBox
+                                                x:Name="txtResourceName"
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,5" />
+
+                                            <Button
+                                                x:Name="btnCreateResource"
+                                                Grid.Row="2"
+                                                Grid.ColumnSpan="2"
+                                                Width="370"
+                                                Height="30"
+                                                Margin="0,5,0,0"
+                                                HorizontalAlignment="Center"
+                                                Background="#FF4E8434"
+                                                Content="Ressource erstellen" />
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Ressourcen suchen  -->
+                                <GroupBox
+                                    Margin="0,0,0,10"
+                                    Background="#ffffff"
+                                    Header="Ressourcen suchen">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Width="80"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Suchbegriff:" />
+                                            <TextBox
+                                                x:Name="txtResourceSearch"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,5" />
+
+                                            <Button
+                                             x:Name="btnSearchResources"
+                                             Grid.Row="1"
+                                             Grid.ColumnSpan="2"
+                                             Width="280"
+                                             Height="30"
+                                             Margin="90,0,0,0"
+                                             Background="#FF40678C"
+                                             Content="Suchen" />
+
+                                            <StackPanel
+                                                Grid.Row="2"
+                                                Grid.ColumnSpan="2"
+                                                Margin="0,25,0,0"
+                                                HorizontalAlignment="Center"
+                                                Orientation="Horizontal">
+
+                                                <Button
+                                                    x:Name="btnRefreshResources"
+                                                    Width="110"
+                                                    Height="40"
+                                                    Margin="0,0,10,0"
+                                                    Background="#FFA4D0F1"
+                                                    Content="Alle anzeigen" Foreground="Black" />
+                                                <Button
+                                                    x:Name="btnShowRoomResources"
+                                                    Width="110"
+                                                    Height="40"
+                                                    Margin="0,0,0,0"
+                                                    Background="#FF638BA9"
+                                                    Content="Nur Räume" />
+                                                <Button
+                                                    x:Name="btnShowEquipmentResources"
+                                                    Width="130"
+                                                    Height="40"
+                                                    Margin="10,0,0,0"
+                                                    HorizontalAlignment="Center"
+                                                    Background="#FF638BA9"
+                                                    Content="Nur Ausstattung" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Ressourceneinstellungen  -->
+                                <GroupBox Background="#ffffff" Header="Ressourceneinstellungen">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="*" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="65" />
+                                                <ColumnDefinition Width="280" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Width="80"
+                                                Margin="0,5,0,5"
+                                                VerticalAlignment="Center"
+                                                Text="Auswählen:" />
+                                            <ComboBox
+                                                x:Name="cmbResourceSelect"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Width="200"
+                                                Margin="0,5,25,5"
+                                                IsEditable="True" />
+                                            <Button
+                                                x:Name="btnRefreshResourceList"
+                                                Grid.Row="0"
+                                                Grid.Column="2"
+                                                Width="45"
+                                                Height="35"
+                                                Margin="235,5,0,5"
+                                                VerticalAlignment="Center"
+                                                Background="#CCE5FF"
+                                                BorderBrush="#B3D7FF"
+                                                Content="🔄"
+                                                Foreground="#004085"
+                                                ToolTip="Ressourcenliste aktualisieren" />
+
+                                            <StackPanel
+                                                Grid.Row="1"
+                                                Grid.ColumnSpan="2"
+                                                Margin="0,25,0,0"
+                                                HorizontalAlignment="Center"
+                                                Orientation="Horizontal">
+                                                <Button
+                                                    x:Name="btnEditResourceSettings"
+                                                    Width="165"
+                                                    Height="30"
+                                                    Margin="0,0,10,0"
+                                                    Background="#FF797D26"
+                                                    Content="Bearbeiten" />
+                                                <Button
+                                                    x:Name="btnRemoveResource"
+                                                    Width="165"
+                                                    Height="30"
+                                                    Background="#FF7D3838"
+                                                    Content="Löschen" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+                            </StackPanel>
+
+                            <!--  Rechte Spalte - Ausgaben  -->
+                            <GroupBox
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Background="#ffffff"
+                                Header="Aktuelle Ressourcen">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <DataGrid
+                                        x:Name="dgResources"
+                                        Grid.Row="0"
+                                        Margin="8,8,8,0"
+                                        AutoGenerateColumns="False"
+                                        IsReadOnly="True">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn
+                                                Width="*"
+                                                Binding="{Binding DisplayName}"
+                                                Header="Name" />
+                                            <DataGridTextColumn
+                                                Width="*"
+                                                Binding="{Binding PrimarySmtpAddress}"
+                                                Header="E-Mail" />
+                                            <DataGridTextColumn
+                                                Width="120"
+                                                Binding="{Binding RecipientTypeDetails}"
+                                                Header="Typ" />
+                                            <DataGridTextColumn
+                                                Width="80"
+                                                Binding="{Binding ResourceCapacity}"
+                                                Header="Kapazität" />
+                                            <DataGridTextColumn
+                                                Width="150"
+                                                Binding="{Binding Office}"
+                                                Header="Ort" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <Button
+                                        x:Name="btnExportResources"
+                                        Grid.Row="1"
+                                        Width="220"
+                                        Height="30"
+                                        Margin="0,8,8,8"
+                                        HorizontalAlignment="Right"
+                                        Background="#E8F4FD"
+                                        BorderBrush="#B8DAFF"
+                                        Content="Ressourcenliste exportieren (CSV)"
+                                        Foreground="#0056B3" />
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
+                    </TabItem>
+
+                    <!--  Kontakte Tab  -->
+                    <TabItem
+                        x:Name="tabContacts"
+                        Header="Kontakte"
+                        Visibility="Collapsed">
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="420" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!--  Hilfe Link  -->
+                            <TextBlock
+                                x:Name="helpLinkContacts"
+                                Grid.Row="0"
+                                Grid.ColumnSpan="2"
+                                Margin="0,0,0,10"
+                                HorizontalAlignment="Right"
+                                Cursor="Hand"
+                                Foreground="#0067c0"
+                                Text="Hilfe zu Kontakten"
+                                TextDecorations="Underline" />
+
+                            <!--  Linke Spalte - Verwaltung  -->
+                            <StackPanel
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Margin="0,0,10,0">
+
+                                <!--  Neuen Kontakt erstellen  -->
+                                <GroupBox
+                                    Margin="0,0,0,10"
+                                    Background="#ffffff"
+                                    Header="Neuen externen Kontakt erstellen">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Width="120"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Kontaktname:" />
+                                            <TextBox
+                                                x:Name="txtContactName"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,5"
+                                                ToolTip="Vollständiger Name des Kontakts" />
+
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Width="120"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Kontaktalias:" />
+                                            <TextBox
+                                                x:Name="txtContactAlias"
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,5"
+                                                ToolTip="Eindeutiger Alias für den Kontakt" />
+
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Grid.Column="0"
+                                                Width="120"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Externe E-Mail:" />
+                                            <TextBox
+                                                x:Name="txtContactExternalEmail"
+                                                Grid.Row="2"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,10"
+                                                ToolTip="Externe E-Mail-Adresse des Kontakts" />
+
+                                            <Button
+                                                x:Name="btnCreateContact"
+                                                Grid.Row="3"
+                                                Grid.ColumnSpan="2"
+                                                Margin="0,10,0,0"
+                                                Background="#FF4E8434"
+                                                Content="Externen Kontakt erstellen"
+                                                Foreground="White" />
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!-- Kontakt aktualisieren -->
+                                <GroupBox 
+                                    Margin="0,0,0,10"
+                                    Background="#ffffff"
+                                    Header="Ausgewählten Kontakt aktualisieren">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Width="120"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Neuer Name:" />
+                                            <TextBox
+                                                x:Name="txtUpdateContactName"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,5"
+                                                ToolTip="Neuer Name für den ausgewählten Kontakt" />
+
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Width="120"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Neue E-Mail:" />
+                                            <TextBox
+                                                x:Name="txtUpdateContactEmail"
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,5"
+                                                ToolTip="Neue externe E-Mail-Adresse" />
+
+                                            <Button
+                                                x:Name="btnUpdateContact"
+                                                Grid.Row="2"
+                                                Grid.ColumnSpan="2"
+                                                Margin="0,10,0,0"
+                                                Background="#FF40678C"
+                                                Content="Kontakt aktualisieren"
+                                                Foreground="White"
+                                                IsEnabled="False" />
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Kontakte suchen und verwalten  -->
+                                <GroupBox Background="#ffffff" Header="Kontakte suchen und verwalten">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Width="120"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Kontakt suchen:" />
+                                            <TextBox
+                                                x:Name="txtContactSearch"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,10" />
+
+                                            <StackPanel
+                                                Grid.Row="1"
+                                                Grid.ColumnSpan="2"
+                                                Margin="0,10,0,0"
+                                                HorizontalAlignment="Center"
+                                                Orientation="Horizontal">
+                                                <Button
+                                                    x:Name="btnShowMailContacts"
+                                                    Width="170"
+                                                    Height="30"
+                                                    Margin="0,0,5,0"
+                                                    Background="#FF40678C"
+                                                    Content="Alle MailContacts anzeigen" />
+                                                <Button
+                                                    x:Name="btnShowMailUsers"
+                                                    Width="170"
+                                                    Height="30"
+                                                    Margin="5,0,0,0"
+                                                    Background="#FF40678C"
+                                                    Content="Alle MailUsers anzeigen" />
+                                            </StackPanel>
+
+                                            <Button
+                                                x:Name="btnRemoveContact"
+                                                Grid.Row="2"
+                                                Grid.ColumnSpan="2"
+                                                Width="350"
+                                                Height="30"
+                                                Margin="0,10,0,0"
+                                                HorizontalAlignment="Center"
+                                                Background="#FF7D3838"
+                                                Content="Ausgewählten Kontakt löschen" />
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+                            </StackPanel>
+
+                            <!--  Rechte Spalte - Ausgaben  -->
+                            <GroupBox
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Background="#ffffff"
+                                Header="Aktuelle Kontakte">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <DataGrid
+                                        x:Name="lstContacts"
+                                        Grid.Row="0"
+                                        Margin="8,8,8,0"
+                                        AutoGenerateColumns="False"
+                                        IsReadOnly="True"
+                                        SelectionMode="Single"
+                                        SelectionChanged="lstContacts_SelectionChanged">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn
+                                                Width="*"
+                                                Binding="{Binding DisplayName}"
+                                                Header="Anzeigename" />
+                                            <DataGridTextColumn
+                                                Width="*"
+                                                Binding="{Binding PrimarySmtpAddress}"
+                                                Header="Primäre E-Mail" />
+                                            <DataGridTextColumn
+                                                Width="*"
+                                                Binding="{Binding ExternalEmailAddress}"
+                                                Header="Externe E-Mail" />
+                                            <DataGridTextColumn
+                                                Width="120"
+                                                Binding="{Binding RecipientTypeDetails}"
+                                                Header="Typ" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <Button
+                                        x:Name="btnExportContacts"
+                                        Grid.Row="1"
+                                        Width="210"
+                                        Height="30"
+                                        Margin="0,8,8,8"
+                                        HorizontalAlignment="Right"
+                                        Background="#E8F4FD"
+                                        BorderBrush="#B8DAFF"
+                                        Content="Kontaktliste exportieren (CSV)"
+                                        Foreground="#0056B3" />
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
+                    </TabItem>
+
+                    <!--  Berichte & Export Tab  -->
+                    <TabItem
+                        x:Name="tabReports"
+                        Header="Berichte &amp; Export"
+                        Visibility="Collapsed">
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="420" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!--  Hilfe Link  -->
+                            <TextBlock
+                                x:Name="helpLinkReports"
+                                Grid.Row="0"
+                                Grid.ColumnSpan="2"
+                                Margin="0,0,0,10"
+                                HorizontalAlignment="Right"
+                                Cursor="Hand"
+                                Foreground="#0067c0"
+                                Text="Hilfe zu Berichten"
+                                TextDecorations="Underline" />
+
+                            <!--  Linke Spalte - Berichtseinstellungen  -->
+                            <StackPanel
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Margin="0,0,10,0">
+
+                                <!--  Berichtsauswahl  -->
+                                <GroupBox
+                                    Margin="0,0,0,10"
+                                    Background="#ffffff"
+                                    Header="Berichtsart auswählen">
+                                    <StackPanel Margin="10">
+                                        <TextBlock
+                                            Margin="0,0,0,10"
+                                            FontWeight="SemiBold"
+                                            Text="Kategorie:" />
+                                        <ListBox
+                                            x:Name="lstReportCategories"
+                                            Height="150"
+                                            Margin="0,0,0,15"
+                                            BorderBrush="#d4d4d4"
+                                            BorderThickness="1">
+                                            <ListBoxItem
+                                                Content="Postfachberichte"
+                                                IsSelected="True"
+                                                Tag="mailbox" />
+                                            <ListBoxItem Content="Berechtigungsberichte" Tag="permissions" />
+                                            <ListBoxItem Content="Gruppenberichte" Tag="groups" />
+                                            <ListBoxItem Content="Ressourcenberichte" Tag="resources" />
+                                            <ListBoxItem Content="Auditberichte" Tag="audit" />
+                                        </ListBox>
+
+                                        <TextBlock
+                                            Margin="0,0,0,5"
+                                            FontWeight="SemiBold"
+                                            Text="Verfügbare Berichte:" />
+                                        <ComboBox
+                                            x:Name="cmbReportType"
+                                            Height="30"
+                                            Margin="0,0,0,0" />
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Berichtsparameter  -->
+                                <GroupBox
+                                    Margin="0,0,0,10"
+                                    Background="#ffffff"
+                                    Header="Berichtsparameter">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Width="80"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Von:" />
+                                            <DatePicker
+                                                x:Name="dpReportStartDate"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Width="80"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Bis:" />
+                                            <DatePicker
+                                                x:Name="dpReportEndDate"
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Grid.Column="0"
+                                                Width="80"
+                                                Margin="0,5,10,5"
+                                                VerticalAlignment="Center"
+                                                Text="Benutzer:" />
+                                            <TextBox
+                                                x:Name="txtReportUserFilter"
+                                                Grid.Row="2"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="0,5,0,5" />
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Export-Optionen  -->
+                                <GroupBox
+                                    Margin="0,0,0,10"
+                                    Background="#ffffff"
+                                    Header="Export-Optionen">
+                                    <StackPanel Margin="10">
+                                        <CheckBox
+                                            x:Name="chkAutoExport"
+                                            Margin="0,5"
+                                            Content="Automatisch als CSV speichern" />
+                                        <CheckBox
+                                            x:Name="chkOpenAfterExport"
+                                            Margin="0,5"
+                                            Content="Nach Export öffnen"
+                                            IsEnabled="{Binding ElementName=chkAutoExport, Path=IsChecked}" />
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Aktionen  -->
+                                <GroupBox Background="#ffffff" Header="Aktionen">
+                                    <StackPanel Margin="10">
+                                        <Button
+                                            x:Name="btnGenerateReport"
+                                            Width="360"
+                                            Height="30"
+                                            Margin="0,0,0,10"
+                                            HorizontalAlignment="Center"
+                                            Background="#FF4E8434"
+                                            Content="Bericht generieren" />
+
+                                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnExportResultsExcel"
+                                                Width="175"
+                                                Height="30"
+                                                Margin="0,0,5,0"
+                                                Background="#E7F3FF"
+                                                BorderBrush="#B8DAFF"
+                                                Content="Nach Excel exportieren"
+                                                Foreground="#0056B3" />
+                                            <Button
+                                                x:Name="btnExportReport"
+                                                Width="175"
+                                                Height="30"
+                                                Margin="5,0,0,0"
+                                                Background="#E8F4FD"
+                                                BorderBrush="#B8DAFF"
+                                                Content="Als CSV exportieren"
+                                                Foreground="#0056B3" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </GroupBox>
+                            </StackPanel>
+
+                            <!--  Rechte Spalte - Berichtsergebnisse  -->
+                            <GroupBox
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Background="#ffffff"
+                                Header="Berichtsergebnisse">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <DataGrid
+                                        x:Name="lstReportResults"
+                                        Grid.Row="0"
+                                        Margin="8"
+                                        AutoGenerateColumns="True">
+                                        <!--  AutoGenerateColumns="True" da Spalten je nach Bericht variieren  -->
+                                    </DataGrid>
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
+                    </TabItem>
+
+                    <!--  Region Tab  -->
+                    <TabItem
+                        x:Name="tabRegion"
+                        Header="Regionaleinstellungen"
+                        Visibility="Collapsed">
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="420" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!--  Hilfe Link  -->
+                            <TextBlock
+                                x:Name="helpLinkRegionSettings"
+                                Grid.Row="0"
+                                Grid.ColumnSpan="2"
+                                Margin="0,0,0,10"
+                                HorizontalAlignment="Right"
+                                Cursor="Hand"
+                                Foreground="#0067c0"
+                                Text="Hilfe zu Regionaleinstellungen"
+                                TextDecorations="Underline" />
+
+                            <!--  Linke Spalte - Verwaltung  -->
+                            <StackPanel
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Margin="0,0,10,0">
+
+                                <!--  Einstellungen abrufen  -->
+                                <GroupBox Background="#ffffff" Header="Aktuelle Einstellungen abrufen">
+                                    <Grid Margin="10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock
+                                             Grid.Row="0"
+                                             Grid.Column="0"
+                                             Width="105"
+                                             Margin="0,5,10,5"
+                                             VerticalAlignment="Center"
+                                             Text="Postfach:" />
+                                        <TextBox
+                                             x:Name="txtGetRegionMailbox"
+                                             Grid.Row="0"
+                                             Grid.Column="1"
+                                             Height="30"
+                                             Margin="0,5,0,10"
+                                             ToolTip="E-Mail-Adresse des Postfachs, dessen Einstellungen abgerufen werden sollen." />
+
+                                        <Button
+                                             x:Name="btnGetRegionSettings"
+                                             Grid.Row="1"
+                                             Grid.ColumnSpan="2"
+                                             Width="235"
+                                             Height="30"
+                                             Margin="115,0,0,0"
+                                             HorizontalAlignment="Center"
+                                             Background="#FF40678C"
+                                             Content="Einstellungen abrufen"
+                                             Foreground="White" />
+                                    </Grid>
+                                </GroupBox>
+
+                                <!--  Hinweis  -->
+                                <Border
+                                    Margin="0,10,0,10"
+                                    Padding="10"
+                                    Background="#FFF3CD"
+                                    BorderBrush="#FFEAA7"
+                                    BorderThickness="1"
+                                    CornerRadius="3">
+                                    <TextBlock
+                                        FontSize="11"
+                                        Foreground="#856404"
+                                        Text="Das Setzen von 'ALL' kann je nach Anzahl der Postfächer dauern!"
+                                        TextWrapping="Wrap" />
+                                </Border>
+
+                                <!--  Einstellungen für Postfächer festlegen  -->
+                                <GroupBox
+                                    Margin="0,0,0,10"
+                                    Background="#ffffff"
+                                    Header="Einstellungen für Postfächer festlegen">
+                                    <Grid Margin="10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock
+                                            Grid.Row="0"
+                                            Grid.Column="0"
+                                            Width="105"
+                                            Margin="0,5,10,5"
+                                            VerticalAlignment="Center"
+                                            Text="Postfach/Benutzer:" />
+                                        <TextBox
+                                            x:Name="txtRegionMailbox"
+                                            Grid.Row="0"
+                                            Grid.Column="1"
+                                            Height="50"
+                                            Margin="0,5,0,5"
+                                            TextWrapping="Wrap"
+                                            ToolTip="Einzelne E-Mail-Adresse, mehrere durch Semikolon (;) getrennt, oder 'ALL' für alle Benutzerpostfächer (Vorsicht!)."
+                                            VerticalScrollBarVisibility="Auto" />
+
+                                        <TextBlock
+                                            Grid.Row="1"
+                                            Grid.Column="0"
+                                            Width="105"
+                                            Margin="0,5,10,5"
+                                            VerticalAlignment="Center"
+                                            Text="Sprache:" />
+                                        <ComboBox
+                                            x:Name="cmbRegionLanguage"
+                                            Grid.Row="1"
+                                            Grid.Column="1"
+                                            Height="30"
+                                            Margin="0,5,0,5">
+                                            <ComboBoxItem
+                                                Content="(Keine Änderung)"
+                                                IsSelected="True"
+                                                Tag="" />
+                                            <ComboBoxItem Content="Deutsch (Deutschland)" Tag="de-DE" />
+                                            <ComboBoxItem Content="Englisch (USA)" Tag="en-US" />
+                                            <ComboBoxItem Content="Französisch (Frankreich)" Tag="fr-FR" />
+                                            <ComboBoxItem Content="Spanisch (Spanien)" Tag="es-ES" />
+                                        </ComboBox>
+
+                                        <TextBlock
+                                            Grid.Row="2"
+                                            Grid.Column="0"
+                                            Width="105"
+                                            Margin="0,5,10,5"
+                                            VerticalAlignment="Center"
+                                            Text="Zeitzone:" />
+                                        <ComboBox
+                                            x:Name="cmbRegionTimezone"
+                                            Grid.Row="2"
+                                            Grid.Column="1"
+                                            Height="30"
+                                            Margin="0,5,0,5">
+                                            <ComboBoxItem
+                                                Content="(Keine Änderung)"
+                                                IsSelected="True"
+                                                Tag="" />
+                                            <ComboBoxItem Content="W. Europe Standard Time" Tag="W. Europe Standard Time" />
+                                            <ComboBoxItem Content="Central European Standard Time" Tag="Central European Standard Time" />
+                                            <ComboBoxItem Content="GMT Standard Time" Tag="GMT Standard Time" />
+                                            <ComboBoxItem Content="Eastern Standard Time" Tag="Eastern Standard Time" />
+                                            <ComboBoxItem Content="Pacific Standard Time" Tag="Pacific Standard Time" />
+                                        </ComboBox>
+
+                                        <TextBlock
+                                            Grid.Row="3"
+                                            Grid.Column="0"
+                                            Width="105"
+                                            Margin="0,5,10,5"
+                                            VerticalAlignment="Center"
+                                            Text="Datumsformat:" />
+                                        <ComboBox
+                                            x:Name="cmbRegionDateFormat"
+                                            Grid.Row="3"
+                                            Grid.Column="1"
+                                            Height="30"
+                                            Margin="0,5,0,5"
+                                            ToolTip="Das Datumsformat für die Postfächer festlegen.">
+                                            <ComboBoxItem
+                                                Content="(Keine Änderung)"
+                                                IsSelected="True"
+                                                Tag="" />
+                                            <ComboBoxItem Content="dd.MM.yyyy" Tag="dd.MM.yyyy" />
+                                            <ComboBoxItem Content="MM/dd/yyyy" Tag="MM/dd/yyyy" />
+                                            <ComboBoxItem Content="yyyy-MM-dd" Tag="yyyy-MM-dd" />
+                                            <ComboBoxItem Content="d. MMMM yyyy" Tag="d. MMMM yyyy" />
+                                        </ComboBox>
+
+                                        <TextBlock
+                                            Grid.Row="4"
+                                            Grid.Column="0"
+                                            Width="105"
+                                            Margin="0,5,10,5"
+                                            VerticalAlignment="Center"
+                                            Text="Zeitformat:" />
+                                        <ComboBox
+                                            x:Name="cmbRegionTimeFormat"
+                                            Grid.Row="4"
+                                            Grid.Column="1"
+                                            Height="30"
+                                            Margin="0,5,0,5"
+                                            ToolTip="Das Zeitformat für die Postfächer festlegen.">
+                                            <ComboBoxItem
+                                                Content="(Keine Änderung)"
+                                                IsSelected="True"
+                                                Tag="" />
+                                            <ComboBoxItem Content="HH:mm" Tag="HH:mm" />
+                                            <ComboBoxItem Content="hh:mm tt" Tag="hh:mm tt" />
+                                            <ComboBoxItem Content="HH:mm:ss" Tag="HH:mm:ss" />
+                                        </ComboBox>
+
+                                        <TextBlock
+                                            Grid.Row="5"
+                                            Grid.Column="0"
+                                            Width="105"
+                                            Margin="0,5,10,5"
+                                            VerticalAlignment="Center"
+                                            Text="Ordnernamen anpassen:" />
+                                        <CheckBox
+                                            x:Name="chkRegionDefaultFolderNameMatchingUserLanguage"
+                                            Grid.Row="5"
+                                            Grid.Column="1"
+                                            Margin="0,5,0,5"
+                                            VerticalAlignment="Center"
+                                            IsThreeState="True"
+                                            ToolTip="Legt fest, ob Standardordner (z.B. Posteingang) an die Benutzersprache angepasst werden." />
+
+                                        <Border
+                                            Grid.Row="6"
+                                            Grid.ColumnSpan="2"
+                                            Margin="0,10,0,10"
+                                            Padding="10"
+                                            Background="#FFF3CD"
+                                            BorderBrush="#FFEAA7"
+                                            BorderThickness="1"
+                                            CornerRadius="3">
+                                            <TextBlock
+                                                FontSize="11"
+                                                Foreground="#856404"
+                                                Text="Bei 'Ordnernamen anpassen' bedeutet: Angehakt = Ja (Anpassen), Nicht Angehakt = Nein (Nicht anpassen)."
+                                                TextWrapping="Wrap" />
+                                        </Border>
+
+                                        <Button
+                                            x:Name="btnSetRegionSettings"
+                                            Grid.Row="7"
+                                            Grid.ColumnSpan="2"
+                                            Width="350"
+                                            Height="30"
+                                            Margin="0,15,0,0"
+                                            HorizontalAlignment="Center"
+                                            Background="#FF4E8434"
+                                            Content="Regionaleinstellungen anwenden"
+                                            Foreground="White"
+                                            ToolTip="Setzt die ausgewählten Regionaleinstellungen für die angegebenen Postfächer." />
+                                    </Grid>
+                                </GroupBox>
+                            </StackPanel>
+
+                            <!--  Rechte Spalte - Ausgaben  -->
+                            <GroupBox
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Background="#ffffff"
+                                Header="Ergebnis / Status">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                                        <TextBox
+                                            x:Name="txtRegionResult"
+                                            Height="500"
+                                            Margin="8,8,8,0"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            FontFamily="Consolas"
+                                            IsReadOnly="True"
+                                            TextWrapping="Wrap" />
+                                    </ScrollViewer>
+                                    <Button
+                                        x:Name="btnExportRegionSettings"
+                                        Grid.Row="1"
+                                        Width="180"
+                                        Height="30"
+                                        Margin="0,8,8,8"
+                                        HorizontalAlignment="Right"
+                                        Background="#E8F4FD"
+                                        BorderBrush="#B8DAFF"
+                                        Content="Ergebnisse exportieren (CSV)"
+                                        Foreground="#0056B3" />
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
+                    </TabItem>
+
+                    <!--  Mail Flow Rules Tab  -->
+                    <TabItem
+                        x:Name="tabMailFlowRules"
+                        Header="Transport Rules"
+                        Visibility="Collapsed">
+                        <Grid Margin="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="420" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <!--  Linke Spalte - Verwaltung  -->
+                            <StackPanel
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="0"
+                                Margin="0,0,10,0">
+
+                                <!--  Rule Creation Section  -->
+                                <GroupBox Header="Create New Rule">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Rule Name:" />
+                                            <TextBox
+                                                x:Name="txtRuleName"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Condition:" />
+                                            <ComboBox
+                                                x:Name="cmbCondition"
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5">
+                                                <ComboBoxItem Content="Sender is..." Tag="From" />
+                                                <ComboBoxItem Content="Recipient is..." Tag="SentTo" />
+                                                <ComboBoxItem Content="Subject contains..." Tag="SubjectContainsWords" />
+                                                <ComboBoxItem Content="Body contains..." Tag="BodyContainsWords" />
+                                                <ComboBoxItem Content="Sender is external..." Tag="FromScope" />
+                                                <ComboBoxItem Content="Message size over..." Tag="MessageSizeOver" />
+                                                <ComboBoxItem Content="Sender address contains..." Tag="FromAddressContainsWords" />
+                                            </ComboBox>
+
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Value:" />
+                                            <TextBox
+                                                x:Name="txtConditionValue"
+                                                Grid.Row="2"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="3"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Action:" />
+                                            <ComboBox
+                                                x:Name="cmbAction"
+                                                Grid.Row="3"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5">
+                                                <ComboBoxItem Content="Prepend subject..." Tag="PrependSubject" />
+                                                <ComboBoxItem Content="Redirect to..." Tag="RedirectMessageTo" />
+                                                <ComboBoxItem Content="Copy to..." Tag="BlindCopyTo" />
+                                                <ComboBoxItem Content="Reject message..." Tag="RejectMessageEnhancedStatusCode" />
+                                                <ComboBoxItem Content="Delete message" Tag="DeleteMessage" />
+                                                <ComboBoxItem Content="Quarantine..." Tag="Quarantine" />
+                                            </ComboBox>
+
+                                            <TextBlock
+                                                Grid.Row="4"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Action Value:" />
+                                            <TextBox
+                                                x:Name="txtActionValue"
+                                                Grid.Row="4"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="5"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Mode:" />
+                                            <ComboBox
+                                                x:Name="cmbRuleMode"
+                                                Grid.Row="5"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5">
+                                                <ComboBoxItem Content="Enforce" Tag="Enforce" />
+                                                <ComboBoxItem
+                                                    Content="Test with Policy Tips"
+                                                    IsSelected="True"
+                                                    Tag="Test" />
+                                                <ComboBoxItem Content="Test without Policy Tips" Tag="AuditAndNotify" />
+                                            </ComboBox>
+                                        </Grid>
+
+                                        <StackPanel
+                                            Margin="0,10,0,0"
+                                            HorizontalAlignment="Center"
+                                            Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnCreateRule"
+                                                Width="170"
+                                                Margin="0,0,10,0"
+                                                Background="#28a745"
+                                                BorderBrush="#28a745"
+                                                Content="Create Rule"
+                                                Foreground="White" />
+                                            <Button
+                                                x:Name="btnTestRule"
+                                                Width="170"
+                                                Background="#ffc107"
+                                                BorderBrush="#ffc107"
+                                                Content="Test Rule"
+                                                Foreground="Black" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Rule Management Buttons  -->
+                                <GroupBox Header="Rule Management">
+                                    <StackPanel Margin="30">
+                                        <Button
+                                            x:Name="btnRefreshRules"
+                                            Margin="0,0,0,5"
+                                            Padding="10,5"
+                                            Content="Refresh" Background="#FF40678C" />
+                                        <Button
+                                            x:Name="btnEnableRule"
+                                            Margin="0,15,0,5"
+                                            Padding="10,5"
+                                            Content="Enable" Background="#FF4E8434" />
+                                        <Button
+                                            x:Name="btnDisableRule"
+                                            Margin="0,5,0,5"
+                                            Padding="10,5"
+                                            Content="Disable" Background="#FF7D3838" />
+                                        <Button
+                                            x:Name="btnDeleteRule"
+                                            Margin="0,25,0,5"
+                                            Padding="10,5"
+                                            Background="#FFDE3949"
+                                            BorderBrush="#dc3545"
+                                            Content="Delete"
+                                            Foreground="White" />
+                                        <Button
+                                            x:Name="btnExportRules"
+                                            Margin="0,25,0,5"
+                                            Padding="10,5"
+                                            Content="Export" Background="#FFE8F4FD" Foreground="Black" />
+                                        <Button
+                                            x:Name="btnImportRules"
+                                            Margin="0,5,0,0"
+                                            Padding="10,5"
+                                            Content="Import" Foreground="Black" Background="#FFE8F4FD" />
+                                    </StackPanel>
+                                </GroupBox>
+                            </StackPanel>
+
+                            <!--  Rechte Spalte - Ausgaben  -->
+                            <GroupBox
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                Header="Existing Rules">
+                                <DataGrid
+                                    Name="dgMailFlowRules"
+                                    AutoGenerateColumns="False"
+                                    IsReadOnly="True"
+                                    >
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn
+                                            Width="Auto"
+                                            Binding="{Binding Name}"
+                                            Header="Name" />
+                                        <DataGridTextColumn
+                                            Width="Auto"
+                                            Binding="{Binding State}"
+                                            Header="State" />
+                                        <DataGridTextColumn
+                                            Width="Auto"
+                                            Binding="{Binding Priority}"
+                                            Header="Priority" />
+                                        <DataGridTextColumn
+                                            Width="*"
+                                            Binding="{Binding Conditions}"
+                                            Header="Conditions" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </GroupBox>
+                        </Grid>
+                    </TabItem>
+
+                    <!--  Inbox Rules Tab  -->
+                    <TabItem
+                        x:Name="tabInboxRules"
+                        Header="Inbox Rules"
+                        Visibility="Collapsed">
+                        <Grid Margin="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="420" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <!--  Linke Spalte - Verwaltung  -->
+                            <StackPanel
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="0"
+                                Margin="0,0,10,0">
+
+                                <!--  User Selection  -->
+                                <GroupBox Header="Benutzer auswählen">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="222" />
+                                                <ColumnDefinition Width="95" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Margin="0,5,0,5"
+                                                VerticalAlignment="Center"
+                                                Text="Benutzer:" />
+                                            <TextBox
+                                                x:Name="cmbInboxRuleUser"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Margin="25,5,5,5" />
+                                            <Button
+                                                x:Name="btnLoadInboxRules"
+                                                Grid.Row="0"
+                                                Grid.Column="2"
+                                                Margin="0,0,0,0"
+                                                HorizontalAlignment="Center"
+                                                Background="#007bff"
+                                                BorderBrush="#007bff"
+                                                Content="Regeln Laden"
+                                                Foreground="White" />
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Quick Rule Creation  -->
+                                <GroupBox Header="Schnellregel erstellen">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Regelname:" />
+                                            <TextBox
+                                                x:Name="txtInboxRuleName"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Von Adresse:" />
+                                            <TextBox
+                                                x:Name="txtFromAddress"
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Zielordner:" />
+                                            <ComboBox
+                                                x:Name="cmbTargetFolder"
+                                                Grid.Row="2"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5">
+                                                <ComboBoxItem Content="Posteingang\VIP" />
+                                                <ComboBoxItem Content="Posteingang\Newsletter" />
+                                                <ComboBoxItem Content="Posteingang\Automatisch" />
+                                                <ComboBoxItem Content="Junk-E-Mail" />
+                                                <ComboBoxItem Content="Gelöschte Elemente" />
+                                            </ComboBox>
+
+                                            <CheckBox
+                                                Name="chkMarkAsRead"
+                                                Grid.Row="3"
+                                                Grid.Column="1"
+                                                Margin="5,5"
+                                                Content="Als gelesen markieren" />
+
+                                            <Button
+                                                Name="btnCreateInboxRule"
+                                                Grid.Row="4"
+                                                Grid.ColumnSpan="2"
+                                                Margin="0,20,0,0"
+                                                Background="#FF4E8434"
+                                                BorderBrush="#28a745"
+                                                Content="Regel erstellen"
+                                                Foreground="White" />
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Inbox Rule Management  -->
+                                <GroupBox Header="Regelverwaltung">
+                                    <StackPanel Margin="10">
+                                        <Button
+                                            x:Name="btnRefreshInboxRules"
+                                            Margin="0,0,0,5"
+                                            Padding="10,5"
+                                            Content="Aktualisieren" Background="#FF40678C" />
+                                        <Button
+                                            x:Name="btnEnableInboxRule"
+                                            Margin="0,25,0,5"
+                                            Padding="10,5"
+                                            Content="Aktivieren" Background="#FF4E8434" />
+                                        <Button
+                                            x:Name="btnDisableInboxRule"
+                                            Margin="0,5,0,25"
+                                            Padding="10,5"
+                                            Content="Deaktivieren" Background="#FFAB4949" />
+                                        <Button
+                                            x:Name="btnMoveRuleUp"
+                                            Margin="0,5,0,5"
+                                            Padding="10,5"
+                                            Content="Nach oben" />
+                                        <Button
+                                            x:Name="btnMoveRuleDown"
+                                            Margin="0,5,0,0"
+                                            Padding="10,5"
+                                            Content="Nach unten" />
+                                        <Button
+                                            x:Name="btnDeleteInboxRule"
+                                            Margin="0,25,0,5"
+                                            Padding="10,5"
+                                            Background="#dc3545"
+                                            BorderBrush="#dc3545"
+                                            Content="Löschen"
+                                            Foreground="White" />
+                                    </StackPanel>
+                                </GroupBox>
+                            </StackPanel>
+
+                            <!--  Rechte Spalte - Ausgaben  -->
+                            <GroupBox
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                Header="Vorhandene Regeln">
+                                <DataGrid
+                                    Name="dgInboxRules"
+                                    AutoGenerateColumns="False"
+                                    IsReadOnly="True">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn
+                                            Width="Auto"
+                                            Binding="{Binding Name}"
+                                            Header="Name" />
+                                        <DataGridCheckBoxColumn
+                                            Width="Auto"
+                                            Binding="{Binding Enabled}"
+                                            Header="Aktiv" />
+                                        <DataGridTextColumn
+                                            Width="*"
+                                            Binding="{Binding Conditions}"
+                                            Header="Bedingungen" />
+                                        <DataGridTextColumn
+                                            Width="*"
+                                            Binding="{Binding Actions}"
+                                            Header="Aktionen" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </GroupBox>
+                        </Grid>
+                    </TabItem>
+
+                    <!--  Message Trace Tab  -->
+                    <TabItem
+                        x:Name="tabMessageTrace"
+                        Header="Message Trace"
+                        Visibility="Collapsed">
+                        <Grid Margin="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" MinWidth="420" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <!--  Linke Spalte - Verwaltung  -->
+                            <StackPanel
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                Margin="0,0,10,0">
+
+                                <!--  Search Parameters  -->
+                                <GroupBox Header="Suchparameter">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Absender:" />
+                                            <TextBox
+                                                x:Name="txtTraceSender"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Empfänger:" />
+                                            <TextBox
+                                                x:Name="txtTraceRecipient"
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Betreff:" />
+                                            <TextBox
+                                                x:Name="txtTraceSubject"
+                                                Grid.Row="2"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="3"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Nachrichten-ID:" />
+                                            <TextBox
+                                                x:Name="txtTraceMessageId"
+                                                Grid.Row="3"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="4"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Status:" />
+                                            <ComboBox
+                                                x:Name="cmbTraceStatus"
+                                                Grid.Row="4"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5">
+                                                <ComboBoxItem Content="Alle" IsSelected="True" />
+                                                <ComboBoxItem Content="Zugestellt" />
+                                                <ComboBoxItem Content="Fehlgeschlagen" />
+                                                <ComboBoxItem Content="Ausstehend" />
+                                                <ComboBoxItem Content="Unter Quarantäne" />
+                                            </ComboBox>
+                                        </Grid>
+
+                                        <Grid Margin="0,10,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Startdatum:" />
+                                            <DatePicker
+                                                x:Name="dpTraceStart"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Enddatum:" />
+                                            <DatePicker
+                                                x:Name="dpTraceEnd"
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5" />
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Aktionen  -->
+                                <GroupBox Header="Aktionen">
+                                    <StackPanel Margin="10">
+                                        <Button
+                                            x:Name="btnStartTrace"
+                                            Margin="0,0,0,0"
+                                            Padding="10,5"
+
+                                            Background="#FF4E8434"
+                                            Content="Suche starten"
+                                            Foreground="White" />
+                                        <Button
+                                            x:Name="btnDetailedTrace"
+                                            Margin="0,10,0,50"
+                                            Padding="10,5"
+                                            Background="#FF6B5AA7"
+                                            Content="Detailansicht"
+                                            Foreground="White" />
+                                        <Button
+                                            x:Name="btnExportTrace"
+                                            Margin="0,0,0,5"
+                                            Padding="10,5"
+                                            Background="#FFE8F4FD"
+                                            Content="Als CSV exportieren"
+                                            Foreground="Black" />
+                                        <Button
+                                            x:Name="btnClearTrace"
+                                            Margin="0,15,0,0"
+                                            Padding="10,5"
+                                            Background="#FFD05050"
+                                            Content="Ergebnisse löschen"
+                                            Foreground="White" />
+                                    </StackPanel>
+                                </GroupBox>
+                            </StackPanel>
+
+                            <!--  Rechte Spalte - Ausgaben  -->
+                            <GroupBox
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                Header="Suchergebnisse">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <DataGrid
+                                        Name="dgMessageTrace"
+                                        Grid.Row="0"
+                                        AutoGenerateColumns="False"
+                                        IsReadOnly="True">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn
+                                                Width="130"
+                                                Binding="{Binding Received}"
+                                                Header="Empfangen" />
+                                            <DataGridTextColumn
+                                                Width="200"
+                                                Binding="{Binding SenderAddress}"
+                                                Header="Absender" />
+                                            <DataGridTextColumn
+                                                Width="200"
+                                                Binding="{Binding RecipientAddress}"
+                                                Header="Empfänger" />
+                                            <DataGridTextColumn
+                                                Width="*"
+                                                Binding="{Binding Subject}"
+                                                Header="Betreff" />
+                                            <DataGridTextColumn
+                                                Width="100"
+                                                Binding="{Binding Status}"
+                                                Header="Status" />
+                                            <DataGridTextColumn
+                                                Width="80"
+                                                Binding="{Binding Size}"
+                                                Header="Größe (KB)" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+
+                                    <TextBlock
+                                        x:Name="txtTraceCount"
+                                        Grid.Row="1"
+                                        Margin="10,5,10,10"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Text="Ergebnisse: 0" />
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
+                    </TabItem>
+
+                    <!--  Dashboard Tab  -->
+                    <TabItem
+                        x:Name="tabDashboard"
+                        Header="Dashboard"
+                        Visibility="Visible">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="15" MaxWidth="1400" HorizontalAlignment="Center">
+
+                                <!--  Statistik-Karten  -->
+                                <GroupBox Header="Exchange Online auf einen Blick" Padding="10" Margin="0,0,0,20" BorderBrush="#E0E0E0">
+                                    <WrapPanel HorizontalAlignment="Center">
+                                        <!--  Statistik-Karte Vorlage  -->
+                                        <Border Width="220" Height="120" Margin="10" Background="White" BorderBrush="#E0E0E0" BorderThickness="1">
+                                            <Border.Effect>
+                                                <DropShadowEffect ShadowDepth="1" Color="#CCCCCC" Opacity="0.3" BlurRadius="5"/>
+                                            </Border.Effect>
+                                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                <TextBlock x:Name="txtStatTotalMailboxes" Text="0" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#0078D4"/>
+                                                <TextBlock Text="Benutzerpostfächer" FontSize="14" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Width="220" Height="120" Margin="10" Background="White" BorderBrush="#E0E0E0" BorderThickness="1">
+                                            <Border.Effect>
+                                                <DropShadowEffect ShadowDepth="1" Color="#CCCCCC" Opacity="0.3" BlurRadius="5"/>
+                                            </Border.Effect>
+                                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                <TextBlock x:Name="txtStatSharedMailboxes" Text="0" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#107C10"/>
+                                                <TextBlock Text="Shared Mailboxes" FontSize="14" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Width="220" Height="120" Margin="10" Background="White" BorderBrush="#E0E0E0" BorderThickness="1">
+                                            <Border.Effect>
+                                                <DropShadowEffect ShadowDepth="1" Color="#CCCCCC" Opacity="0.3" BlurRadius="5"/>
+                                            </Border.Effect>
+                                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                <TextBlock x:Name="txtStatGroups" Text="0" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#D83B01"/>
+                                                <TextBlock Text="Gruppen &amp; Verteiler" FontSize="14" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Width="220" Height="120" Margin="10" Background="White" BorderBrush="#E0E0E0" BorderThickness="1">
+                                            <Border.Effect>
+                                                <DropShadowEffect ShadowDepth="1" Color="#CCCCCC" Opacity="0.3" BlurRadius="5"/>
+                                            </Border.Effect>
+                                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                <TextBlock x:Name="txtStatResources" Text="0" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#5C2D91"/>
+                                                <TextBlock Text="Ressourcen" FontSize="14" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Width="220" Height="120" Margin="10" Background="White" BorderBrush="#E0E0E0" BorderThickness="1">
+                                            <Border.Effect>
+                                                <DropShadowEffect ShadowDepth="1" Color="#CCCCCC" Opacity="0.3" BlurRadius="5"/>
+                                            </Border.Effect>
+                                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                <TextBlock x:Name="txtStatDomains" Text="0" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#008272"/>
+                                                <TextBlock Text="Domänen" FontSize="14" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </WrapPanel>
+                                </GroupBox>
+
+                                <!--  Funktionsübersicht & Bedienung  -->
+                                <Grid Margin="0,50,0,20">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <GroupBox Grid.Column="0" Header="Funktionsübersicht" Margin="0,0,10,0" Padding="15" BorderBrush="#E0E0E0">
+                                        <TextBlock TextWrapping="Wrap" FontSize="13">
+                                            <Run FontWeight="SemiBold" Text="  • Kalender- &amp; Postfachberechtigungen"/>
+                                            <LineBreak />
+                                            <Run FontWeight="SemiBold" Text="  • Shared Mailboxes &amp; Ressourcen"/>
+                                            <LineBreak />
+                                            <Run FontWeight="SemiBold" Text="  • Gruppen &amp; Kontakte"/>
+                                            <LineBreak />
+                                            <Run FontWeight="SemiBold" Text="  • Transportregeln &amp; Nachrichtenverfolgung"/>
+                                            <LineBreak />
+                                            <Run FontWeight="SemiBold" Text="  • Regionaleinstellungen"/>
+                                            <LineBreak />
+                                            <Run FontWeight="SemiBold" Text="  • Berichte &amp; Audits"/>
+                                        </TextBlock>
+                                    </GroupBox>
+
+                                    <GroupBox Grid.Column="1" Header="Bedienungshinweise" Margin="10,0,0,0" Padding="15" BorderBrush="#E0E0E0">
+                                        <TextBlock TextWrapping="Wrap" FontSize="13">
+                                            <Run Text="1. "/>
+                                            <Run FontWeight="SemiBold" Text="Verbindung herstellen:"/>
+                                            <LineBreak />
+                                            <Run Text="  • Klicken Sie im Hauptfenster auf &quot;Verbinden&quot;, um eine Verbindung zu EXO herzustellen."/>
+                                            <LineBreak />
+                                            <Run Text="  • Nachdem die Verbindung erfolgreich hergestellt wurde, werden die Dashboard Statistiken aktualisiert!"/>
+                                            <LineBreak /><LineBreak />
+                                            <Run Text="2. "/>
+                                            <Run FontWeight="SemiBold" Text="Tab auswählen:"/>
+                                            <LineBreak />
+                                            <Run Text="  • Navigieren Sie über die Reiter zu dem gewünschten Verwaltungsbereich."/>
+                                            <LineBreak /><LineBreak />
+                                            <Run Text="3. "/>
+                                            <Run FontWeight="SemiBold" Text="Aktionen durchführen:"/>
+                                            <LineBreak />
+                                            <Run Text="  • Nutzen Sie die entsprechenden Schaltflächen und Eingabefelder, um die gewünschten Aktionen auszuführen."/>
+                                        </TextBlock>
+                                    </GroupBox>
+                                </Grid>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
+
+
+                    <!--  Auto Reply Tab  -->
+                    <TabItem
+                        x:Name="tabAutoReply"
+                        Header="Auto Reply Management"
+                        Visibility="Collapsed">
+                        <Grid Margin="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" MinWidth="420" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <!--  Linke Spalte - Verwaltung  -->
+                            <StackPanel
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                Margin="0,0,10,0">
+
+                                <!--  Quick Setup  -->
+                                <GroupBox Header="Einrichtung - automatische Antwort">
+                                    <StackPanel Margin="10">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Benutzer:" />
+                                            <TextBox
+                                                Name="txtAutoReplyUser"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Margin="5,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Startdatum:" />
+                                            <DatePicker
+                                                Name="dpAutoReplyStart"
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="5,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Center"
+                                                Text="Enddatum:" />
+                                            <DatePicker
+                                                Name="dpAutoReplyEnd"
+                                                Grid.Row="2"
+                                                Grid.Column="1"
+                                                Height="30"
+                                                Margin="5,5,0,5" />
+
+                                            <TextBlock
+                                                Grid.Row="3"
+                                                Grid.Column="0"
+                                                Margin="0,5,5,5"
+                                                VerticalAlignment="Top"
+                                                Text="Nachricht:" />
+                                            <TextBox
+                                                Name="txtAutoReplyMessage"
+                                                Grid.Row="3"
+                                                Grid.Column="1"
+                                                Height="250"
+                                                Margin="5,5,0,5"
+                                                AcceptsReturn="True"
+                                                Text="Ich bin vom {StartDate} bis zum {EndDate} außer Haus ..."
+                                                TextWrapping="Wrap" VerticalAlignment="Top" />
+
+                                            <StackPanel
+                                                Grid.Row="4"
+                                                Grid.ColumnSpan="2"
+                                                Margin="0,10,0,0"
+                                                HorizontalAlignment="Center"
+                                                Orientation="Horizontal">
+                                                <Button
+                                                    Name="btnSetAutoReply"
+                                                    Width="295"
+                                                    Margin="0,0,10,0"
+                                                    Background="#28a745"
+                                                    BorderBrush="#28a745"
+                                                    Content="Automatische Antwort aktivieren"
+                                                    Foreground="White" />
+                                                <Button
+                                                    Name="btnDisableAutoReply"
+                                                    Width="295"
+                                                    Background="#dc3545"
+                                                    BorderBrush="#dc3545"
+                                                    Content="Automatische Antwort deaktivieren"
+                                                    Foreground="White" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Management Buttons  -->
+                                <GroupBox Header="Regelverwaltung">
+                                    <StackPanel Margin="10">
+                                        <Button
+                                            x:Name="btnRefreshAutoReply"
+                                            Margin="0,0,0,5"
+                                            Padding="10,5"
+                                            Content="Status aktualisieren" Background="#FF40678C" />
+                                        <Button
+                                            x:Name="btnBulkAutoReply"
+                                            Margin="0,5,0,5"
+                                            Padding="10,5"
+                                            Content="Masseneinrichtung" Background="#FF6B5AA7" />
+                                        <Button
+                                            x:Name="btnExportAutoReply"
+                                            Margin="0,5,0,0"
+                                            Padding="10,5"
+                                            Content="Status exportieren" />
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!--  Hinweis  -->
+                                <Border
+                                    Margin="0,30,0,10"
+                                    Padding="10"
+                                    Background="#FFF3CD"
+                                    BorderBrush="#FFEAA7"
+                                    BorderThickness="1"
+                                    CornerRadius="3">
+                                    <TextBlock
+                                        FontSize="12"
+                                        Foreground="#856404"
+                                        Text="Umbruch in der Abwesenheitsnotiz mit HTML Code 'br' setzten"
+                                        TextWrapping="Wrap" />
+                                </Border>
+
+                            </StackPanel>
+
+                            <!--  Rechte Spalte - Ausgaben  -->
+                            <GroupBox
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                Header="Aktueller Status der automatischen Antwort">
+                                <DataGrid
+                                    Name="dgAutoReplyStatus"
+                                    AutoGenerateColumns="False"
+                                    IsReadOnly="True">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn
+                                            Width="Auto"
+                                            Binding="{Binding DisplayName}"
+                                            Header="Benutzer" />
+                                        <DataGridCheckBoxColumn
+                                            Width="Auto"
+                                            Binding="{Binding AutoReplyState}"
+                                            Header="Aktiv" />
+                                        <DataGridTextColumn
+                                            Width="Auto"
+                                            Binding="{Binding StartTime}"
+                                            Header="Start" />
+                                        <DataGridTextColumn
+                                            Width="Auto"
+                                            Binding="{Binding EndTime}"
+                                            Header="Ende" />
+                                        <DataGridTextColumn
+                                            Width="*"
+                                            Binding="{Binding InternalMessage}"
+                                            Header="Nachricht" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </GroupBox>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
+            </Border>
+        </Grid>
+
+        <!--  Status Bar  -->
+        <Border
+            Grid.Row="2"
+            Background="#142831"
+            BorderBrush="#E0E0E0"
+            BorderThickness="0,1,0,0">
+            <Grid Margin="20,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock
+                    x:Name="txtStatus"
+                    Grid.Column="0"
+                    FontSize="16"
+                    Foreground="#e2e2e2"
+                    Text="Bereit" Grid.ColumnSpan="3" Margin="0,0,450,0" />
+
+                <StackPanel
+                    Grid.Column="2"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+                    <TextBlock
+                        Margin="0,0,5,0"
+                        FontSize="11"
+                        Foreground="#e2e2e2"
+                        Text="Copyright 2025 @" />
+                    <TextBlock
+                        Margin="0,0,35,0"
+                        FontSize="11"
+                        Foreground="#e2e2e2"
+                        Text="by PhinIT | PSscripts.de" />
+                    <TextBlock
+                        Cursor="Hand"
+                        FontSize="11"
+                        Foreground="#d0e8ff"
+                        Text="www.phinit.de  or  www.psscripts.de" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
+"@
+
+# # Globale Variablen für asynchrone Tab-Initialisierung initialisieren
 $script:tabInitRunspace = $null
 $script:tabInitAsync = $null
 $script:tabInitTimer = $null
@@ -437,7 +7487,7 @@ function Show-MessageBox {
 }
 # Registry-Pfad und Standardwerte für Konfigurationseinstellungen
 $script:registryPath = "HKCU:\Software\easyIT\easyEXO"
-$currentScriptVersion = "0.0.12"
+$currentScriptVersion = "0.1.X"
 
 try {
     Write-LogEntry "Prüfe und initialisiere Registry-Konfiguration unter '$($script:registryPath)'."
@@ -495,7 +7545,7 @@ try {
     if ($performUpdate) {
         Write-LogEntry "Setze/Aktualisiere Registry-Standardwerte für '$($script:registryPath)'."
         New-ItemProperty -Path $script:registryPath -Name "Debug" -Value 0 -PropertyType DWORD -Force -ErrorAction Stop | Out-Null
-        New-ItemProperty -Path $script:registryPath -Name "AppName" -Value "Exchange Online Verwaltung" -PropertyType String -Force -ErrorAction Stop | Out-Null
+        New-ItemProperty -Path $script:registryPath -Name "AppName" -Value "easyEXO - Exchange Online Management" -PropertyType String -Force -ErrorAction Stop | Out-Null
         New-ItemProperty -Path $script:registryPath -Name "Version" -Value $currentScriptVersion -PropertyType String -Force -ErrorAction Stop | Out-Null
         New-ItemProperty -Path $script:registryPath -Name "ThemeColor" -Value "#0078D7" -PropertyType String -Force -ErrorAction Stop | Out-Null
         New-ItemProperty -Path $script:registryPath -Name "DefaultUser" -Value "" -PropertyType String -Force -ErrorAction Stop | Out-Null
@@ -568,8 +7618,8 @@ function Get-RegistryConfig {
         return @{
             "General" = @{
                 "Debug" = "0"
-                "AppName" = "Exchange Online Verwaltung"
-                "Version" = "0.0.12"
+                "AppName" = "easyEXO"
+                "Version" = "0.1.X"
                 "ThemeColor" = "#0078D7"
             }
             "Paths" = @{
@@ -13481,26 +20531,24 @@ function Load-XAML {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
-        [string]$XamlFilePath
+        [string]$XamlContent
     )
     
     try {
-        Write-Log  "Lade XAML von: $XamlFilePath" -Type "Info"
+        # Lade XAML aus dem übergebenen String
+        Write-Log "Lade XAML aus String-Variable..." -Type "Info"
         
-        # Überprüfen, ob die XAML-Datei existiert
-        if (-not (Test-Path -Path $XamlFilePath)) {
-            throw "XAML-Datei nicht gefunden: $XamlFilePath"
-        }
-        
-        # XAML-Datei laden und problematische Event-Handler entfernen
-        $xamlString = Get-Content -Path $XamlFilePath -Raw
+        # Problematische Event-Handler entfernen
+        $xamlString = $XamlContent
         $xamlString = $xamlString -replace 'SelectionChanged="lstContacts_SelectionChanged"', ''
         # CornerRadius entfernen, um Kompatibilitätsprobleme mit älteren .NET-Versionen zu vermeiden
         $xamlString = $xamlString -replace '\s+CornerRadius="[^"]*"', ''
-        [xml]$xamlContent = $xamlString
+        
+        # XML parsen
+        [xml]$xmlContent = $xamlString
         
         # Parse XAML
-        $reader = New-Object System.Xml.XmlNodeReader $xamlContent
+        $reader = New-Object System.Xml.XmlNodeReader $xmlContent
         
         try {
             $window = [System.Windows.Markup.XamlReader]::Load($reader)
@@ -13537,15 +20585,18 @@ function Load-XAML {
             Write-Log "TabControl.Items ist immer noch null!" -Type "Error"
         }
         
+        # Speichere das Window-Objekt im Script-Scope
+        $script:Form = $window
+        
         return $window
     }
-    
     catch {
         $errorMsg = $_.Exception.Message
         Write-Log "Fehler in Load-XAML: $errorMsg" -Type "Error"
         throw
     }
 }
+
 # -------------------------------------------------
 # Abschnitt: GUI Laden
 # -------------------------------------------------
@@ -13554,32 +20605,17 @@ Add-Type -AssemblyName PresentationCore
 Add-Type -AssemblyName WindowsBase
 Add-Type -AssemblyName System.Windows.Forms
 
-# Pfad zur XAML-Datei
-$script:xamlFilePath = Join-Path -Path $PSScriptRoot -ChildPath "EXOGUI.xaml"
-
-# Fallback-Pfad, falls die Datei nicht im Hauptverzeichnis ist
-if (-not (Test-Path -Path $script:xamlFilePath)) {
-    $script:xamlFilePath = Join-Path -Path $PSScriptRoot -ChildPath "assets\EXOGUI.xaml"
+# XAML laden und Window-Objekt erstellen
+try {
+    $script:Form = Load-XAML -XamlContent $script:XamlContent
+    Write-Log "XAML erfolgreich geladen und Window-Objekt erstellt" -Type "Success"
+}
+catch {
+    Write-Log "Kritischer Fehler beim Laden des XAML: $($_.Exception.Message)" -Type "Error"
+    Write-LogEntry "Anwendung wird beendet aufgrund XAML-Fehler"
+    exit 1
 }
 
-# Prüfen, ob XAML-Datei gefunden wurde
-if (-not (Test-Path -Path $script:xamlFilePath)) {
-    Write-Log "KRITISCHER FEHLER: XAML-Datei nicht gefunden an beiden Standardpfaden!"  
-    Write-Log "Gesucht wurde in: $PSScriptRoot und $PSScriptRoot\assets"  
-    try {
-        $tempXamlPath = [System.IO.Path]::GetTempFileName() + ".xaml"
-        Set-Content -Path $tempXamlPath -Value $minimalXaml -Encoding UTF8
-        
-        $script:xamlFilePath = $tempXamlPath
-    }
-    catch {
-        Write-Log "Konnte keine Notfall-GUI erstellen. Das Programm wird beendet."  
-        exit
-    }
-}
-
-# GUI aus externer XAML-Datei laden
-$script:Form = Load-XAML -XamlFilePath $script:xamlFilePath
 # -------------------------------------------------
 # Abschnitt: GUI-Elemente referenzieren
 # -------------------------------------------------
@@ -16063,288 +23099,174 @@ function Show-SettingsWindow {
     [CmdletBinding()]
     param()
 
+    # WPF-Framework laden
+    Add-Type -AssemblyName PresentationFramework
+
+    # WinForms für FolderBrowserDialog
+    Add-Type -AssemblyName System.Windows.Forms
+
+    Write-Log "Show-SettingsWindow: Öffne Einstellungsfenster." -Type Info
+    Update-StatusBar -Message "Öffne Einstellungen..." -Type Info
+
     try {
-        # Sicherstellen, dass die notwendigen Assemblies geladen sind
-        Add-Type -AssemblyName System.Windows.Forms
-        Add-Type -AssemblyName System.Drawing
-        $xamlPath = Join-Path -Path $PSScriptRoot -ChildPath "assets\SettingsWindow.xaml"
-        if (-not (Test-Path $xamlPath)) {
-            $errorMsg = "Fehler: SettingsWindow.xaml nicht gefunden unter $xamlPath"
-            Write-Log $errorMsg -Type Error
-            [System.Windows.MessageBox]::Show("Die XAML-Datei für das Einstellungsfenster wurde nicht gefunden.`nPfad: $xamlPath", "Fehler", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error)
-            Return
-        }
+        # XAML für das Einstellungsfenster
+        $xamlSettings = @"
+        <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                Title="Einstellungen - easyEXO" Height="275" Width="500" 
+                WindowStartupLocation="CenterOwner" ShowInTaskbar="False" ResizeMode="NoResize"
+                Background="#f9f9f9">
+            <Window.Resources>
+                <Style TargetType="Button">
+                    <Setter Property="Background" Value="#f0f0f0"/>
+                    <Setter Property="Foreground" Value="#202020"/>
+                    <Setter Property="BorderBrush" Value="#e0e0e0"/>
+                    <Setter Property="BorderThickness" Value="1"/>
+                    <Setter Property="Padding" Value="10,6"/>
+                    <Setter Property="MinHeight" Value="30"/>
+                    <Setter Property="MinWidth" Value="80"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" 
+                                        BorderBrush="{TemplateBinding BorderBrush}" 
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        CornerRadius="2">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#e5e5e5"/>
+                            <Setter Property="BorderBrush" Value="#d0d0d0"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="#d0d0d0"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+                <Style TargetType="TextBox">
+                    <Setter Property="BorderBrush" Value="#d4d4d4"/>
+                    <Setter Property="BorderThickness" Value="1"/>
+                    <Setter Property="Padding" Value="8,2"/>
+                    <Setter Property="Height" Value="30"/>
+                    <Setter Property="VerticalContentAlignment" Value="Center"/>
+                </Style>
+                <Style TargetType="CheckBox">
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                </Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="Margin" Value="0,0,10,0"/>
+                </Style>
+            </Window.Resources>
+            
+            <Grid Margin="15">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-        Write-Log "Lade SettingsWindow.xaml" -Type Info
-        # Korrigierte Methode zum Laden von XAML aus einer Datei
-        $xamlContent = Get-Content -Path $xamlPath -Raw
-        $stringReader = New-Object System.IO.StringReader -ArgumentList $xamlContent
-        $xmlReader = [System.Xml.XmlReader]::Create($stringReader)
-        $settingsWindow = $null # Initialisieren für den finally-Block
-        try {
-            $settingsWindow = [System.Windows.Markup.XamlReader]::Load($xmlReader)
-        }
-        catch {
-            # Spezifischer Fehler beim Laden von XAML abfangen
-            $loadErrorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Parsen der XAML-Datei '$xamlPath'."
-            Write-Log $loadErrorMsg -Type Error
-            Log-Action "Fehler beim Parsen der XAML für SettingsWindow: $loadErrorMsg"
-            [System.Windows.MessageBox]::Show(
-                "Fehler beim Laden des Einstellungsfensters:`n$loadErrorMsg",
-                "XAML Ladefehler",
-                [System.Windows.MessageBoxButton]::OK,
-                [System.Windows.MessageBoxImage]::Error
-            )
-            Return # Beenden, wenn XAML nicht geladen werden kann
-        }
-        finally {
-            # Sicherstellen, dass die Reader geschlossen werden
-            if ($null -ne $xmlReader) { $xmlReader.Close() }
-            if ($null -ne $stringReader) { $stringReader.Close() }
-        }
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Standard-Benutzer (optional):" ToolTip="Benutzerprinzipalname (UPN), der beim Verbinden vorgeschlagen wird."/>
+                <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" x:Name="txtDefaultUser" Margin="0,0,0,10"/>
 
-        # Füge die Windows Forms Assembly hinzu (für FolderBrowserDialog)
-        try { Add-Type -AssemblyName System.Windows.Forms -ErrorAction Stop } catch {
-            Write-Log "Konnte System.Windows.Forms nicht laden. Ordnerauswahl nicht verfügbar." -Type Warning
-        }
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Debugging aktivieren:" ToolTip="Schreibt ausführliche Informationen in die Log-Datei."/>
+                <CheckBox Grid.Row="1" Grid.Column="1" x:Name="chkEnableDebug" Margin="0,0,0,10"/>
+                
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Log-Verzeichnis:" ToolTip="Pfad zum Ordner, in dem Log-Dateien gespeichert werden."/>
+                <TextBox Grid.Row="2" Grid.Column="1" x:Name="txtLogPath" Margin="0,0,5,10" IsReadOnly="True" Background="#eeeeee"/>
+                <Button Grid.Row="2" Grid.Column="2" x:Name="btnBrowseLogPath" Content="..." Width="40" ToolTip="Log-Verzeichnis auswählen"/>
 
-        # Steuerelemente finden
+                <StackPanel Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+                    <Button x:Name="btnSaveSettings" Content="Speichern" IsDefault="True" Margin="0,0,10,0" Background="#0078D7" Foreground="White" BorderBrush="#005BA1" FontWeight="SemiBold"/>
+                    <Button x:Name="btnCancelSettings" Content="Abbrechen" IsCancel="True"/>
+                </StackPanel>
+            </Grid>
+        </Window> 
+"@
+
+        # XAML laden
+        $reader = [System.Xml.XmlReader]::Create([System.IO.StringReader]$xamlSettings)
+        $settingsWindow = [Windows.Markup.XamlReader]::Load($reader)
+        $settingsWindow.Owner = $script:Form
+
+        # UI-Elemente finden
         $txtDefaultUser = $settingsWindow.FindName("txtDefaultUser")
         $chkEnableDebug = $settingsWindow.FindName("chkEnableDebug")
         $txtLogPath = $settingsWindow.FindName("txtLogPath")
         $btnBrowseLogPath = $settingsWindow.FindName("btnBrowseLogPath")
-        $cmbTheme = $settingsWindow.FindName("cmbTheme")
         $btnSaveSettings = $settingsWindow.FindName("btnSaveSettings")
         $btnCancelSettings = $settingsWindow.FindName("btnCancelSettings")
 
-        # Sicherstellen, dass $script:config und die benötigten Hauptschlüssel existieren
-        # Get-RegistryConfig sollte General, Paths, UI bereits initialisiert haben, falls Werte vorhanden sind.
-        # Hier stellen wir sicher, dass sie existieren, auch wenn sie leer sind, für die Logik unten.
-        if ($null -eq $script:config) { $script:config = @{} }
-        if (-not $script:config.ContainsKey("General")) { $script:config["General"] = @{} }
-        if (-not $script:config.ContainsKey("Paths")) { $script:config["Paths"] = @{} }
-        # Für Fallback-Logik von alten Konfigurationsstrukturen oder wenn Get-RegistryConfig sie nicht erstellt
-        if (-not $script:config.ContainsKey("Defaults")) { $script:config["Defaults"] = @{} }
-        if (-not $script:config.ContainsKey("Logging")) { $script:config["Logging"] = @{} }
-        if (-not $script:config.ContainsKey("Appearance")) { $script:config["Appearance"] = @{} }
+        # Aktuelle Einstellungen laden und in der GUI anzeigen
+        $currentConfig = Get-RegistryConfig
+        $txtDefaultUser.Text = $currentConfig.General.DefaultUser
+        $chkEnableDebug.IsChecked = [bool]($currentConfig.General.Debug -eq "1")
+        $txtLogPath.Text = $currentConfig.General.LogPath
 
-
-        # Aktuelle Einstellungen laden und anzeigen (aus $script:config)
-        # Priorität: Neue Struktur (General, Paths), dann alte Struktur (Defaults, Logging, Appearance) als Fallback
-
-        # DefaultUser
-        if ($null -ne $txtDefaultUser) {
-            if ($script:config["General"].ContainsKey("DefaultUser")) {
-                $txtDefaultUser.Text = $script:config["General"]["DefaultUser"]
-            } elseif ($script:config["Defaults"].ContainsKey("DefaultUser")) { # Fallback
-                $txtDefaultUser.Text = $script:config["Defaults"]["DefaultUser"]
+        # Event-Handler für "Durchsuchen"
+        $btnBrowseLogPath.Add_Click({
+            $folderBrowser = New-Object System.Windows.Forms.FolderBrowserDialog
+            $folderBrowser.Description = "Bitte wählen Sie das Verzeichnis für die Log-Dateien aus."
+            $folderBrowser.SelectedPath = $txtLogPath.Text
+            if ($folderBrowser.ShowDialog() -eq "OK") {
+                $txtLogPath.Text = $folderBrowser.SelectedPath
             }
-        }
+        })
 
-        # DebugEnabled
-        if ($null -ne $chkEnableDebug) {
-            if ($script:config["General"].ContainsKey("Debug")) {
-                $chkEnableDebug.IsChecked = ($script:config["General"]["Debug"] -eq "1")
-            } elseif ($script:config["Logging"].ContainsKey("DebugEnabled")) { # Fallback
-                $debugEnabledValue = $script:config["Logging"]["DebugEnabled"]
-                if ($debugEnabledValue -is [string] -and $debugEnabledValue -match '^(true|false)$') {
-                    $chkEnableDebug.IsChecked = [System.Convert]::ToBoolean($debugEnabledValue)
-                } elseif ($debugEnabledValue -is [bool]) {
-                    $chkEnableDebug.IsChecked = $debugEnabledValue
-                } else {
-                    $chkEnableDebug.IsChecked = $false # Fallback bei ungültigem Wert
-                    Write-Log "Ungültiger Wert für DebugEnabled in Config (Logging): '$debugEnabledValue'. Setze auf false." -Type Warning
+        # Event-Handler für "Abbrechen"
+        $btnCancelSettings.Add_Click({
+            $settingsWindow.Close()
+        })
+
+        # Event-Handler für "Speichern"
+        $btnSaveSettings.Add_Click({
+            try {
+                if (-not (Test-Path -Path $script:registryPath)) {
+                    New-Item -Path $script:registryPath -Force | Out-Null
                 }
-            } else {
-                $chkEnableDebug.IsChecked = $false # Standard-Fallback
+                Set-ItemProperty -Path $script:registryPath -Name "DefaultUser" -Value $txtDefaultUser.Text -ErrorAction Stop
+                $debugValue = if ($chkEnableDebug.IsChecked) { "1" } else { "0" }
+                Set-ItemProperty -Path $script:registryPath -Name "Debug" -Value $debugValue -ErrorAction Stop
+                Set-ItemProperty -Path $script:registryPath -Name "LogPath" -Value $txtLogPath.Text -ErrorAction Stop
+
+                Write-Log "Einstellungen erfolgreich in der Registry gespeichert." -Type Success
+                Show-MessageBox -Message "Die Einstellungen wurden gespeichert. Einige Änderungen erfordern einen Neustart der Anwendung." -Title "Gespeichert" -Type Info
+                
+                # Globale Konfiguration aktualisieren
+                $script:config = Get-RegistryConfig
+                # Debug-Modus direkt anpassen
+                $script:debugMode = $script:config.General.Debug -eq "1"
+
+                $settingsWindow.Close()
             }
-        }
-
-        # LogPath / LogDirectory
-        if ($null -ne $txtLogPath) {
-            if ($script:config["Paths"].ContainsKey("LogPath")) {
-                $txtLogPath.Text = $script:config["Paths"]["LogPath"]
-            } elseif ($script:config["Logging"].ContainsKey("LogDirectory")) { # Fallback
-                $txtLogPath.Text = $script:config["Logging"]["LogDirectory"]
+            catch {
+                $errorMsg = "Fehler beim Speichern der Einstellungen in der Registry: $($_.Exception.Message)"
+                Write-Log $errorMsg -Type Error
+                Show-MessageBox -Message $errorMsg -Title "Fehler" -Type Error
             }
-        }
-        
-        # Theme
-        if ($null -ne $cmbTheme) {
-            $themeToLoad = $null
-            if ($script:config["General"].ContainsKey("Theme")) { # Neuer Schlüssel für Theme-Tag
-                $themeToLoad = $script:config["General"]["Theme"]
-            } elseif ($script:config["Appearance"].ContainsKey("Theme")) { # Fallback auf alte Struktur
-                $themeToLoad = $script:config["Appearance"]["Theme"]
-            } elseif ($script:config["General"].ContainsKey("ThemeColor")) { # Fallback auf ThemeColor, falls "Theme" nicht existiert
-                 # Hier müsste eine Logik stehen, die ThemeColor (z.B. #0078D7) auf einen Tag (z.B. "Light") mappt.
-                 # Fürs Erste wird dies ignoriert und der Standard-Theme verwendet, wenn nur ThemeColor vorhanden ist.
-                 Write-Log "ThemeColor ('$($script:config["General"]["ThemeColor"])') gefunden, aber 'Theme' (Tag) wird bevorzugt. Mapping nicht implementiert." -Type Debug
-            }
+        })
 
-            if ($null -ne $themeToLoad) {
-                foreach($item in $cmbTheme.Items) {
-                    if ($item.Tag -eq $themeToLoad) {
-                        $cmbTheme.SelectedItem = $item
-                        break
-                    }
-                }
-                if ($null -eq $cmbTheme.SelectedItem) { $cmbTheme.SelectedIndex = 0 } # Fallback, wenn Tag nicht in ComboBox
-            } else {
-                $cmbTheme.SelectedIndex = 0 # Standardwert setzen, falls nichts in Config
-            }
-        }
-
-
-        # Event Handler für "Durchsuchen..."
-        if ($null -ne $btnBrowseLogPath) {
-            $btnBrowseLogPath.Add_Click({
-                try {
-                    # Prüfen ob Windows Forms verfügbar ist
-                    if (-not ([System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms"))) {
-                        [System.Windows.MessageBox]::Show("Die Komponente für die Ordnerauswahl (System.Windows.Forms) konnte nicht geladen werden.", "Fehler", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning)
-                        Return
-                    }
-
-                    $folderBrowser = New-Object System.Windows.Forms.FolderBrowserDialog
-                    $folderBrowser.Description = "Wählen Sie das Verzeichnis für Log-Dateien"
-                    $folderBrowser.ShowNewFolderButton = $true
-                    if ($txtLogPath.Text -and (Test-Path $txtLogPath.Text -PathType Container)) {
-                        $folderBrowser.SelectedPath = $txtLogPath.Text
-                    }
-
-                    # WPF Fenster als Parent setzen (optional, für besseres modales Verhalten)
-                    $wpfWindowInteropHelper = New-Object System.Windows.Interop.WindowInteropHelper -ArgumentList $settingsWindow
-                    $ownerHandle = $wpfWindowInteropHelper.Handle
-
-                    # Erstelle ein Objekt, das IWin32Window implementiert
-                    $ownerWindow = New-Object System.Windows.Forms.NativeWindow
-                    $ownerWindow.AssignHandle($ownerHandle)
-
-                    try {
-                        # Dialog anzeigen und das NativeWindow-Objekt als Owner übergeben
-                        if ($folderBrowser.ShowDialog($ownerWindow) -eq [System.Windows.Forms.DialogResult]::OK) {
-                            $txtLogPath.Text = $folderBrowser.SelectedPath
-                            Write-Log "Neues Log-Verzeichnis ausgewählt: $($txtLogPath.Text)" -Type Info
-                        }
-                    }
-                    finally {
-                        # Handle freigeben, um Ressourcenlecks zu vermeiden
-                        $ownerWindow.ReleaseHandle()
-                    }
-                } catch {
-                     $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Öffnen des Ordnerauswahldialogs."
-                     Write-Log $errorMsg -Type Error
-                     [System.Windows.MessageBox]::Show("Fehler beim Anzeigen des Ordnerauswahldialogs: $errorMsg", "Fehler", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error)
-                }
-            })
-        }
-
-        # Event Handler für "Speichern"
-        if ($null -ne $btnSaveSettings) {
-            $btnSaveSettings.Add_Click({
-                # Werte auslesen
-                $newDefaultUser = if($null -ne $txtDefaultUser) { $txtDefaultUser.Text.Trim() } else { "" }
-                $newDebugEnabled = if($null -ne $chkEnableDebug) { $chkEnableDebug.IsChecked } else { $false }
-                $newLogPath = if($null -ne $txtLogPath) { $txtLogPath.Text.Trim() } else { "" }
-                $newThemeTag = if($null -ne $cmbTheme.SelectedItem) { $cmbTheme.SelectedItem.Tag } else { "Light" } # Standard-Theme-Tag
-
-                # Validieren
-                if (-not $newLogPath) {
-                    [System.Windows.MessageBox]::Show("Bitte geben Sie ein Log-Verzeichnis an.", "Validierung fehlgeschlagen", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning)
-                    return
-                }
-                if (-not (Test-Path (Split-Path -Path $newLogPath -Parent) -PathType Container)) {
-                    [System.Windows.MessageBox]::Show("Das übergeordnete Verzeichnis des Log-Pfads existiert nicht. Bitte wählen Sie einen gültigen Pfad.", "Validierung fehlgeschlagen", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning)
-                    return
-                }
-
-
-                # $script:config mit den neuen Werten aktualisieren (konsistent mit Get-RegistryConfig Struktur)
-                $script:config["General"]["DefaultUser"] = $newDefaultUser
-                $script:config["General"]["Debug"] = if($newDebugEnabled) {"1"} else {"0"}
-                $script:config["Paths"]["LogPath"] = $newLogPath
-                $script:config["General"]["Theme"] = $newThemeTag # Speichere den Tag, nicht die Farbe
-
-                # Konfiguration in Registry speichern
-                $saveResult = $false
-                try {
-                    if (-not (Test-Path $script:registryPath)) {
-                        Write-Log "Registry-Pfad '$($script:registryPath)' nicht gefunden, wird erstellt." -Type Info
-                        New-Item -Path $script:registryPath -Force | Out-Null
-                    }
-                    Set-ItemProperty -Path $script:registryPath -Name "DefaultUser" -Value $newDefaultUser -Type String -ErrorAction Stop
-                    Set-ItemProperty -Path $script:registryPath -Name "Debug" -Value $script:config["General"]["Debug"] -Type String -ErrorAction Stop
-                    Set-ItemProperty -Path $script:registryPath -Name "LogPath" -Value $newLogPath -Type String -ErrorAction Stop
-                    Set-ItemProperty -Path $script:registryPath -Name "Theme" -Value $newThemeTag -Type String -ErrorAction Stop
-                    
-                    Write-Log "Einstellungen erfolgreich in die Registry geschrieben." -Type Success
-                    $saveResult = $true
-                }
-                catch {
-                    $errorDetail = Get-FormattedError -ErrorRecord $_ -DefaultText "Unbekannter Fehler beim Schreiben in die Registry."
-                    Write-Log "Fehler beim Speichern der Einstellungen in die Registry: $errorDetail" -Type Error
-                    Log-Action "Registry Speicherfehler: $errorDetail"
-                    [System.Windows.MessageBox]::Show("Fehler beim Speichern der Einstellungen in die Registry:`n$($_.Exception.Message)", "Speicherfehler", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error)
-                    $saveResult = $false
-                }
-
-                if ($saveResult) {
-                    # Laufzeitvariablen aktualisieren
-                    $script:debugMode = $newDebugEnabled # Direkt die boolesche Variable für den aktuellen Lauf setzen
-                    $script:DebugPreference = if($newDebugEnabled) { 'Continue' } else { 'SilentlyContinue' } # Für Write-Debug etc.
-                    $script:LogDir = $newLogPath
-                    
-                    # Logging neu initialisieren oder Pfad aktualisieren
-                    # Annahme: Initialize-Logging verwendet $script:LogDir und $script:debugMode (oder $script:DebugPreference)
-                    Initialize-Logging 
-                    
-                    # Theme zur Laufzeit anwenden (falls Funktion dafür existiert)
-                    # Apply-Theme $newThemeTag # Beispiel, Funktion müsste existieren
-
-                    Update-GuiText -TextElement $script:txtStatus -Message "Einstellungen erfolgreich gespeichert und angewendet."
-                    Log-Action "Einstellungen wurden gespeichert und angewendet."
-                    $settingsWindow.Close()
-                } else {
-                    Update-GuiText -TextElement $script:txtStatus -Message "Fehler beim Speichern der Einstellungen."
-                }
-            })
-        }
-
-        # Event Handler für "Abbrechen"
-        if ($null -ne $btnCancelSettings) {
-            $btnCancelSettings.Add_Click({ $settingsWindow.Close() })
-        }
-
-        # Fenstereigentümer setzen, damit es modal zum Hauptfenster ist
-        if ($null -ne $script:Form -and $script:Form -is [System.Windows.Window]) {
-            $settingsWindow.Owner = $script:Form
-        } else {
-            Write-Log "Hauptfenster (\$script:Form) nicht gefunden oder ungültig. Einstellungsfenster wird nicht modal angezeigt." -Type Warning
-        }
-
-
-        # Fenster anzeigen
-        Write-Log "Zeige Einstellungsfenster an" -Type Info
-        [void]$settingsWindow.ShowDialog()
-        Write-Log "Einstellungsfenster geschlossen" -Type Info
-
-    }
-    catch {
-         # Allgemeiner Fehler im Einstellungsfenster (außerhalb des XAML-Ladevorgangs)
-         $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Unerwarteter Fehler im Einstellungsfenster."
-         Write-Log $errorMsg -Type Error
-         Log-Action "Fehler im Einstellungsfenster: $errorMsg"
-         [System.Windows.MessageBox]::Show(
-             "Fehler im Einstellungsfenster:`n$errorMsg",
-             "Fensterfehler",
-             [System.Windows.MessageBoxButton]::OK,
-             [System.Windows.MessageBoxImage]::Error
-         )
+        $settingsWindow.ShowDialog() | Out-Null
+        Write-Log "Show-SettingsWindow: Einstellungsfenster geschlossen." -Type Success
+        Update-StatusBar -Message "Einstellungen angezeigt." -Type Success
+    } catch {
+        Write-Log "Show-SettingsWindow: Fehler beim Anzeigen der Einstellungen: $($_.Exception.Message)" -Type Error
+        Show-MessageBox -Message "Fehler beim Anzeigen der Einstellungen: $($_.Exception.Message)" -Title "Fehler" -Type Error
+        Update-StatusBar -Message "Fehler beim Anzeigen der Einstellungen." -Type Error
     }
 }
-
-# --- Ende Funktionen für Einstellungsfenster ---
 
 ##############TABSFUNKTIONEN####################
 
@@ -21469,8 +28391,8 @@ finally {
 # SIG # Begin signature block
 # MIIcCAYJKoZIhvcNAQcCoIIb+TCCG/UCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCK1U0nzbJJZNnY
-# VFQhQNdQfxNCd+Pfy1W0z4s8dwRrf6CCFk4wggMQMIIB+KADAgECAhB3jzsyX9Cg
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCA7XI6NcZjbCq8m
+# 6BeTn+E8+sv1YXD3ZkBy66FQLlYvkaCCFk4wggMQMIIB+KADAgECAhB3jzsyX9Cg
 # jEi+sBC2rBMTMA0GCSqGSIb3DQEBCwUAMCAxHjAcBgNVBAMMFVBoaW5JVC1QU3Nj
 # cmlwdHNfU2lnbjAeFw0yNTA3MDUwODI4MTZaFw0yNzA3MDUwODM4MTZaMCAxHjAc
 # BgNVBAMMFVBoaW5JVC1QU3NjcmlwdHNfU2lnbjCCASIwDQYJKoZIhvcNAQEBBQAD
@@ -21593,28 +28515,28 @@ finally {
 # DBVQaGluSVQtUFNzY3JpcHRzX1NpZ24CEHePOzJf0KCMSL6wELasExMwDQYJYIZI
 # AWUDBAIBBQCggYQwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0B
 # CQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAv
-# BgkqhkiG9w0BCQQxIgQgyX98rsX3ehXXR3Dt46lmQlYZk9U6L2B3BCqZvl6X58cw
-# DQYJKoZIhvcNAQEBBQAEggEAhTqeN0gG56hq78yoqglzXblYkaghAwwkRyhNFbBv
-# LYcr8Ulro7m9lXI3KU36+qgw613wv1/DxUdJWANinRBSgKq4KFJ9df+2zcCD1/DW
-# TxqSuwloHFtoI2BcYKoKJfv0CS8kH5j3uo2wicpe49jW/6g4HlIXRhZsmPRiaxn2
-# yJsdjtfgfJZuTjFTvsys036wcdRG6knc629QXysf8n1dH2rHIS//oU+QZNXdF89r
-# X2FcKyT7ksvnKRZUjbshsCdmyrDnd8ErJb+PVK0jhPtXV9orp1nw4m15BTwGEu31
-# vdwmqbUfBW/K0s7gtZvht++YIYxQGmYCScf3Vtf6nIkeo6GCAyYwggMiBgkqhkiG
+# BgkqhkiG9w0BCQQxIgQgANDbObLZ9CA0ed6UsMOVEZ/tBTMnM+nNLub5QS2O5wYw
+# DQYJKoZIhvcNAQEBBQAEggEAsKGl6W34WWCfCSgH9Q8+BMcm+EDz1L2RWXoZbUpu
+# SCL3bdbHYYi6H3/pEeFUN3/c33nqyTVOfxp9HdjR1uaF4j98zPbQTyvDh86Igdcn
+# 3kzBkrBI9hiMBiRxB+roFD/Xorc402gbsN9IZ/ftdGqsdjFnjqIpFYdZIY6fX1c3
+# eJuT/y3ydlwFNrPrmRURz8hWzQA+xJ3OMiFTsab83DwHiUIiy4HMzMfh1jFfY1n/
+# DgK/gYkmn6ZpnCrL8wdrkDWWupWp1jI20tkGdvl+lnoJFHOmCBp8vpaWo45sd1Rl
+# pf69avOZg18W4BjLyt7hYO+mx5gUFdMVzR6gGUGY1mln26GCAyYwggMiBgkqhkiG
 # 9w0BCQYxggMTMIIDDwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdp
 # Q2VydCwgSW5jLjFBMD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3Rh
 # bXBpbmcgUlNBNDA5NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgw
 # DQYJYIZIAWUDBAIBBQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqG
-# SIb3DQEJBTEPFw0yNTA3MTIxMTU1NTlaMC8GCSqGSIb3DQEJBDEiBCAplNBjBSRs
-# S1Ps7fKGd/skhaXk8mbM4bqyMar2bTWvhzANBgkqhkiG9w0BAQEFAASCAgC0oRb9
-# 8dFW4kgSl/mLGA8C4SK9e2bwwfjE1TDEC81sCSntevKfFdH7PDiJz/rswkrEi1fe
-# 0GO8OhdTutC3V9pB598nFvLjSCzqRTCMEWdqScAX7a+uysB8gxgoiPKJe+vbkK8a
-# r1okTBMpfCtCwwAzYoDAcAaFgPDADJtTycOyNm2ijbsXxSjUAAO9TJTcrdiHja1A
-# nfpE2lZS8Ti3bowjDX10avbBITWIxTZR2n6xQNT/SeCeFxoGHJau+oum1kgPKqeN
-# HL83x0Glx8Y5Nl9WTCBKEwpofBaOB/7xBkb1ZOmf780k7rNHHNsVzD5vH6qRLX9Z
-# N6/Yo1gpqMlj5l+WTtw8G2t3gtBoGhPEThOuxO3W3oeS4BkgkGOfOgHc+CH74720
-# +57/E0VOSnSJ2oDkX3UNDfYMWsfi5qSUK1HBfw7TBIns4sITc1syPtLMJOJ9lxHQ
-# yQwcazN8mrA9N5z80XOeY7+j3RJJLkxX5dC5D2Cw2i3bM9//0J5lJMWsvNR0kUNS
-# RUjxqsE+JCbZRtEHmSYFtpalYcfE6o/pn2JGrCvL8Z0nCbRXXvHvVx2gCTHDxx0+
-# tns/xnpScHK7FbJsiYtgNKeSOcmRFFs16eOzM4HIgNQSaCwmr4fcPa/NhQdlUxJf
-# HRsRgdGgfJvHOAIFIPDnotAU8AkodrZQYOCblA==
+# SIb3DQEJBTEPFw0yNTA3MTIxMzQzNDdaMC8GCSqGSIb3DQEJBDEiBCAd27lyvWPm
+# lxFz3nGWBdo56rFQINN7ajgdJmzXUzzcdTANBgkqhkiG9w0BAQEFAASCAgAWabvN
+# 6v/Urv0GUkB6NLjzsyirpqdvSfzrVhAXHLOuwcJCW26jvm0Rj1pZgn//p7uu7HzP
+# 6pYJSuVuxiZP/fkrrwklJ8ED6INX5bqDLatGO0qrb9D04JK+A7NP50jvf2JIOfoI
+# KElkE3ds0apIzt8LeHoQ0fe3zLsjwxezm2nbDMJMobVQhCj2T4tmtpDMKjXTV89N
+# hFCC7sK9qHaFPvDWa3OjJfVJu4naJZL9/yLUqEwiml3orK1FfXwxyMUgiC/H7hVw
+# EILW2aOxAG3swnbmaRMb9hh3MpIk+bC0Ns31XIO7ENeFfMiHeXqtI964vG2fLyK+
+# 9/FU8J6rmBiYWEBgAjqtU/7fG2IRpm6O3jRMFzCDYqBwrBmEi8oB1aU9v3zUfnKD
+# hLgOgdnSDEAFzEFi5nzII4OIhwM9cMew9+1cte+fB5uonEe5H5H6HZbzqroJ9Dr2
+# O/310NfKUsS6oDH77kbOoueSbYtj5TPJN79Y6pFzJtRWeL5K3Q2iPp6z71oELjJt
+# 4HLlNWwBB4LCRs6+CFuXWmgoqqCNhZa1WeI3KLxX1ykM8bpcydnbUrSFXK5L8dkv
+# jau6v580ynCc07vya5dlT3RxmxxqWiHE12wCRu1ACHrT9QHg7B1wHcAMQDo4+6E5
+# eCRJ5LqfjFZU0Zet5WqXIBU3BYiqDRbVIKdcQQ==
 # SIG # End signature block
