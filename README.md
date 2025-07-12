@@ -11,8 +11,7 @@ Das Tool bietet einen modularen Aufbau mit verschiedenen Tabs für spezifische V
 ## Hauptfunktionen
 
 ### 📊 Dashboard
-- **Live-Statistiken**: Zeigt eine dynamische Übersicht über wichtige Exchange-Objekte wie Postfächer, Gruppen, Kontakte und Ressourcen.
-- **Verbindungsstatus**: Klare visuelle Anzeige, ob eine Verbindung zu Exchange Online besteht.
+- **Statistiken**: Zeigt nach Verbindung eine dynamische Übersicht über wichtige Exchange-Objekte wie Postfächer, Gruppen, Kontakte und Ressourcen.
 
 ### 🗂️ Grundlegende Verwaltung
 - **Kalenderberechtigungen**: Einfaches Anzeigen, Hinzufügen, Ändern und Entfernen von Berechtigungen für Benutzerkalender. Setzen von Standard- und anonymen Berechtigungen.
@@ -51,12 +50,13 @@ Das Tool bietet einen modularen Aufbau mit verschiedenen Tabs für spezifische V
 ## Anwendung
 
 1.  **Herunterladen**: Laden Sie das Skript `easyEXO_V0.1.1.ps1` herunter.
-2.  **Ausführen**: Starten Sie das Skript in einer PowerShell-Konsole mit Administratorrechten.
+2.  **Zertifikat**: importieren Sie das öffentliche Code Signing Certificat von https://github.com/PS-easyIT/PowerShell_Certificate
+3.  **Ausführen**: Starten Sie das Skript in einer PowerShell-Konsole mit Administratorrechten.
     ```powershell
     .\easyEXO_V0.1.1.ps1
     ```
-3.  **Verbinden**: Klicken Sie auf den Button "Mit Exchange Online verbinden". Nach erfolgreicher Authentifizierung werden die GUI-Elemente aktiviert.
-4.  **Verwalten**: Navigieren Sie durch die Tabs, um die gewünschten Aktionen auszuführen.
+4.  **Verbinden**: Klicken Sie auf den Button "Mit Exchange Online verbinden". Nach erfolgreicher Authentifizierung werden die GUI-Elemente aktiviert.
+5.  **Verwalten**: Navigieren Sie durch die Tabs, um die gewünschten Aktionen auszuführen.
 
 ## Konfiguration
 
