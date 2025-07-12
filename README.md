@@ -1,6 +1,6 @@
 # easyEXO - Exchange Online Verwaltungstool
 
-![Screenshot](https://github.com/PS-easyIT/easyEXO/blob/main/%23%20Screenshots/easyEXO-V0.1.1_Dashboard.jpg)
+![Screenshot](https://github.com/PS-easyIT/easyEXO/blob/main/%23%20Screenshots/easyEXO-V0.0.12_Dashboard.jpg)
 
 ## Übersicht
 
