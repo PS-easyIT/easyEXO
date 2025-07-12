@@ -1,4 +1,4 @@
-[Screenshot ](https://github.com/PS-easyIT/easyEXO/blob/main/%23%20Screenshots/easyEXO-V0.0.13_Dashboard.jpg)
+![Screenshot](https://github.com/PS-easyIT/easyEXO/blob/main/%23%20Screenshots/easyEXO-V0.0.13_Dashboard.jpg)
 
 Dieses Repository enthält das PowerShell Script **easyEXO_V0.0.12.ps1** zur Verwaltung und Konfiguration von Exchange Online. 
 easyEXO bietet eine übersichtliche Benutzeroberfläche mit vielfältigen Tabs und Funktionen.
