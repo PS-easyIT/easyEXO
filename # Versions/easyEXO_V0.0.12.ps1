@@ -11317,6 +11317,1819 @@ function Search-ExoContacts {
     }
 }
 
+#region ATP Action Functions
+
+# Hilfsfunktion zum Exportieren von DataGrid-Inhalten
+function Export-DataGridContent {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Windows.Controls.DataGrid]$DataGrid,
+
+        [Parameter(Mandatory = $true)]
+        [string]$DefaultFileName
+    )
+
+    try {
+        $dataToExport = $DataGrid.ItemsSource
+        if ($null -eq $dataToExport -or $dataToExport.Count -eq 0) {
+            Show-MessageBox -Message "Es sind keine Daten zum Exportieren vorhanden." -Title "Keine Daten" -Type "Warning"
+            return
+        }
+
+        $saveFileDialog = New-Object Microsoft.Win32.SaveFileDialog
+        $saveFileDialog.Filter = "CSV-Dateien (*.csv)|*.csv|Alle Dateien (*.*)|*.*"
+        $saveFileDialog.FileName = "$($DefaultFileName)_$(Get-Date -Format 'yyyyMMdd_HHmmss').csv"
+        
+        if ($saveFileDialog.ShowDialog() -eq $true) {
+            $exportPath = $saveFileDialog.FileName
+            $dataToExport | Export-Csv -Path $exportPath -NoTypeInformation -Encoding UTF8 -Delimiter ";"
+            Update-StatusBar -Message "Daten erfolgreich nach '$exportPath' exportiert." -Type "Success"
+            Show-MessageBox -Message "Die Daten wurden erfolgreich exportiert." -Title "Export erfolgreich" -Type "Info"
+        }
+    } catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Exportieren der Daten."
+        Write-Log $errorMsg -Type "Error"
+        Update-StatusBar -Message "Fehler beim Exportieren der Daten." -Type "Error"
+        Show-MessageBox -Message $errorMsg -Title "Export-Fehler" -Type "Error"
+    }
+}
+
+function Get-AntiPhishingPoliciesAction {
+    if (-not (Confirm-ExchangeConnection)) { return }
+    Update-StatusBar -Message "Anti-Phishing-Richtlinien werden geladen..." -Type Info
+    try {
+        $policies = Get-AntiPhishPolicy -ErrorAction Stop
+        $script:dgAntiPhishingPolicies.Dispatcher.Invoke([Action]{
+            $script:dgAntiPhishingPolicies.ItemsSource = $policies
+        })
+        Update-StatusBar -Message "$($policies.Count) Anti-Phishing-Richtlinien geladen." -Type Success
+        Log-Action "Anti-Phishing-Richtlinien geladen: $($policies.Count) gefunden."
+    } catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Laden der Anti-Phishing-Richtlinien."
+        Update-StatusBar -Message $errorMsg -Type Error
+        Show-MessageBox -Message $errorMsg -Title "Fehler" -Type Error
+        Log-Action "Fehler beim Laden der Anti-Phishing-Richtlinien: $errorMsg"
+    }
+}
+
+function New-AntiPhishingPolicyAction {
+    [CmdletBinding()]
+    param()
+
+    if (-not (Confirm-ExchangeConnection)) { return }
+    Update-StatusBar -Message "Öffne Dialog zur Erstellung einer neuen Anti-Phishing-Richtlinie..." -Type Info
+
+    try {
+        # XAML für das Dialogfenster
+        $xamlDialog = @"
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Neue Anti-Phishing-Richtlinie" Height="550" Width="600"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <TextBlock Grid.Row="0" Text="Neue Anti-Phishing-Richtlinie erstellen" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+        
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Label Content="Richtlinienname:" FontWeight="SemiBold"/>
+                <TextBox x:Name="txtPolicyName" Margin="0,0,0,10"/>
+                
+                <Label Content="Beschreibung (optional):" FontWeight="SemiBold"/>
+                <TextBox x:Name="txtPolicyDescription" Margin="0,0,0,10" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
+
+                <CheckBox x:Name="chkEnabled" Content="Richtlinie aktivieren" IsChecked="True" Margin="0,10,0,10"/>
+                
+                <GroupBox Header="Schutzeinstellungen" Margin="0,10,0,10">
+                    <StackPanel Margin="10">
+                        <CheckBox x:Name="chkImpersonationProtectionEnabled" Content="Identitätsschutz aktivieren" IsChecked="True"/>
+                        <CheckBox x:Name="chkSpoofProtectionEnabled" Content="Spoofingschutz aktivieren" IsChecked="True"/>
+                        <CheckBox x:Name="chkMailboxIntelligenceProtectionEnabled" Content="Schutz durch Postfachintelligenz aktivieren" IsChecked="True"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <Label Content="Anwenden auf (Benutzer, Gruppen, Domänen - mit Semikolon trennen):" FontWeight="SemiBold"/>
+                <TextBox x:Name="txtAppliedTo" Margin="0,0,0,10" ToolTip="z.B. user@contoso.com; marketing@contoso.com; contoso.com"/>
+
+            </StackPanel>
+        </ScrollViewer>
+        
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button x:Name="btnCreate" Content="Erstellen" Width="100" Height="30" Margin="0,0,10,0" IsDefault="True"/>
+            <Button x:Name="btnCancel" Content="Abbrechen" Width="80" Height="30" IsCancel="True"/>
+        </StackPanel>
+    </Grid>
+</Window>
+"@
+
+        $reader = [System.Xml.XmlReader]::Create([System.IO.StringReader]$xamlDialog)
+        $dialog = [Windows.Markup.XamlReader]::Load($reader)
+        
+        # UI-Elemente referenzieren
+        $txtPolicyName = $dialog.FindName("txtPolicyName")
+        $txtPolicyDescription = $dialog.FindName("txtPolicyDescription")
+        $chkEnabled = $dialog.FindName("chkEnabled")
+        $chkImpersonationProtectionEnabled = $dialog.FindName("chkImpersonationProtectionEnabled")
+        $chkSpoofProtectionEnabled = $dialog.FindName("chkSpoofProtectionEnabled")
+        $chkMailboxIntelligenceProtectionEnabled = $dialog.FindName("chkMailboxIntelligenceProtectionEnabled")
+        $txtAppliedTo = $dialog.FindName("txtAppliedTo")
+        $btnCreate = $dialog.FindName("btnCreate")
+        $btnCancel = $dialog.FindName("btnCancel")
+
+        $btnCancel.Add_Click({ $dialog.Close() })
+
+        $btnCreate.Add_Click({
+            try {
+                $policyName = $txtPolicyName.Text.Trim()
+                if ([string]::IsNullOrWhiteSpace($policyName)) {
+                    Show-MessageBox -Message "Bitte geben Sie einen Richtliniennamen an." -Title "Eingabe fehlt" -Type Warning
+                    return
+                }
+
+                Update-StatusBar -Message "Erstelle Anti-Phishing-Richtlinie '$policyName'..." -Type Info
+
+                $policyParams = @{
+                    Name = $policyName
+                    Enabled = $chkEnabled.IsChecked
+                    Description = $txtPolicyDescription.Text.Trim()
+                    ImpersonationProtectionEnabled = $chkImpersonationProtectionEnabled.IsChecked
+                    SpoofProtectionEnabled = $chkSpoofProtectionEnabled.IsChecked
+                    MailboxIntelligenceProtectionEnabled = $chkMailboxIntelligenceProtectionEnabled.IsChecked
+                    ErrorAction = 'Stop'
+                }
+
+                # Richtlinie erstellen
+                New-AntiPhishPolicy @policyParams
+
+                # Regel erstellen und mit Richtlinie verknüpfen
+                $appliedToRecipients = $txtAppliedTo.Text.Trim() -split ';' | ForEach-Object { $_.Trim() } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+                if ($appliedToRecipients.Count -gt 0) {
+                    $ruleParams = @{
+                        Name = "$($policyName)_Rule"
+                        AntiPhishPolicy = $policyName
+                        RecipientDomainIs = $appliedToRecipients | Where-Object { $_ -notlike "*@*" }
+                        SentTo = $appliedToRecipients | Where-Object { $_ -like "*@*" }
+                        ErrorAction = 'Stop'
+                    }
+                    New-AntiPhishRule @ruleParams
+                }
+
+                $dialog.DialogResult = $true
+                $dialog.Close()
+                Show-MessageBox -Message "Die Anti-Phishing-Richtlinie '$policyName' wurde erfolgreich erstellt." -Title "Erfolg" -Type Info
+                Log-Action "Neue Anti-Phishing-Richtlinie '$policyName' erstellt."
+                
+                # Liste aktualisieren
+                Get-AntiPhishingPoliciesAction
+
+            } catch {
+                $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Erstellen der Anti-Phishing-Richtlinie."
+                Write-Log $errorMsg -Type Error
+                Show-MessageBox -Message $errorMsg -Title "Fehler" -Type Error
+            }
+        })
+
+        $dialog.Owner = $script:Form
+        [void]$dialog.ShowDialog()
+
+    } catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Öffnen des Dialogs für neue Anti-Phishing-Richtlinien."
+        Write-Log $errorMsg -Type Error
+        Show-MessageBox -Message $errorMsg -Title "Fehler" -Type Error
+    }
+}
+
+function Set-AntiPhishingPolicyAction {
+    [CmdletBinding()]
+    param()
+
+    if (-not (Confirm-ExchangeConnection)) { return }
+
+    $selectedPolicy = $script:dgAntiPhishingPolicies.SelectedItem
+    if ($null -eq $selectedPolicy) {
+        Show-MessageBox -Message "Bitte wählen Sie eine Richtlinie aus der Liste aus, um sie zu bearbeiten." -Title "Keine Auswahl" -Type "Warning"
+        return
+    }
+
+    Update-StatusBar -Message "Lade Details für Richtlinie '$($selectedPolicy.Name)'..." -Type Info
+
+    try {
+        # Zugehörige Regel finden
+        $rule = Get-AntiPhishRule | Where-Object { $_.AntiPhishPolicy -eq $selectedPolicy.Name } | Select-Object -First 1
+
+        # XAML für das Dialogfenster (ähnlich wie bei 'New', aber zum Bearbeiten)
+        $xamlDialog = @"
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Anti-Phishing-Richtlinie bearbeiten" Height="550" Width="600"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <TextBlock Grid.Row="0" Text="Anti-Phishing-Richtlinie bearbeiten" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+        
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Label Content="Richtlinienname:" FontWeight="SemiBold"/>
+                <TextBox x:Name="txtPolicyName" Margin="0,0,0,10" IsReadOnly="True" Background="#EEEEEE"/>
+                
+                <Label Content="Beschreibung (optional):" FontWeight="SemiBold"/>
+                <TextBox x:Name="txtPolicyDescription" Margin="0,0,0,10" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
+
+                <CheckBox x:Name="chkEnabled" Content="Richtlinie aktivieren" Margin="0,10,0,10"/>
+                
+                <GroupBox Header="Schutzeinstellungen" Margin="0,10,0,10">
+                    <StackPanel Margin="10">
+                        <CheckBox x:Name="chkImpersonationProtectionEnabled" Content="Identitätsschutz aktivieren" Margin="0,5"/>
+                        <CheckBox x:Name="chkSpoofProtectionEnabled" Content="Spoof-Schutz aktivieren" Margin="0,5"/>
+                        <CheckBox x:Name="chkMailboxIntelligenceProtectionEnabled" Content="Postfachintelligenz-Schutz aktivieren" Margin="0,5"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <Label Content="Anwenden auf (Benutzer, Gruppen, Domänen - mit Semikolon trennen):" FontWeight="SemiBold"/>
+                <TextBox x:Name="txtAppliedTo" Margin="0,0,0,10" ToolTip="z.B. user@contoso.com; marketing@contoso.com; contoso.com"/>
+
+            </StackPanel>
+        </ScrollViewer>
+        
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button x:Name="btnSave" Content="Speichern" Width="100" Height="30" Margin="0,0,10,0" IsDefault="True"/>
+            <Button x:Name="btnCancel" Content="Abbrechen" Width="80" Height="30" IsCancel="True"/>
+        </StackPanel>
+    </Grid>
+</Window>
+"@
+
+        $reader = [System.Xml.XmlReader]::Create([System.IO.StringReader]$xamlDialog)
+        $dialog = [Windows.Markup.XamlReader]::Load($reader)
+        
+        # UI-Elemente referenzieren
+        $txtPolicyName = $dialog.FindName("txtPolicyName")
+        $txtPolicyDescription = $dialog.FindName("txtPolicyDescription")
+        $chkEnabled = $dialog.FindName("chkEnabled")
+        $chkImpersonationProtectionEnabled = $dialog.FindName("chkImpersonationProtectionEnabled")
+        $chkSpoofProtectionEnabled = $dialog.FindName("chkSpoofProtectionEnabled")
+        $chkMailboxIntelligenceProtectionEnabled = $dialog.FindName("chkMailboxIntelligenceProtectionEnabled")
+        $txtAppliedTo = $dialog.FindName("txtAppliedTo")
+        $btnSave = $dialog.FindName("btnSave")
+        $btnCancel = $dialog.FindName("btnCancel")
+
+        # Dialog mit vorhandenen Werten füllen
+        $txtPolicyName.Text = $selectedPolicy.Name
+        $txtPolicyDescription.Text = $selectedPolicy.Description
+        $chkEnabled.IsChecked = $selectedPolicy.Enabled
+        $chkImpersonationProtectionEnabled.IsChecked = $selectedPolicy.ImpersonationProtectionEnabled
+        $chkSpoofProtectionEnabled.IsChecked = $selectedPolicy.SpoofProtectionEnabled
+        $chkMailboxIntelligenceProtectionEnabled.IsChecked = $selectedPolicy.MailboxIntelligenceProtectionEnabled
+        
+        if ($null -ne $rule) {
+            $appliedTo = @()
+            if ($rule.SentTo) { $appliedTo += $rule.SentTo }
+            if ($rule.RecipientDomainIs) { $appliedTo += $rule.RecipientDomainIs }
+            $txtAppliedTo.Text = $appliedTo -join "; "
+        }
+
+        $btnCancel.Add_Click({ $dialog.Close() })
+
+        $btnSave.Add_Click({
+            try {
+                $policyName = $txtPolicyName.Text
+                Update-StatusBar -Message "Aktualisiere Anti-Phishing-Richtlinie '$policyName'..." -Type Info
+
+                $policyParams = @{
+                    Identity = $policyName
+                    Enabled = $chkEnabled.IsChecked
+                    Description = $txtPolicyDescription.Text.Trim()
+                    ImpersonationProtectionEnabled = $chkImpersonationProtectionEnabled.IsChecked
+                    SpoofProtectionEnabled = $chkSpoofProtectionEnabled.IsChecked
+                    MailboxIntelligenceProtectionEnabled = $chkMailboxIntelligenceProtectionEnabled.IsChecked
+                    ErrorAction = 'Stop'
+                }
+
+                # Richtlinie aktualisieren
+                Set-AntiPhishPolicy @policyParams
+
+                # Regel aktualisieren, falls vorhanden
+                if ($null -ne $rule) {
+                    $appliedToRecipients = $txtAppliedTo.Text.Trim() -split ';' | ForEach-Object { $_.Trim() } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+                    $ruleParams = @{
+                        Identity = $rule.Name
+                        RecipientDomainIs = $appliedToRecipients | Where-Object { $_ -notlike "*@*" }
+                        SentTo = $appliedToRecipients | Where-Object { $_ -like "*@*" }
+                        ErrorAction = 'Stop'
+                    }
+                    Set-AntiPhishRule @ruleParams
+                }
+
+                $dialog.DialogResult = $true
+                $dialog.Close()
+                Show-MessageBox -Message "Die Anti-Phishing-Richtlinie '$policyName' wurde erfolgreich aktualisiert." -Title "Erfolg" -Type Info
+                Log-Action "Anti-Phishing-Richtlinie '$policyName' aktualisiert."
+                
+                # Liste aktualisieren
+                Get-AntiPhishingPoliciesAction
+
+            } catch {
+                $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Aktualisieren der Anti-Phishing-Richtlinie."
+                Write-Log $errorMsg -Type Error
+                Show-MessageBox -Message $errorMsg -Title "Fehler" -Type Error
+            }
+        })
+
+        $dialog.Owner = $script:Form
+        [void]$dialog.ShowDialog()
+
+    } catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Öffnen des Dialogs zum Bearbeiten der Anti-Phishing-Richtlinie."
+        Write-Log $errorMsg -Type Error
+        Show-MessageBox -Message $errorMsg -Title "Fehler" -Type Error
+    }
+}
+
+function Export-AntiPhishingPoliciesAction {
+    [CmdletBinding()]
+    param()
+
+    if (-not (Confirm-ExchangeConnection)) { return }
+    Export-DataGridContent -DataGrid $script:dgAntiPhishingPolicies -DefaultFileName "AntiPhishingPolicies"
+}
+
+function Remove-AntiPhishingPolicyAction {
+    [CmdletBinding(SupportsShouldProcess = $true)]
+    param()
+
+    if (-not (Confirm-ExchangeConnection)) { return }
+
+    $selectedPolicy = $script:dgAntiPhishingPolicies.SelectedItem
+    if ($null -eq $selectedPolicy) {
+        Show-MessageBox -Message "Bitte wählen Sie eine Richtlinie zum Löschen aus." -Title "Keine Auswahl" -Type "Warning"
+        return
+    }
+
+    $policyName = $selectedPolicy.Name
+    $confirmMessage = "Möchten Sie die Anti-Phishing-Richtlinie '$policyName' und die zugehörige Regel wirklich löschen?"
+    
+    if ($PSCmdlet.ShouldProcess($policyName, "Anti-Phishing-Richtlinie und Regel löschen")) {
+        $confirmResult = Show-MessageBox -Message $confirmMessage -Title "Löschen bestätigen" -Type "YesNo" -Icon "Question"
+        if ($confirmResult -ne 'Yes') {
+            Update-StatusBar -Message "Löschvorgang abgebrochen." -Type "Info"
+            return
+        }
+
+        Update-StatusBar -Message "Lösche Richtlinie '$policyName'..." -Type "Info"
+        try {
+            # Zuerst die Regel löschen, falls vorhanden
+            $rule = Get-AntiPhishRule | Where-Object { $_.AntiPhishPolicy -eq $policyName } | Select-Object -First 1
+            if ($null -ne $rule) {
+                Remove-AntiPhishRule -Identity $rule.Name -Confirm:$false -ErrorAction Stop
+                Write-Log "Zugehörige Regel '$($rule.Name)' für Richtlinie '$policyName' gelöscht." -Type "Info"
+            }
+
+            # Dann die Richtlinie löschen
+            Remove-AntiPhishPolicy -Identity $policyName -Confirm:$false -ErrorAction Stop
+
+            Show-MessageBox -Message "Die Anti-Phishing-Richtlinie '$policyName' wurde erfolgreich gelöscht." -Title "Erfolg" -Type "Info"
+            Log-Action "Anti-Phishing-Richtlinie '$policyName' gelöscht."
+            
+            # Liste aktualisieren
+            Get-AntiPhishingPoliciesAction
+
+        } catch {
+            $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Löschen der Anti-Phishing-Richtlinie."
+            Write-Log $errorMsg -Type "Error"
+            Show-MessageBox -Message $errorMsg -Title "Fehler" -Type "Error"
+        }
+    }
+}
+
+function Get-SafeAttachmentPoliciesAction {
+    Update-StatusBar -Message "Safe Attachment-Richtlinien werden geladen..."
+    # Implementierung: Get-SafeAttachmentPolicy
+    $policies = Get-SafeAttachmentPolicy -ErrorAction SilentlyContinue
+    $script:dgSafeAttachmentPolicies.Dispatcher.Invoke([Action]{
+        $script:dgSafeAttachmentPolicies.ItemsSource = $policies
+    })
+    Update-StatusBar -Message "$($policies.Count) Safe Attachment-Richtlinien geladen." -Type Success
+}
+
+function New-SafeAttachmentPolicyAction {
+    [CmdletBinding()]
+    param()
+
+    if (-not (Confirm-ExchangeConnection)) { return }
+    Update-StatusBar -Message "Öffne Dialog zur Erstellung einer neuen Safe Attachment-Richtlinie..." -Type Info
+
+    try {
+        # XAML für das Dialogfenster
+        $xamlDialog = @"
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Neue Safe Attachment-Richtlinie" Height="500" Width="600"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <TextBlock Grid.Row="0" Text="Neue Safe Attachment-Richtlinie erstellen" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+        
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Label Content="Richtlinienname:" FontWeight="SemiBold"/>
+                <TextBox x:Name="txtPolicyName" Margin="0,0,0,10"/>
+                
+                <Label Content="Beschreibung (optional):" FontWeight="SemiBold"/>
+                <TextBox x:Name="txtPolicyDescription" Margin="0,0,0,10" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
+
+                <CheckBox x:Name="chkEnabled" Content="Richtlinie aktivieren" IsChecked="True" Margin="0,10,0,10"/>
+                
+                <Label Content="Aktion bei schädlichen Anhängen:" FontWeight="SemiBold"/>
+                <ComboBox x:Name="cmbAction" Margin="0,0,0,10">
+                    <ComboBoxItem Content="Block" Tag="Block"/>
+                    <ComboBoxItem Content="Replace" Tag="Replace"/>
+                    <ComboBoxItem Content="Quarantine" Tag="Quarantine"/>
+                    <ComboBoxItem Content="DynamicDelivery" Tag="DynamicDelivery"/>
+                </ComboBox>
+
+                <CheckBox x:Name="chkEnableRedirect" Content="Umleitung aktivieren" Margin="0,10,0,0"/>
+                <TextBox x:Name="txtRedirectAddress" Margin="0,0,0,10" ToolTip="E-Mail-Adresse für Umleitung" IsEnabled="False"/>
+
+            </StackPanel>
+        </ScrollViewer>
+        
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button x:Name="btnCreate" Content="Erstellen" Width="100" Height="30" Margin="0,0,10,0" IsDefault="True"/>
+            <Button x:Name="btnCancel" Content="Abbrechen" Width="80" Height="30" IsCancel="True"/>
+        </StackPanel>
+    </Grid>
+</Window>
+"@
+
+        $reader = [System.Xml.XmlReader]::Create([System.IO.StringReader]$xamlDialog)
+        $dialog = [Windows.Markup.XamlReader]::Load($reader)
+        
+        # UI-Elemente referenzieren
+        $txtPolicyName = $dialog.FindName("txtPolicyName")
+        $txtPolicyDescription = $dialog.FindName("txtPolicyDescription")
+        $chkEnabled = $dialog.FindName("chkEnabled")
+        $cmbAction = $dialog.FindName("cmbAction")
+        $chkEnableRedirect = $dialog.FindName("chkEnableRedirect")
+        $txtRedirectAddress = $dialog.FindName("txtRedirectAddress")
+        $btnCreate = $dialog.FindName("btnCreate")
+        $btnCancel = $dialog.FindName("btnCancel")
+
+        # Redirect-Textbox aktivieren/deaktivieren
+        $chkEnableRedirect.Add_Checked({
+            $txtRedirectAddress.IsEnabled = $true
+        })
+        $chkEnableRedirect.Add_Unchecked({
+            $txtRedirectAddress.IsEnabled = $false
+            $txtRedirectAddress.Text = ""
+        })
+
+        $btnCancel.Add_Click({ $dialog.Close() })
+
+        $btnCreate.Add_Click({
+            try {
+                $policyName = $txtPolicyName.Text.Trim()
+                if ([string]::IsNullOrWhiteSpace($policyName)) {
+                    Show-MessageBox -Message "Bitte geben Sie einen Richtliniennamen an." -Title "Eingabe fehlt" -Type Warning
+                    return
+                }
+
+                Update-StatusBar -Message "Erstelle Safe Attachment-Richtlinie '$policyName'..." -Type Info
+
+                $selectedActionItem = $cmbAction.SelectedItem
+                $actionValue = if ($selectedActionItem -and $selectedActionItem.Tag) { $selectedActionItem.Tag } else { "Block" }
+
+                $policyParams = @{
+                    Name = $policyName
+                    Enabled = $chkEnabled.IsChecked
+                    Action = $actionValue
+                    Description = $txtPolicyDescription.Text.Trim()
+                    ErrorAction = 'Stop'
+                }
+
+                if ($chkEnableRedirect.IsChecked -and -not [string]::IsNullOrWhiteSpace($txtRedirectAddress.Text)) {
+                    $policyParams.Add("RedirectAddress", $txtRedirectAddress.Text.Trim())
+                }
+
+                # Richtlinie erstellen
+                New-SafeAttachmentPolicy @policyParams
+
+                $dialog.DialogResult = $true
+                $dialog.Close()
+                Show-MessageBox -Message "Die Safe Attachment-Richtlinie '$policyName' wurde erfolgreich erstellt." -Title "Erfolg" -Type Info
+                Log-Action "Neue Safe Attachment-Richtlinie '$policyName' erstellt."
+                
+                # Liste aktualisieren
+                Get-SafeAttachmentPoliciesAction
+
+            } catch {
+                $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Erstellen der Safe Attachment-Richtlinie."
+                Write-Log $errorMsg -Type Error
+                Show-MessageBox -Message $errorMsg -Title "Fehler" -Type Error
+            }
+        })
+
+        $dialog.Owner = $script:Form
+        [void]$dialog.ShowDialog()
+
+    } catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Öffnen des Dialogs für neue Safe Attachment-Richtlinien."
+        Write-Log $errorMsg -Type Error
+        Show-MessageBox -Message $errorMsg -Title "Fehler" -Type Error
+    }
+}
+
+function Set-SafeAttachmentPolicyAction {
+    [CmdletBinding()]
+    param()
+
+    if (-not (Confirm-ExchangeConnection)) { return }
+
+    $selectedPolicy = $script:dgSafeAttachmentPolicies.SelectedItem
+    if ($null -eq $selectedPolicy) {
+        Show-MessageBox -Message "Bitte wählen Sie eine Richtlinie aus der Liste aus, um sie zu bearbeiten." -Title "Keine Auswahl" -Type "Warning"
+        return
+    }
+
+    Update-StatusBar -Message "Lade Details für Richtlinie '$($selectedPolicy.Name)'..." -Type Info
+
+    try {
+        # Zugehörige Regel finden
+        $rule = $null
+        try {
+            $rule = Get-SafeAttachmentRule | Where-Object { $_.SafeAttachmentPolicy -eq $selectedPolicy.Name } | Select-Object -First 1
+        } catch {}
+
+        # XAML für das Dialogfenster
+        $xamlDialog = @"
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Safe Attachment-Richtlinie bearbeiten" Height="550" Width="600"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <TextBlock Grid.Row="0" Text="Safe Attachment-Richtlinie bearbeiten" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+        
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Label Content="Richtlinienname:" FontWeight="SemiBold"/>
+                <TextBox x:Name="txtPolicyName" Margin="0,0,0,10" IsReadOnly="True" Background="#EEEEEE"/>
+                
+                <Label Content="Beschreibung (optional):" FontWeight="SemiBold"/>
+                <TextBox x:Name="txtPolicyDescription" Margin="0,0,0,10" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
+
+                <CheckBox x:Name="chkEnabled" Content="Richtlinie aktivieren" Margin="0,10,0,10"/>
+                
+                <Label Content="Aktion bei schädlichen Anhängen:" FontWeight="SemiBold"/>
+                <ComboBox x:Name="cmbAction" Margin="0,0,0,10">
+                    <ComboBoxItem Content="Blockieren (Block)" Tag="Block"/>
+                    <ComboBoxItem Content="Ersetzen (Replace)" Tag="Replace"/>
+                    <ComboBoxItem Content="In Quarantäne verschieben (Quarantine)" Tag="Quarantine"/>
+                    <ComboBoxItem Content="Dynamische Zustellung (DynamicDelivery)" Tag="DynamicDelivery"/>
+                </ComboBox>
+
+                <CheckBox x:Name="chkEnableRedirect" Content="Umleitung für erkannte Anhänge aktivieren" Margin="0,10,0,0"/>
+                <TextBox x:Name="txtRedirectAddress" Margin="0,5,0,10" ToolTip="E-Mail-Adresse für Umleitung" IsEnabled="False"/>
+
+                <Label Content="Anwenden auf (Benutzer, Gruppen, Domänen - mit Semikolon trennen):" FontWeight="SemiBold"/>
+                <TextBox x:Name="txtAppliedTo" Margin="0,0,0,10" ToolTip="z.B. user@contoso.com; marketing@contoso.com; contoso.com"/>
+
+            </StackPanel>
+        </ScrollViewer>
+        
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button x:Name="btnSave" Content="Speichern" Width="100" Height="30" Margin="0,0,10,0" IsDefault="True"/>
+            <Button x:Name="btnCancel" Content="Abbrechen" Width="80" Height="30" IsCancel="True"/>
+        </StackPanel>
+    </Grid>
+</Window>
+"@
+
+        $reader = [System.Xml.XmlReader]::Create([System.IO.StringReader]$xamlDialog)
+        $dialog = [Windows.Markup.XamlReader]::Load($reader)
+        
+        # UI-Elemente referenzieren
+        $txtPolicyName = $dialog.FindName("txtPolicyName")
+        $txtPolicyDescription = $dialog.FindName("txtPolicyDescription")
+        $chkEnabled = $dialog.FindName("chkEnabled")
+        $cmbAction = $dialog.FindName("cmbAction")
+        $chkEnableRedirect = $dialog.FindName("chkEnableRedirect")
+        $txtRedirectAddress = $dialog.FindName("txtRedirectAddress")
+        $txtAppliedTo = $dialog.FindName("txtAppliedTo")
+        $btnSave = $dialog.FindName("btnSave")
+        $btnCancel = $dialog.FindName("btnCancel")
+
+        # Dialog mit vorhandenen Werten füllen
+        $txtPolicyName.Text = $selectedPolicy.Name
+        $txtPolicyDescription.Text = $selectedPolicy.Description
+        $chkEnabled.IsChecked = $selectedPolicy.Enabled
+
+        # Aktion in ComboBox auswählen
+        $actionItem = $cmbAction.Items | Where-Object { $_.Tag -eq $selectedPolicy.Action } | Select-Object -First 1
+        if ($null -ne $actionItem) { $cmbAction.SelectedItem = $actionItem }
+
+        # Umleitungseinstellungen
+        $chkEnableRedirect.IsChecked = $selectedPolicy.EnableRedirect
+        $txtRedirectAddress.IsEnabled = $selectedPolicy.EnableRedirect
+        $txtRedirectAddress.Text = $selectedPolicy.RedirectAddress
+
+        # Empfänger aus Regel laden
+        if ($null -ne $rule) {
+            $appliedTo = @()
+            if ($rule.SentTo) { $appliedTo += $rule.SentTo }
+            if ($rule.RecipientDomainIs) { $appliedTo += $rule.RecipientDomainIs }
+            $txtAppliedTo.Text = $appliedTo -join "; "
+        }
+
+        # Event-Handler
+        $chkEnableRedirect.Add_Checked({ $txtRedirectAddress.IsEnabled = $true })
+        $chkEnableRedirect.Add_Unchecked({ $txtRedirectAddress.IsEnabled = $false; $txtRedirectAddress.Text = "" })
+        $btnCancel.Add_Click({ $dialog.Close() })
+
+        $btnSave.Add_Click({
+            try {
+                $policyName = $txtPolicyName.Text
+                Update-StatusBar -Message "Aktualisiere Safe Attachment-Richtlinie '$policyName'..." -Type Info
+
+                $selectedActionItem = $cmbAction.SelectedItem
+                $actionValue = if ($selectedActionItem -and $selectedActionItem.Tag) { $selectedActionItem.Tag } else { "Block" }
+
+                $policyParams = @{
+                    Identity = $policyName
+                    Enabled = $chkEnabled.IsChecked
+                    Action = $actionValue
+                    Description = $txtPolicyDescription.Text.Trim()
+                    ErrorAction = 'Stop'
+                }
+                # Umleitung nur setzen, wenn aktiviert und Adresse angegeben
+                if ($chkEnableRedirect.IsChecked -and -not [string]::IsNullOrWhiteSpace($txtRedirectAddress.Text)) {
+                    $policyParams.EnableRedirect = $true
+                    $policyParams.RedirectAddress = $txtRedirectAddress.Text.Trim()
+                } else {
+                    $policyParams.EnableRedirect = $false
+                }
+
+                # Richtlinie aktualisieren
+                Set-SafeAttachmentPolicy @policyParams
+
+                # Regel aktualisieren, falls vorhanden
+                if ($null -ne $rule) {
+                    $appliedToRecipients = $txtAppliedTo.Text.Trim() -split ';' | ForEach-Object { $_.Trim() } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+                    $ruleParams = @{
+                        Identity = $rule.Name
+                        RecipientDomainIs = $appliedToRecipients | Where-Object { $_ -notlike "*@*" }
+                        SentTo = $appliedToRecipients | Where-Object { $_ -like "*@*" }
+                        ErrorAction = 'Stop'
+                    }
+                    Set-SafeAttachmentRule @ruleParams
+                }
+
+                $dialog.DialogResult = $true
+                $dialog.Close()
+                Show-MessageBox -Message "Die Safe Attachment-Richtlinie '$policyName' wurde erfolgreich aktualisiert." -Title "Erfolg" -Type Info
+                Log-Action "Safe Attachment-Richtlinie '$policyName' aktualisiert."
+                
+                # Liste aktualisieren
+                Get-SafeAttachmentPoliciesAction
+
+            } catch {
+                $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Aktualisieren der Safe Attachment-Richtlinie."
+                Write-Log $errorMsg -Type Error
+                Show-MessageBox -Message $errorMsg -Title "Fehler" -Type Error
+            }
+        })
+
+        $dialog.Owner = $script:Form
+        [void]$dialog.ShowDialog()
+
+    } catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Öffnen des Dialogs zum Bearbeiten der Safe Attachment-Richtlinie."
+        Write-Log $errorMsg -Type Error
+        Show-MessageBox -Message $errorMsg -Title "Fehler" -Type Error
+    }
+}
+
+function Export-SafeAttachmentPoliciesAction {
+    [CmdletBinding()]
+    param()
+
+    if (-not (Confirm-ExchangeConnection)) { return }
+
+    try {
+        # Die Hilfsfunktion aufrufen, die die Logik für den Export enthält
+        Export-DataGridContent -DataGrid $script:dgSafeAttachmentPolicies -DefaultFileName "SafeAttachmentPolicies"
+        Log-Action "Safe Attachment-Richtlinien exportiert."
+    }
+    catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Ein unerwarteter Fehler ist beim Export der Safe Attachment-Richtlinien aufgetreten."
+        Write-Log $errorMsg -Type "Error"
+        Log-Action "Fehler beim Export der Safe Attachment-Richtlinien: $errorMsg"
+        Show-MessageBox -Message $errorMsg -Title "Export-Fehler" -Type "Error"
+    }
+}
+
+function Remove-SafeAttachmentPolicyAction {
+    [CmdletBinding(SupportsShouldProcess = $true)]
+    param()
+
+    if (-not (Confirm-ExchangeConnection)) { return }
+
+    $selectedPolicy = $script:dgSafeAttachmentPolicies.SelectedItem
+    if ($null -eq $selectedPolicy) {
+        Show-MessageBox -Message "Bitte wählen Sie eine Richtlinie zum Löschen aus." -Title "Keine Auswahl" -Type "Warning"
+        return
+    }
+
+    $policyName = $selectedPolicy.Name
+    $confirmMessage = "Möchten Sie die Safe Attachment-Richtlinie '$policyName' und die zugehörige Regel wirklich löschen?"
+    
+    if ($PSCmdlet.ShouldProcess($policyName, "Safe Attachment-Richtlinie und Regel löschen")) {
+        $confirmResult = Show-MessageBox -Message $confirmMessage -Title "Löschen bestätigen" -Type "YesNo" -Icon "Question"
+        if ($confirmResult -ne 'Yes') {
+            Update-StatusBar -Message "Löschvorgang abgebrochen." -Type "Info"
+            return
+        }
+
+        Update-StatusBar -Message "Lösche Richtlinie '$policyName'..." -Type "Info"
+        try {
+            # Zuerst die Regel löschen, falls vorhanden
+            $rule = Get-SafeAttachmentRule | Where-Object { $_.SafeAttachmentPolicy -eq $policyName } | Select-Object -First 1
+            if ($null -ne $rule) {
+                Remove-SafeAttachmentRule -Identity $rule.Name -Confirm:$false -ErrorAction Stop
+                Write-Log "Zugehörige Regel '$($rule.Name)' für Richtlinie '$policyName' gelöscht." -Type "Info"
+            }
+
+            # Dann die Richtlinie löschen
+            Remove-SafeAttachmentPolicy -Identity $policyName -Confirm:$false -ErrorAction Stop
+
+            Show-MessageBox -Message "Die Safe Attachment-Richtlinie '$policyName' wurde erfolgreich gelöscht." -Title "Erfolg" -Type "Info"
+            Log-Action "Safe Attachment-Richtlinie '$policyName' gelöscht."
+            
+            # Liste aktualisieren
+            Get-SafeAttachmentPoliciesAction
+
+        } catch {
+            $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Löschen der Safe Attachment-Richtlinie."
+            Write-Log $errorMsg -Type "Error"
+            Show-MessageBox -Message $errorMsg -Title "Fehler" -Type "Error"
+        }
+    }
+}
+
+function Get-SafeLinksPoliciesAction {
+    [CmdletBinding()]
+    param()
+
+    if (-not (Confirm-ExchangeConnection)) { return }
+    Update-StatusBar -Message "Safe Links-Richtlinien werden geladen..." -Type Info
+    
+    try {
+        # Safe Links-Richtlinien abrufen
+        $policies = Get-SafeLinksPolicy -ErrorAction Stop
+        
+        # DataGrid im UI-Thread aktualisieren
+        $script:dgSafeLinksPolicies.Dispatcher.Invoke([Action]{
+            $script:dgSafeLinksPolicies.ItemsSource = $policies
+        })
+        
+        $policyCount = if ($null -ne $policies) { $policies.Count } else { 0 }
+        Update-StatusBar -Message "$policyCount Safe Links-Richtlinien geladen." -Type Success
+        Log-Action "Safe Links-Richtlinien geladen: $policyCount gefunden."
+    }
+    catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Laden der Safe Links-Richtlinien."
+        Update-StatusBar -Message $errorMsg -Type Error
+        Show-MessageBox -Message $errorMsg -Title "Fehler" -Type Error
+        Log-Action "Fehler beim Laden der Safe Links-Richtlinien: $errorMsg"
+    }
+}
+
+function New-SafeLinksPolicyAction {
+    [CmdletBinding()]
+    param()
+
+    if (-not (Confirm-ExchangeConnection)) { return }
+    Update-StatusBar -Message "Öffne Dialog zur Erstellung einer neuen Safe Links-Richtlinie..." -Type Info
+
+    try {
+        # XAML für das Dialogfenster
+        $xamlDialog = @"
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Neue Safe Links-Richtlinie" Height="700" Width="650"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <TextBlock Grid.Row="0" Text="Neue Safe Links-Richtlinie erstellen" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+        
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Label Content="Richtlinienname:" FontWeight="SemiBold"/>
+                <TextBox x:Name="txtPolicyName" Margin="0,0,0,10"/>
+                
+                <Label Content="Beschreibung (optional):" FontWeight="SemiBold"/>
+                <TextBox x:Name="txtPolicyDescription" Margin="0,0,0,10" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
+
+                <CheckBox x:Name="chkEnabled" Content="Richtlinie aktivieren" IsChecked="True" Margin="0,10,0,10"/>
+                
+                <GroupBox Header="Schutzeinstellungen" Margin="0,5,0,10">
+                    <StackPanel Margin="10">
+                        <CheckBox x:Name="chkScanUrlsInEmail" Content="URLs in E-Mails auf schädliche Links überprüfen" IsChecked="True" ToolTip="Aktiviert den Schutz für Links in E-Mail-Nachrichten."/>
+                        <CheckBox x:Name="chkScanUrlsInOffice" Content="URLs in Office 365-Apps auf schädliche Links überprüfen" IsChecked="True" ToolTip="Aktiviert den Schutz für Links in Office-Dokumenten (Word, Excel, PowerPoint)."/>
+                        <CheckBox x:Name="chkWaitForScan" Content="Warten, bis die URL-Überprüfung abgeschlossen ist" ToolTip="Verhindert die Zustellung von Nachrichten mit potenziell schädlichen Links, bis die Überprüfung abgeschlossen ist."/>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="Klickschutz-Einstellungen" Margin="0,5,0,10">
+                    <StackPanel Margin="10">
+                        <CheckBox x:Name="chkDoNotTrackClicks" Content="Benutzerklicks nicht nachverfolgen" ToolTip="Verhindert, dass Klicks auf sichere Links protokolliert werden."/>
+                        <CheckBox x:Name="chkDoNotAllowClickThrough" Content="Benutzern nicht erlauben, zur ursprünglichen URL durchzuklicken" ToolTip="Blockiert den Zugriff auf die ursprüngliche URL, wenn sie als schädlich eingestuft wird."/>
+                        <CheckBox x:Name="chkDisplayBranding" Content="Organisations-Branding auf Benachrichtigungsseiten anzeigen" ToolTip="Zeigt Ihr Firmenlogo auf den Warnseiten von Safe Links an."/>
+                    </StackPanel>
+                </GroupBox>
+
+                <Label Content="Folgende URLs nicht umschreiben (mit Semikolon trennen):" FontWeight="SemiBold"/>
+                <TextBox x:Name="txtDoNotRewriteUrls" Margin="0,0,0,10" Height="50" TextWrapping="Wrap" AcceptsReturn="True" ToolTip="z.B. *.contoso.com;*.fabrikam.com"/>
+
+                <Label Content="Anwenden auf (Benutzer, Gruppen, Domänen - mit Semikolon trennen):" FontWeight="SemiBold"/>
+                <TextBox x:Name="txtAppliedTo" Margin="0,0,0,10" ToolTip="z.B. user@contoso.com; marketing@contoso.com; contoso.com"/>
+
+            </StackPanel>
+        </ScrollViewer>
+        
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button x:Name="btnCreate" Content="Erstellen" Width="100" Height="30" Margin="0,0,10,0" IsDefault="True"/>
+            <Button x:Name="btnCancel" Content="Abbrechen" Width="80" Height="30" IsCancel="True"/>
+        </StackPanel>
+    </Grid>
+</Window>
+"@
+
+        $reader = [System.Xml.XmlReader]::Create([System.IO.StringReader]$xamlDialog)
+        $dialog = [Windows.Markup.XamlReader]::Load($reader)
+        
+        # UI-Elemente referenzieren
+        $txtPolicyName = $dialog.FindName("txtPolicyName")
+        $txtPolicyDescription = $dialog.FindName("txtPolicyDescription")
+        $chkEnabled = $dialog.FindName("chkEnabled")
+        $chkScanUrlsInEmail = $dialog.FindName("chkScanUrlsInEmail")
+        $chkScanUrlsInOffice = $dialog.FindName("chkScanUrlsInOffice")
+        $chkWaitForScan = $dialog.FindName("chkWaitForScan")
+        $chkDoNotTrackClicks = $dialog.FindName("chkDoNotTrackClicks")
+        $chkDoNotAllowClickThrough = $dialog.FindName("chkDoNotAllowClickThrough")
+        $chkDisplayBranding = $dialog.FindName("chkDisplayBranding")
+        $txtDoNotRewriteUrls = $dialog.FindName("txtDoNotRewriteUrls")
+        $txtAppliedTo = $dialog.FindName("txtAppliedTo")
+        $btnCreate = $dialog.FindName("btnCreate")
+        $btnCancel = $dialog.FindName("btnCancel")
+
+        $btnCancel.Add_Click({ $dialog.Close() })
+
+        $btnCreate.Add_Click({
+            try {
+                $policyName = $txtPolicyName.Text.Trim()
+                if ([string]::IsNullOrWhiteSpace($policyName)) {
+                    Show-MessageBox -Message "Bitte geben Sie einen Richtliniennamen an." -Title "Eingabe fehlt" -Type Warning
+                    return
+                }
+
+                Update-StatusBar -Message "Erstelle Safe Links-Richtlinie '$policyName'..." -Type Info
+
+                $policyParams = @{
+                    Name = $policyName
+                    Enabled = $chkEnabled.IsChecked
+                    Description = $txtPolicyDescription.Text.Trim()
+                    EnableSafeLinksForEmail = $chkScanUrlsInEmail.IsChecked
+                    EnableSafeLinksForOffice = $chkScanUrlsInOffice.IsChecked
+                    ScanUrls = $chkWaitForScan.IsChecked
+                    DoNotTrackUserClicks = $chkDoNotTrackClicks.IsChecked
+                    DoNotAllowClickThrough = $chkDoNotAllowClickThrough.IsChecked
+                    EnableOrganizationBranding = $chkDisplayBranding.IsChecked
+                    ErrorAction = 'Stop'
+                }
+
+                $doNotRewriteUrlsList = $txtDoNotRewriteUrls.Text.Trim() -split ';' | ForEach-Object { $_.Trim() } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+                if ($doNotRewriteUrlsList.Count -gt 0) {
+                    $policyParams.Add("DoNotRewriteUrls", $doNotRewriteUrlsList)
+                }
+
+                # Richtlinie erstellen
+                New-SafeLinksPolicy @policyParams
+
+                # Regel erstellen und mit Richtlinie verknüpfen
+                $appliedToRecipients = $txtAppliedTo.Text.Trim() -split ';' | ForEach-Object { $_.Trim() } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+                if ($appliedToRecipients.Count -gt 0) {
+                    $ruleParams = @{
+                        Name = "$($policyName)_Rule"
+                        SafeLinksPolicy = $policyName
+                        RecipientDomainIs = $appliedToRecipients | Where-Object { $_ -notlike "*@*" }
+                        SentTo = $appliedToRecipients | Where-Object { $_ -like "*@*" }
+                        ErrorAction = 'Stop'
+                    }
+                    New-SafeLinksRule @ruleParams
+                }
+
+                $dialog.DialogResult = $true
+                $dialog.Close()
+                Show-MessageBox -Message "Die Safe Links-Richtlinie '$policyName' wurde erfolgreich erstellt." -Title "Erfolg" -Type Info
+                Log-Action "Neue Safe Links-Richtlinie '$policyName' erstellt."
+                
+                # Liste aktualisieren
+                Get-SafeLinksPoliciesAction
+
+            } catch {
+                $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Erstellen der Safe Links-Richtlinie."
+                Write-Log $errorMsg -Type Error
+                Show-MessageBox -Message $errorMsg -Title "Fehler" -Type Error
+            }
+        })
+
+        $dialog.Owner = $script:Form
+        [void]$dialog.ShowDialog()
+
+    } catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Öffnen des Dialogs für neue Safe Links-Richtlinien."
+        Write-Log $errorMsg -Type Error
+        Show-MessageBox -Message $errorMsg -Title "Fehler" -Type Error
+    }
+}
+
+function Set-SafeLinksPolicyAction {
+    [CmdletBinding()]
+    param()
+
+    if (-not (Confirm-ExchangeConnection)) { return }
+
+    $selectedPolicy = $script:dgSafeLinksPolicies.SelectedItem
+    if ($null -eq $selectedPolicy) {
+        Show-MessageBox -Message "Bitte wählen Sie eine Richtlinie aus der Liste aus, um sie zu bearbeiten." -Title "Keine Auswahl" -Type "Warning"
+        return
+    }
+
+    Update-StatusBar -Message "Lade Details für Richtlinie '$($selectedPolicy.Name)'..." -Type Info
+
+    try {
+        # Zugehörige Regel finden, um den Geltungsbereich zu bearbeiten
+        $rule = $null
+        try {
+            $rule = Get-SafeLinksRule | Where-Object { $_.SafeLinksPolicy -eq $selectedPolicy.Name } | Select-Object -First 1
+        } catch {
+            Write-Log "Keine zugehörige Safe Links-Regel für '$($selectedPolicy.Name)' gefunden oder Fehler beim Abruf." -Type "Info"
+        }
+
+        # XAML für das Dialogfenster (basiert auf dem Dialog für 'New')
+        $xamlDialog = @"
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Safe Links-Richtlinie bearbeiten" Height="700" Width="650"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <TextBlock Grid.Row="0" Text="Safe Links-Richtlinie bearbeiten" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+        
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Label Content="Richtlinienname:" FontWeight="SemiBold"/>
+                <TextBox x:Name="txtPolicyName" Margin="0,0,0,10" IsReadOnly="True" Background="#EEEEEE"/>
+                
+                <Label Content="Beschreibung (optional):" FontWeight="SemiBold"/>
+                <TextBox x:Name="txtPolicyDescription" Margin="0,0,0,10" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
+
+                <CheckBox x:Name="chkEnabled" Content="Richtlinie aktivieren" Margin="0,10,0,10"/>
+                
+                <GroupBox Header="Schutzeinstellungen für E-Mail &amp; Office" Margin="0,5,0,10">
+                    <StackPanel Margin="10">
+                        <CheckBox x:Name="chkScanUrlsInEmail" Content="URLs in E-Mails scannen" IsChecked="True" Margin="0,5"/>
+                        <CheckBox x:Name="chkScanUrlsInOffice" Content="URLs in Office-Anwendungen scannen" IsChecked="True" Margin="0,5"/>
+                        <CheckBox x:Name="chkWaitForScan" Content="Auf Abschluss des URL-Scans warten, bevor die Nachricht zugestellt wird" Margin="0,5"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="Klickschutz-Einstellungen" Margin="0,5,0,10">
+                    <StackPanel Margin="10">
+                        <CheckBox x:Name="chkDoNotTrackClicks" Content="Benutzerklicks nicht nachverfolgen" Margin="0,5"/>
+                        <CheckBox x:Name="chkDoNotAllowClickThrough" Content="Benutzern nicht erlauben, sich zur ursprünglichen URL durchzuklicken" Margin="0,5"/>
+                        <CheckBox x:Name="chkDisplayBranding" Content="Organisations-Branding auf Benachrichtigungs- und Warnseiten anzeigen" Margin="0,5"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <Label Content="Folgende URLs nicht umschreiben (mit Semikolon trennen):" FontWeight="SemiBold"/>
+                <TextBox x:Name="txtDoNotRewriteUrls" Margin="0,0,0,10" Height="50" TextWrapping="Wrap" AcceptsReturn="True" ToolTip="z.B. *.contoso.com;*.fabrikam.com"/>
+
+                <Label Content="Anwenden auf (Benutzer, Gruppen, Domänen - mit Semikolon trennen):" FontWeight="SemiBold"/>
+                <TextBox x:Name="txtAppliedTo" Margin="0,0,0,10" ToolTip="z.B. user@contoso.com; marketing@contoso.com; contoso.com"/>
+
+            </StackPanel>
+        </ScrollViewer>
+        
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button x:Name="btnSave" Content="Speichern" Width="100" Height="30" Margin="0,0,10,0" IsDefault="True"/>
+            <Button x:Name="btnCancel" Content="Abbrechen" Width="80" Height="30" IsCancel="True"/>
+        </StackPanel>
+    </Grid>
+</Window>
+"@
+
+        $reader = [System.Xml.XmlReader]::Create([System.IO.StringReader]$xamlDialog)
+        $dialog = [Windows.Markup.XamlReader]::Load($reader)
+        
+        # UI-Elemente referenzieren
+        $txtPolicyName = $dialog.FindName("txtPolicyName")
+        $txtPolicyDescription = $dialog.FindName("txtPolicyDescription")
+        $chkEnabled = $dialog.FindName("chkEnabled")
+        $chkScanUrlsInEmail = $dialog.FindName("chkScanUrlsInEmail")
+        $chkScanUrlsInOffice = $dialog.FindName("chkScanUrlsInOffice")
+        $chkWaitForScan = $dialog.FindName("chkWaitForScan")
+        $chkDoNotTrackClicks = $dialog.FindName("chkDoNotTrackClicks")
+        $chkDoNotAllowClickThrough = $dialog.FindName("chkDoNotAllowClickThrough")
+        $chkDisplayBranding = $dialog.FindName("chkDisplayBranding")
+        $txtDoNotRewriteUrls = $dialog.FindName("txtDoNotRewriteUrls")
+        $txtAppliedTo = $dialog.FindName("txtAppliedTo")
+        $btnSave = $dialog.FindName("btnSave")
+        $btnCancel = $dialog.FindName("btnCancel")
+
+        # Dialog mit vorhandenen Werten füllen
+        $txtPolicyName.Text = $selectedPolicy.Name
+        $txtPolicyDescription.Text = $selectedPolicy.Description
+        $chkEnabled.IsChecked = $selectedPolicy.Enabled
+        
+        # Schutzeinstellungen setzen
+        $chkScanUrlsInEmail.IsChecked = $selectedPolicy.EnableSafeLinksForEmail
+        $chkScanUrlsInOffice.IsChecked = $selectedPolicy.EnableSafeLinksForOffice
+        $chkWaitForScan.IsChecked = $selectedPolicy.ScanUrls
+
+        # Klickschutz-Einstellungen setzen
+        $chkDoNotTrackClicks.IsChecked = $selectedPolicy.DoNotTrackUserClicks
+        $chkDoNotAllowClickThrough.IsChecked = $selectedPolicy.DoNotAllowClickThrough
+        $chkDisplayBranding.IsChecked = $selectedPolicy.EnableOrganizationBranding
+
+        # DoNotRewriteUrls setzen, wenn vorhanden
+        if ($null -ne $selectedPolicy.DoNotRewriteUrls -and $selectedPolicy.DoNotRewriteUrls.Count -gt 0) {
+            $txtDoNotRewriteUrls.Text = ($selectedPolicy.DoNotRewriteUrls -join "; ")
+        }
+        
+        # Empfänger aus Regel laden
+        if ($null -ne $rule) {
+            $appliedTo = @()
+            if ($rule.SentTo) { $appliedTo += $rule.SentTo }
+            if ($rule.RecipientDomainIs) { $appliedTo += $rule.RecipientDomainIs }
+            $txtAppliedTo.Text = $appliedTo -join "; "
+        }
+
+        $btnCancel.Add_Click({ $dialog.Close() })
+
+        $btnSave.Add_Click({
+            try {
+                $policyName = $txtPolicyName.Text
+                Update-StatusBar -Message "Aktualisiere Safe Links-Richtlinie '$policyName'..." -Type Info
+
+                # Parameter für die Richtlinie vorbereiten
+                $policyParams = @{
+                    Identity = $policyName
+                    Enabled = $chkEnabled.IsChecked
+                    Description = $txtPolicyDescription.Text.Trim()
+                    EnableSafeLinksForEmail = $chkScanUrlsInEmail.IsChecked
+                    EnableSafeLinksForOffice = $chkScanUrlsInOffice.IsChecked
+                    ScanUrls = $chkWaitForScan.IsChecked
+                    DoNotTrackUserClicks = $chkDoNotTrackClicks.IsChecked
+                    DoNotAllowClickThrough = $chkDoNotAllowClickThrough.IsChecked
+                    EnableOrganizationBranding = $chkDisplayBranding.IsChecked
+                    ErrorAction = 'Stop'
+                }
+
+                # DoNotRewriteUrls-Liste aufbereiten
+                $doNotRewriteUrlsList = $txtDoNotRewriteUrls.Text.Trim() -split ';' | ForEach-Object { $_.Trim() } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+                if ($doNotRewriteUrlsList.Count -gt 0) {
+                    $policyParams.Add("DoNotRewriteUrls", $doNotRewriteUrlsList)
+                } else {
+                    # Wenn keine URLs angegeben sind, leeres Array setzen
+                    $policyParams.Add("DoNotRewriteUrls", @())
+                }
+
+                # Richtlinie aktualisieren
+                Set-SafeLinksPolicy @policyParams
+
+                # Regel aktualisieren oder neu erstellen, falls notwendig
+                $appliedToRecipients = $txtAppliedTo.Text.Trim() -split ';' | ForEach-Object { $_.Trim() } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+                
+                if ($appliedToRecipients.Count -gt 0) {
+                    $domains = $appliedToRecipients | Where-Object { $_ -notlike "*@*" }
+                    $recipients = $appliedToRecipients | Where-Object { $_ -like "*@*" }
+                    
+                    if ($null -ne $rule) {
+                        # Bestehende Regel aktualisieren
+                        $ruleParams = @{
+                            Identity = $rule.Name
+                            SafeLinksPolicy = $policyName
+                            ErrorAction = 'Stop'
+                        }
+                        
+                        if ($domains.Count -gt 0) {
+                            $ruleParams.Add("RecipientDomainIs", $domains)
+                        }
+                        
+                        if ($recipients.Count -gt 0) {
+                            $ruleParams.Add("SentTo", $recipients)
+                        }
+                        
+                        Set-SafeLinksRule @ruleParams
+                        Write-Log "Safe Links-Regel '$($rule.Name)' für Richtlinie '$policyName' aktualisiert." -Type "Success"
+                    }
+                    else {
+                        # Neue Regel erstellen
+                        $ruleName = "$($policyName)_Rule"
+                        $ruleParams = @{
+                            Name = $ruleName
+                            SafeLinksPolicy = $policyName
+                            ErrorAction = 'Stop'
+                        }
+                        
+                        if ($domains.Count -gt 0) {
+                            $ruleParams.Add("RecipientDomainIs", $domains)
+                        }
+                        
+                        if ($recipients.Count -gt 0) {
+                            $ruleParams.Add("SentTo", $recipients)
+                        }
+                        
+                        New-SafeLinksRule @ruleParams
+                        Write-Log "Neue Safe Links-Regel '$ruleName' für Richtlinie '$policyName' erstellt." -Type "Success"
+                    }
+                }
+
+                $dialog.DialogResult = $true
+                $dialog.Close()
+                Show-MessageBox -Message "Die Safe Links-Richtlinie '$policyName' wurde erfolgreich aktualisiert." -Title "Erfolg" -Type Info
+                Log-Action "Safe Links-Richtlinie '$policyName' aktualisiert."
+                
+                # Liste aktualisieren
+                Get-SafeLinksPoliciesAction
+
+            } catch {
+                $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Aktualisieren der Safe Links-Richtlinie."
+                Write-Log $errorMsg -Type Error
+                Show-MessageBox -Message $errorMsg -Title "Fehler" -Type Error
+            }
+        })
+
+        $dialog.Owner = $script:Form
+        [void]$dialog.ShowDialog()
+
+    } catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Öffnen des Dialogs zum Bearbeiten der Safe Links-Richtlinie."
+        Write-Log $errorMsg -Type Error
+        Show-MessageBox -Message $errorMsg -Title "Fehler" -Type Error
+    }
+}
+
+function Export-SafeLinksPoliciesAction {
+    [CmdletBinding()]
+    param()
+
+    if (-not (Confirm-ExchangeConnection)) { return }
+
+    try {
+        # Die Hilfsfunktion aufrufen, die die Logik für den Export enthält
+        Export-DataGridContent -DataGrid $script:dgSafeLinksPolicies -DefaultFileName "SafeLinksPolicies"
+        Log-Action "Safe Links-Richtlinien exportiert."
+    }
+    catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Ein unerwarteter Fehler ist beim Export der Safe Links-Richtlinien aufgetreten."
+        Write-Log $errorMsg -Type "Error"
+        Log-Action "Fehler beim Export der Safe Links-Richtlinien: $errorMsg"
+        Show-MessageBox -Message $errorMsg -Title "Export-Fehler" -Type "Error"
+    }
+}
+
+function Get-QuarantineMessagesAction {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $false)]
+        [switch]$UseDefaultFilter = $true,
+        
+        [Parameter(Mandatory = $false)]
+        [int]$PageSize = 1000,
+        
+        [Parameter(Mandatory = $false)]
+        [string]$SenderAddress,
+        
+        [Parameter(Mandatory = $false)]
+        [string]$RecipientAddress,
+        
+        [Parameter(Mandatory = $false)]
+        [datetime]$StartReceivedDate,
+        
+        [Parameter(Mandatory = $false)]
+        [datetime]$EndReceivedDate,
+        
+        [Parameter(Mandatory = $false)]
+        [ValidateSet("Spam", "HighConfidenceSpam", "Phish", "HighConfidencePhish", "BulkMail", "TransportRule")]
+        [string]$Type
+    )
+
+    try {
+        # Prüfen, ob eine Verbindung zu Exchange Online besteht
+        if (-not (Confirm-ExchangeConnection)) {
+            Show-MessageBox -Message "Bitte stellen Sie zuerst eine Verbindung zu Exchange Online her." -Title "Nicht verbunden" -Type "Warning"
+            return
+        }
+
+        # Status aktualisieren
+        Update-StatusBar -Message "Quarantäne-Nachrichten werden abgerufen..." -Type "Info"
+        Write-Log "Get-QuarantineMessagesAction: Rufe Quarantäne-Nachrichten ab" -Type "Info"
+        
+        # Parameter für Get-QuarantineMessage aufbauen
+        $quarantineParams = @{
+            ErrorAction = "Stop"
+            PageSize = $PageSize
+        }
+        
+        # Filterparameter hinzufügen, wenn angegeben
+        if (-not [string]::IsNullOrEmpty($SenderAddress)) {
+            $quarantineParams.Add("SenderAddress", $SenderAddress)
+        }
+        
+        if (-not [string]::IsNullOrEmpty($RecipientAddress)) {
+            $quarantineParams.Add("RecipientAddress", $RecipientAddress)
+        }
+        
+        if ($null -ne $StartReceivedDate) {
+            $quarantineParams.Add("StartReceivedDate", $StartReceivedDate)
+        } elseif ($UseDefaultFilter) {
+            # Standard-Datumsbereich von 30 Tagen verwenden - da Nachrichten maximal 30 Tage aufbewahrt werden.
+            $quarantineParams.Add("StartReceivedDate", (Get-Date).AddDays(-30))
+        }
+        
+        if ($null -ne $EndReceivedDate) {
+            $quarantineParams.Add("EndReceivedDate", $EndReceivedDate)
+        }
+        
+        if (-not [string]::IsNullOrEmpty($Type)) {
+            $quarantineParams.Add("Type", $Type)
+        }
+
+        # Quarantäne-Nachrichten abrufen
+        Write-Log "Get-QuarantineMessagesAction: Führe Get-QuarantineMessage mit Parametern aus: $($quarantineParams | ConvertTo-Json -Compress)" -Type "Debug"
+        $messages = Get-QuarantineMessage @quarantineParams
+        
+        # Wenn keine Nachrichten gefunden wurden
+        if ($null -eq $messages -or $messages.Count -eq 0) {
+            Update-StatusBar -Message "Keine Nachrichten in der Quarantäne gefunden." -Type "Warning"
+            Write-Log "Get-QuarantineMessagesAction: Keine Quarantäne-Nachrichten gefunden" -Type "Info"
+            
+            # DataGrid leeren
+            if ($null -ne $script:dgQuarantineMessages) {
+                $script:dgQuarantineMessages.Dispatcher.Invoke([Action]{
+                    $script:dgQuarantineMessages.ItemsSource = $null
+                })
+            } else {
+                Write-Log "Get-QuarantineMessagesAction: Variable dgQuarantineMessages ist nicht initialisiert" -Type "Warning"
+            }
+            
+            return
+        }
+        
+        # Daten für die Anzeige aufbereiten
+        $messagesForDisplay = $messages | ForEach-Object {
+            # Zusätzliche Eigenschaften für bessere Darstellung hinzufügen
+            $_ | Add-Member -NotePropertyName ReceivedTimeLocal -NotePropertyValue $_.ReceivedTime.ToLocalTime() -Force
+            $_ | Add-Member -NotePropertyName Size -NotePropertyValue "$([math]::Round($_.Size / 1KB, 2)) KB" -Force
+            $_
+        }
+        
+        # Daten im DataGrid anzeigen
+        if ($null -ne $script:dgQuarantineMessages) {
+            $script:dgQuarantineMessages.Dispatcher.Invoke([Action]{
+                $script:dgQuarantineMessages.ItemsSource = $messagesForDisplay
+            })
+            
+            # Status aktualisieren
+            $messageCount = $messagesForDisplay.Count
+            Update-StatusBar -Message "$messageCount Nachricht(en) in Quarantäne gefunden." -Type "Success"
+            Write-Log "Get-QuarantineMessagesAction: $messageCount Quarantäne-Nachrichten geladen" -Type "Success"
+            
+            # Wenn vorhanden, Anzahl-Feld aktualisieren
+            if ($null -ne $script:txtQuarantineCount) {
+                $script:txtQuarantineCount.Dispatcher.Invoke([Action]{
+                    $script:txtQuarantineCount.Text = "Anzahl: $messageCount"
+                })
+            }
+        } else {
+            Write-Log "Get-QuarantineMessagesAction: Variable dgQuarantineMessages ist nicht initialisiert" -Type "Warning"
+        }
+        
+        # Erfolgreich abgeschlossen
+        Log-Action "Quarantäne-Nachrichten abgerufen: $messageCount gefunden"
+        return $messagesForDisplay
+    }
+    catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Abrufen der Quarantäne-Nachrichten"
+        Write-Log "Get-QuarantineMessagesAction: $errorMsg" -Type "Error"
+        Update-StatusBar -Message "Fehler beim Abrufen der Quarantäne-Nachrichten" -Type "Error"
+        Show-MessageBox -Message $errorMsg -Title "Fehler" -Type "Error"
+        Log-Action "Fehler beim Abrufen der Quarantäne-Nachrichten: $errorMsg"
+        
+        # DataGrid leeren bei Fehler
+        if ($null -ne $script:dgQuarantineMessages) {
+            $script:dgQuarantineMessages.Dispatcher.Invoke([Action]{
+                $script:dgQuarantineMessages.ItemsSource = $null
+            })
+        }
+        
+        return $null
+    }
+}
+
+function Release-QuarantineMessageAction {
+    [CmdletBinding()]
+    param()
+
+    # Prüfe, ob eine Verbindung zu Exchange Online besteht
+    if (-not (Confirm-ExchangeConnection)) {
+        Show-MessageBox -Message "Bitte stellen Sie zuerst eine Verbindung zu Exchange Online her." -Title "Nicht verbunden" -Type "Warning"
+        return
+    }
+
+    $selectedItem = $script:dgQuarantineMessages.SelectedItem
+    if ($null -eq $selectedItem) {
+        Show-MessageBox -Message "Bitte wählen Sie eine Nachricht aus der Quarantäne-Liste aus." -Title "Keine Auswahl" -Type "Warning"
+        return
+    }
+
+    # Bestätigungsdialog anzeigen
+    $confirmResult = Show-MessageBox -Message "Möchten Sie die ausgewählte Nachricht wirklich freigeben?" -Title "Freigabe bestätigen" -Type "YesNo" -Icon "Question"
+    if ($confirmResult -ne "Yes") {
+        Update-StatusBar -Message "Freigabe abgebrochen." -Type "Info"
+        return
+    }
+
+    try {
+        Update-StatusBar -Message "Freigabe der Nachricht wird durchgeführt..." -Type "Info"
+        Write-Log "Release-QuarantineMessageAction: Freigabe für Nachricht mit Identity '$($selectedItem.Identity)' gestartet." -Type "Info"
+
+        # Quarantäne-Nachricht freigeben
+        Release-QuarantineMessage -Identity $selectedItem.Identity -ReleaseToAll -ErrorAction Stop
+
+        Show-MessageBox -Message "Die ausgewählte Nachricht wurde erfolgreich freigegeben." -Title "Erfolg" -Type "Info"
+        Update-StatusBar -Message "Nachricht erfolgreich freigegeben." -Type "Success"
+        Log-Action "Quarantäne-Nachricht freigegeben: $($selectedItem.Identity)"
+
+        # Liste aktualisieren
+        Get-QuarantineMessagesAction
+    }
+    catch {
+        $errorMsg = $_.Exception.Message
+        Write-Log "Fehler beim Freigeben der Quarantäne-Nachricht: $errorMsg" -Type "Error"
+        Update-StatusBar -Message "Fehler beim Freigeben der Nachricht: $errorMsg" -Type "Error"
+        Show-MessageBox -Message "Fehler beim Freigeben der Nachricht:`n$errorMsg" -Title "Fehler" -Type "Error"
+        Log-Action "Fehler beim Freigeben der Quarantäne-Nachricht: $errorMsg"
+    }
+}
+
+function Delete-QuarantineMessageAction {
+    [CmdletBinding()]
+    param()
+
+    # Prüfen, ob eine Verbindung zu Exchange Online besteht
+    if (-not (Confirm-ExchangeConnection)) {
+        Show-MessageBox -Message "Bitte stellen Sie zuerst eine Verbindung zu Exchange Online her." -Title "Nicht verbunden" -Type "Warning"
+        return
+    }
+
+    $selectedItem = $script:dgQuarantineMessages.SelectedItem
+    if ($null -eq $selectedItem) {
+        Show-MessageBox -Message "Bitte wählen Sie eine Nachricht aus der Quarantäne-Liste aus, um sie zu löschen." -Title "Keine Auswahl" -Type "Warning"
+        return
+    }
+
+    # Bestätigungsdialog anzeigen, da dies eine endgültige Aktion ist
+    $confirmMessage = "Möchten Sie die ausgewählte Nachricht von '$($selectedItem.SenderAddress)' mit dem Betreff '$($selectedItem.Subject)' wirklich endgültig löschen?`n`nDiese Aktion kann nicht rückgängig gemacht werden."
+    $confirmResult = Show-MessageBox -Message $confirmMessage -Title "Löschen bestätigen" -Type "YesNo" -Icon "Warning"
+    if ($confirmResult -ne "Yes") {
+        Update-StatusBar -Message "Löschvorgang abgebrochen." -Type "Info"
+        return
+    }
+
+    try {
+        Update-StatusBar -Message "Lösche Nachricht..." -Type "Info"
+        Write-Log "Delete-QuarantineMessageAction: Löschen für Nachricht mit Identity '$($selectedItem.Identity)' gestartet." -Type "Info"
+
+        # Quarantäne-Nachricht löschen
+        Delete-QuarantineMessage -Identity $selectedItem.Identity -Confirm:$false -ErrorAction Stop
+
+        Show-MessageBox -Message "Die ausgewählte Nachricht wurde erfolgreich gelöscht." -Title "Erfolg" -Type "Info"
+        Update-StatusBar -Message "Nachricht erfolgreich gelöscht." -Type "Success"
+        Log-Action "Quarantäne-Nachricht gelöscht: $($selectedItem.Identity)"
+
+        # Liste aktualisieren, um die gelöschte Nachricht zu entfernen
+        Get-QuarantineMessagesAction
+    }
+    catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Löschen der Quarantäne-Nachricht"
+        Write-Log "Fehler beim Löschen der Quarantäne-Nachricht: $errorMsg" -Type "Error"
+        Update-StatusBar -Message "Fehler beim Löschen der Nachricht: $errorMsg" -Type "Error"
+        Show-MessageBox -Message "Fehler beim Löschen der Nachricht:`n$errorMsg" -Title "Fehler" -Type "Error"
+        Log-Action "Fehler beim Löschen der Quarantäne-Nachricht: $errorMsg"
+    }
+}
+
+function Export-QuarantineMessagesAction {
+    [CmdletBinding()]
+    param()
+
+    try {
+        # Prüfen, ob eine Verbindung zu Exchange Online besteht
+        if (-not (Confirm-ExchangeConnection)) {
+            Show-MessageBox -Message "Bitte stellen Sie zuerst eine Verbindung zu Exchange Online her." -Title "Nicht verbunden" -Type "Warning"
+            return
+        }
+
+        # Prüfen, ob das DataGrid-Element vorhanden ist
+        if ($null -eq $script:dgQuarantineMessages) {
+            Write-Log "Export-QuarantineMessagesAction: Das DataGrid 'dgQuarantineMessages' ist nicht initialisiert." -Type "Error"
+            Show-MessageBox -Message "Ein interner Fehler ist aufgetreten: Das Quarantäne-Datenraster wurde nicht gefunden." -Title "UI-Fehler" -Type "Error"
+            return
+        }
+
+        # Die wiederverwendbare Export-Funktion aufrufen
+        Export-DataGridContent -DataGrid $script:dgQuarantineMessages -DefaultFileName "QuarantineMessages"
+        Log-Action "Quarantäne-Nachrichten exportiert."
+
+    } catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Ein unerwarteter Fehler ist beim Export der Quarantäne-Nachrichten aufgetreten."
+        Write-Log $errorMsg -Type "Error"
+        Log-Action "Fehler beim Export der Quarantäne-Nachrichten: $errorMsg"
+        Show-MessageBox -Message $errorMsg -Title "Export-Fehler" -Type "Error"
+        Update-StatusBar -Message "Fehler beim Export der Quarantäne-Nachrichten." -Type "Error"
+    }
+}
+
+#endregion
+
+#region Mobile Device Management
+function Get-MobileDevicePoliciesAction {
+    [CmdletBinding()]
+    param()
+
+    if (-not (Confirm-ExchangeConnection)) { return }
+    Update-StatusBar -Message "Lade Richtlinien für mobile Geräte..." -Type Info
+    
+    try {
+        $policies = @(Get-MobileDeviceMailboxPolicy -ErrorAction Stop)
+
+        if ($null -ne $script:dgMobileDevicePolicies) {
+            $script:dgMobileDevicePolicies.Dispatcher.Invoke([Action]{
+                $script:dgMobileDevicePolicies.ItemsSource = $policies
+            })
+        } else {
+            Write-Log "DataGrid 'dgMobileDevicePolicies' wurde nicht im Skript-Kontext gefunden." -Type "Warning"
+        }
+
+        $policyCount = if ($null -ne $policies) { $policies.Count } else { 0 }
+        Update-StatusBar -Message "$policyCount Richtlinien für mobile Geräte geladen." -Type Success
+        Log-Action "Richtlinien für mobile Geräte geladen: $policyCount gefunden."
+        
+        return $policies
+
+    } catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Laden der Richtlinien für mobile Geräte."
+        Update-StatusBar -Message $errorMsg -Type Error
+        Show-MessageBox -Message $errorMsg -Title "Fehler" -Type Error
+        Log-Action "Fehler beim Laden der Richtlinien für mobile Geräte: $errorMsg"
+        
+        if ($null -ne $script:dgMobileDevicePolicies) {
+            $script:dgMobileDevicePolicies.Dispatcher.Invoke([Action]{
+                $script:dgMobileDevicePolicies.ItemsSource = $null
+            })
+        }
+        return @()
+    }
+}
+
+function New-MobileDevicePolicyAction {
+    [CmdletBinding()]
+    param()
+
+    if (-not (Confirm-ExchangeConnection)) { return }
+    Update-StatusBar -Message "Öffne Dialog zur Erstellung einer neuen Geräterichtlinie..." -Type Info
+
+    try {
+        # XAML für das Dialogfenster
+        $xamlDialog = @"
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Neue Richtlinie für mobile Geräte" Height="600" Width="500"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="0" Text="Neue Richtlinie für mobile Geräte erstellen" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Label Content="Richtlinienname:" FontWeight="SemiBold"/>
+                <TextBox x:Name="txtPolicyName" Margin="0,0,0,10"/>
+                <Label Content="Beschreibung (optional):" FontWeight="SemiBold"/>
+                <TextBox x:Name="txtPolicyDescription" Margin="0,0,0,10" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
+                <CheckBox x:Name="chkAllowNonProvisionableDevices" Content="Nicht-provisionierbare Geräte zulassen" Margin="0,10,0,10"/>
+                <CheckBox x:Name="chkAllowSimplePassword" Content="Einfache Passwörter zulassen" Margin="0,0,0,10"/>
+                <Label Content="Minimale Passwortlänge:" FontWeight="SemiBold"/>
+                <TextBox x:Name="txtMinPasswordLength" Margin="0,0,0,10"/>
+                <CheckBox x:Name="chkRequireDeviceEncryption" Content="Geräteverschlüsselung erforderlich" Margin="0,0,0,10"/>
+                <CheckBox x:Name="chkAllowCamera" Content="Kamera erlauben" Margin="0,0,0,10"/>
+                <CheckBox x:Name="chkAllowWiFi" Content="WLAN erlauben" Margin="0,0,0,10"/>
+                <CheckBox x:Name="chkAllowBluetooth" Content="Bluetooth erlauben" Margin="0,0,0,10"/>
+            </StackPanel>
+        </ScrollViewer>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button x:Name="btnCreate" Content="Erstellen" Width="100" Height="30" Margin="0,0,10,0" IsDefault="True"/>
+            <Button x:Name="btnCancel" Content="Abbrechen" Width="80" Height="30" IsCancel="True"/>
+        </StackPanel>
+    </Grid>
+</Window>
+"@
+
+        $reader = [System.Xml.XmlReader]::Create([System.IO.StringReader]$xamlDialog)
+        $dialog = [Windows.Markup.XamlReader]::Load($reader)
+
+        # UI-Elemente referenzieren
+        $txtPolicyName = $dialog.FindName("txtPolicyName")
+        $txtPolicyDescription = $dialog.FindName("txtPolicyDescription")
+        $chkAllowNonProvisionableDevices = $dialog.FindName("chkAllowNonProvisionableDevices")
+        $chkAllowSimplePassword = $dialog.FindName("chkAllowSimplePassword")
+        $txtMinPasswordLength = $dialog.FindName("txtMinPasswordLength")
+        $chkRequireDeviceEncryption = $dialog.FindName("chkRequireDeviceEncryption")
+        $chkAllowCamera = $dialog.FindName("chkAllowCamera")
+        $chkAllowWiFi = $dialog.FindName("chkAllowWiFi")
+        $chkAllowBluetooth = $dialog.FindName("chkAllowBluetooth")
+        $btnCreate = $dialog.FindName("btnCreate")
+        $btnCancel = $dialog.FindName("btnCancel")
+
+        $btnCancel.Add_Click({ $dialog.Close() })
+
+        $btnCreate.Add_Click({
+            try {
+                $policyName = $txtPolicyName.Text.Trim()
+                if ([string]::IsNullOrWhiteSpace($policyName)) {
+                    Show-MessageBox -Message "Bitte geben Sie einen Richtliniennamen an." -Title "Eingabe fehlt" -Type Warning
+                    return
+                }
+
+                $params = @{
+                    Name = $policyName
+                    AllowNonProvisionableDevices = $chkAllowNonProvisionableDevices.IsChecked
+                    AllowSimplePassword = $chkAllowSimplePassword.IsChecked
+                    RequireDeviceEncryption = $chkRequireDeviceEncryption.IsChecked
+                    AllowCamera = $chkAllowCamera.IsChecked
+                    AllowWiFi = $chkAllowWiFi.IsChecked
+                    AllowBluetooth = $chkAllowBluetooth.IsChecked
+                    ErrorAction = 'Stop'
+                }
+                if (-not [string]::IsNullOrWhiteSpace($txtPolicyDescription.Text)) {
+                    $params.Description = $txtPolicyDescription.Text.Trim()
+                }
+                if (-not [string]::IsNullOrWhiteSpace($txtMinPasswordLength.Text)) {
+                    $minLen = $txtMinPasswordLength.Text.Trim()
+                    if ($minLen -match '^\d+$') {
+                        $params.MinPasswordLength = [int]$minLen
+                    }
+                }
+
+                # Richtlinie erstellen
+                New-MobileDeviceMailboxPolicy @params
+
+                $dialog.DialogResult = $true
+                $dialog.Close()
+                Show-MessageBox -Message "Die Richtlinie '$policyName' wurde erfolgreich erstellt." -Title "Erfolg" -Type Info
+                Log-Action "Neue Mobile Device Policy '$policyName' erstellt."
+
+                # Liste aktualisieren
+                Get-MobileDevicePoliciesAction
+
+            } catch {
+                $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Erstellen der Geräterichtlinie."
+                Write-Log $errorMsg -Type Error
+                Show-MessageBox -Message $errorMsg -Title "Fehler" -Type Error
+            }
+        })
+
+        $dialog.Owner = $script:Form
+        [void]$dialog.ShowDialog()
+
+    } catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Öffnen des Dialogs für neue Geräterichtlinien."
+        Write-Log $errorMsg -Type Error
+        Show-MessageBox -Message $errorMsg -Title "Fehler" -Type Error
+    }
+}
+
+function Remove-MobileDevicePolicyAction {
+    [CmdletBinding(SupportsShouldProcess = $true)]
+    param()
+
+    if (-not (Confirm-ExchangeConnection)) { return }
+
+    $selectedPolicy = $script:dgMobileDevicePolicies.SelectedItem
+    if ($null -eq $selectedPolicy) {
+        Show-MessageBox -Message "Bitte wählen Sie eine Richtlinie zum Löschen aus." -Title "Keine Auswahl" -Type "Warning"
+        return
+    }
+
+    $policyName = $selectedPolicy.Name
+    $confirmMessage = "Möchten Sie die Richtlinie für mobile Geräte '$policyName' wirklich löschen?`n`nDiese Aktion kann nicht rückgängig gemacht werden."
+    
+    if ($PSCmdlet.ShouldProcess($policyName, "Richtlinie für mobile Geräte löschen")) {
+        $confirmResult = Show-MessageBox -Message $confirmMessage -Title "Löschen bestätigen" -Type "YesNo" -Icon "Question"
+        if ($confirmResult -ne 'Yes') {
+            Update-StatusBar -Message "Löschvorgang abgebrochen." -Type "Info"
+            return
+        }
+
+        Update-StatusBar -Message "Lösche Richtlinie '$policyName'..." -Type "Info"
+        try {
+            # Die Richtlinie löschen
+            Remove-MobileDeviceMailboxPolicy -Identity $policyName -Confirm:$false -ErrorAction Stop
+
+            Show-MessageBox -Message "Die Richtlinie '$policyName' wurde erfolgreich gelöscht." -Title "Erfolg" -Type "Info"
+            Log-Action "Richtlinie für mobile Geräte '$policyName' gelöscht."
+            
+            # Liste aktualisieren, um die gelöschte Richtlinie zu entfernen
+            Get-MobileDevicePoliciesAction
+
+        } catch {
+            $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Löschen der Richtlinie für mobile Geräte."
+            Write-Log $errorMsg -Type "Error"
+            Update-StatusBar -Message $errorMsg -Type "Error"
+            Show-MessageBox -Message $errorMsg -Title "Fehler" -Type "Error"
+            Log-Action "Fehler beim Löschen der Richtlinie für mobile Geräte '$policyName': $errorMsg"
+        }
+    }
+}
+
+function Get-QuarantinedDevicesAction {
+    [CmdletBinding()]
+    param()
+
+    if (-not (Confirm-ExchangeConnection)) { return }
+    Update-StatusBar -Message "Lade unter Quarantäne gestellte Geräte..." -Type Info
+    
+    try {
+        # Get-MobileDevice mit Filter für Quarantäne-Status
+        $devices = Get-MobileDevice -Filter "DeviceAccessState -eq 'Quarantined'" -ErrorAction Stop
+
+        # DataGrid im UI-Thread aktualisieren
+        if ($null -ne $script:dgQuarantinedDevices) {
+            $script:dgQuarantinedDevices.Dispatcher.Invoke([Action]{
+                $script:dgQuarantinedDevices.ItemsSource = $devices
+            })
+        } else {
+            Write-Log "DataGrid 'dgQuarantinedDevices' wurde nicht im Skript-Kontext gefunden." -Type "Warning"
+        }
+
+        $deviceCount = if ($null -ne $devices) { $devices.Count } else { 0 }
+        Update-StatusBar -Message "$deviceCount unter Quarantäne gestellte(s) Gerät(e) gefunden." -Type Success
+        Log-Action "Unter Quarantäne gestellte Geräte geladen: $deviceCount gefunden."
+        
+        return $devices
+
+    } catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Laden der unter Quarantäne gestellten Geräte."
+        Update-StatusBar -Message $errorMsg -Type Error
+        Show-MessageBox -Message $errorMsg -Title "Fehler" -Type Error
+        Log-Action "Fehler beim Laden der unter Quarantäne gestellten Geräte: $errorMsg"
+        
+        # DataGrid bei Fehler leeren
+        if ($null -ne $script:dgQuarantinedDevices) {
+            $script:dgQuarantinedDevices.Dispatcher.Invoke([Action]{
+                $script:dgQuarantinedDevices.ItemsSource = $null
+            })
+        }
+        return @()
+    }
+}
+
+function Allow-QuarantinedDeviceAction {
+    [CmdletBinding(SupportsShouldProcess = $true)]
+    param()
+
+    if (-not (Confirm-ExchangeConnection)) { return }
+
+    $selectedDevice = $script:dgQuarantinedDevices.SelectedItem
+    if ($null -eq $selectedDevice) {
+        Show-MessageBox -Message "Bitte wählen Sie ein Gerät aus der Liste aus, um es zuzulassen." -Title "Keine Auswahl" -Type "Warning"
+        return
+    }
+
+    $deviceName = $selectedDevice.FriendlyName
+    $deviceUser = $selectedDevice.UserDisplayName
+    $actionDescription = "Das unter Quarantäne gestellte Gerät '$deviceName' für Benutzer '$deviceUser' zulassen."
+    
+    if ($PSCmdlet.ShouldProcess("$deviceName ($deviceUser)", "Gerät aus Quarantäne freigeben")) {
+        $confirmResult = Show-MessageBox -Message $actionDescription -Title "Zulassen bestätigen" -Type "YesNo" -Icon "Question"
+        if ($confirmResult -ne 'Yes') {
+            Update-StatusBar -Message "Zulassungsvorgang abgebrochen." -Type "Info"
+            return
+        }
+
+        Update-StatusBar -Message "Erlaube Gerät '$deviceName'..." -Type "Info"
+        try {
+            # Das Gerät explizit zulassen
+            Set-MobileDevice -Identity $selectedDevice.Identity -DeviceAccessState Allowed -Confirm:$false -ErrorAction Stop
+
+            Show-MessageBox -Message "Das Gerät '$deviceName' wurde erfolgreich zugelassen." -Title "Erfolg" -Type "Info"
+            Log-Action "Unter Quarantäne gestelltes Gerät zugelassen: $($selectedDevice.Identity)"
+            
+            # Liste aktualisieren, um das zugelassene Gerät zu entfernen
+            Get-QuarantinedDevicesAction
+
+        } catch {
+            $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Zulassen des Geräts."
+            Write-Log $errorMsg -Type "Error"
+            Update-StatusBar -Message $errorMsg -Type "Error"
+            Show-MessageBox -Message $errorMsg -Title "Fehler" -Type "Error"
+            Log-Action "Fehler beim Zulassen des Geräts '$($selectedDevice.Identity)': $errorMsg"
+        }
+    }
+}
+
+function Block-QuarantinedDeviceAction {
+    [CmdletBinding(SupportsShouldProcess = $true)]
+    param()
+
+    if (-not (Confirm-ExchangeConnection)) { return }
+
+    $selectedDevice = $script:dgQuarantinedDevices.SelectedItem
+    if ($null -eq $selectedDevice) {
+        Show-MessageBox -Message "Bitte wählen Sie ein Gerät aus der Liste aus, um es zu blockieren." -Title "Keine Auswahl" -Type "Warning"
+        return
+    }
+
+    $deviceName = $selectedDevice.FriendlyName
+    $deviceUser = $selectedDevice.UserDisplayName
+    $actionDescription = "Das unter Quarantäne gestellte Gerät '$deviceName' für Benutzer '$deviceUser' blockieren."
+    
+    if ($PSCmdlet.ShouldProcess("$deviceName ($deviceUser)", "Gerät blockieren")) {
+        $confirmResult = Show-MessageBox -Message $actionDescription -Title "Blockieren bestätigen" -Type "YesNo" -Icon "Question"
+        if ($confirmResult -ne 'Yes') {
+            Update-StatusBar -Message "Blockiervorgang abgebrochen." -Type "Info"
+            return
+        }
+
+        Update-StatusBar -Message "Blockiere Gerät '$deviceName'..." -Type "Info"
+        try {
+            # Das Gerät explizit blockieren durch Ändern des DeviceAccessState
+            Set-MobileDevice -Identity $selectedDevice.Identity -DeviceAccessState Blocked -Confirm:$false -ErrorAction Stop
+
+            Show-MessageBox -Message "Das Gerät '$deviceName' wurde erfolgreich blockiert." -Title "Erfolg" -Type "Info"
+            Log-Action "Unter Quarantäne gestelltes Gerät blockiert: $($selectedDevice.Identity)"
+            
+            # Liste der unter Quarantäne gestellten Geräte aktualisieren
+            Get-QuarantinedDevicesAction
+
+        } catch {
+            $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler beim Blockieren des Geräts."
+            Write-Log $errorMsg -Type "Error"
+            Update-StatusBar -Message $errorMsg -Type "Error"
+            Show-MessageBox -Message $errorMsg -Title "Fehler" -Type "Error"
+            Log-Action "Fehler beim Blockieren des Geräts '$($selectedDevice.Identity)': $errorMsg"
+        }
+    }
+}
+
+#endregion
+
 function Initialize-ContactsTab {
     [CmdletBinding()]
     param()
@@ -19196,6 +21009,151 @@ function Initialize-CrossPremisesTab {
     }
 }
 
+function Initialize-ATPTab {
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Log "Initialisiere Advanced Threat Protection (ATP) Tab..." -Type "Info"
+
+        # --- Allgemeine Elemente ---
+        $helpLinkATP = Get-XamlElement -ElementName "helpLinkATP"
+
+        # --- Anti-Phishing ---
+        $btnGetAntiPhishing = Get-XamlElement -ElementName "btnGetAntiPhishing"
+        $btnNewAntiPhishing = Get-XamlElement -ElementName "btnNewAntiPhishing"
+        $btnSetAntiPhishing = Get-XamlElement -ElementName "btnSetAntiPhishing"
+        $dgAntiPhishingPolicies = Get-XamlElement -ElementName "dgAntiPhishingPolicies"
+        $btnExportAntiPhishing = Get-XamlElement -ElementName "btnExportAntiPhishing"
+        $script:dgAntiPhishingPolicies = $dgAntiPhishingPolicies
+
+        # --- Safe Attachments ---
+        $btnGetSafeAttachment = Get-XamlElement -ElementName "btnGetSafeAttachment"
+        $btnNewSafeAttachment = Get-XamlElement -ElementName "btnNewSafeAttachment"
+        $btnSetSafeAttachment = Get-XamlElement -ElementName "btnSetSafeAttachment"
+        $dgSafeAttachmentPolicies = Get-XamlElement -ElementName "dgSafeAttachmentPolicies"
+        $btnExportSafeAttachment = Get-XamlElement -ElementName "btnExportSafeAttachment"
+        $script:dgSafeAttachmentPolicies = $dgSafeAttachmentPolicies
+
+        # --- Safe Links ---
+        $btnGetSafeLinks = Get-XamlElement -ElementName "btnGetSafeLinks"
+        $btnNewSafeLinks = Get-XamlElement -ElementName "btnNewSafeLinks"
+        $btnSetSafeLinks = Get-XamlElement -ElementName "btnSetSafeLinks"
+        $dgSafeLinksPolicies = Get-XamlElement -ElementName "dgSafeLinksPolicies"
+        $btnExportSafeLinks = Get-XamlElement -ElementName "btnExportSafeLinks"
+        $script:dgSafeLinksPolicies = $dgSafeLinksPolicies
+
+        # --- Quarantäne ---
+        $btnGetQuarantineMessages = Get-XamlElement -ElementName "btnGetQuarantineMessages"
+        $btnReleaseQuarantine = Get-XamlElement -ElementName "btnReleaseQuarantine"
+        $btnDeleteQuarantine = Get-XamlElement -ElementName "btnDeleteQuarantine"
+        $dgQuarantineMessages = Get-XamlElement -ElementName "dgQuarantineMessages"
+        $btnExportQuarantine = Get-XamlElement -ElementName "btnExportQuarantine"
+        $script:dgQuarantineMessages = $dgQuarantineMessages
+
+        # --- Event Handler ---
+
+        # Hilfe-Link
+        if ($null -ne $helpLinkATP) {
+            $helpLinkATP.Add_MouseLeftButtonDown({
+                try { Start-Process "https://learn.microsoft.com/de-de/microsoft-365/security/office-365-security/microsoft-defender-for-office-365" } catch { }
+            })
+        }
+
+        # Anti-Phishing Handler
+        Register-EventHandler -Control $btnGetAntiPhishing -Handler { Get-AntiPhishingPoliciesAction } -ControlName "btnGetAntiPhishing"
+        Register-EventHandler -Control $btnNewAntiPhishing -Handler { New-AntiPhishingPolicyAction } -ControlName "btnNewAntiPhishing"
+        Register-EventHandler -Control $btnSetAntiPhishing -Handler { Set-AntiPhishingPolicyAction } -ControlName "btnSetAntiPhishing"
+        Register-EventHandler -Control $btnExportAntiPhishing -Handler { Export-AntiPhishingPoliciesAction } -ControlName "btnExportAntiPhishing"
+
+        # Safe Attachments Handler
+        Register-EventHandler -Control $btnGetSafeAttachment -Handler { Get-SafeAttachmentPoliciesAction } -ControlName "btnGetSafeAttachment"
+        Register-EventHandler -Control $btnNewSafeAttachment -Handler { New-SafeAttachmentPolicyAction } -ControlName "btnNewSafeAttachment"
+        Register-EventHandler -Control $btnSetSafeAttachment -Handler { Set-SafeAttachmentPolicyAction } -ControlName "btnSetSafeAttachment"
+        Register-EventHandler -Control $btnExportSafeAttachment -Handler { Export-SafeAttachmentPoliciesAction } -ControlName "btnExportSafeAttachment"
+
+        # Safe Links Handler
+        Register-EventHandler -Control $btnGetSafeLinks -Handler { Get-SafeLinksPoliciesAction } -ControlName "btnGetSafeLinks"
+        Register-EventHandler -Control $btnNewSafeLinks -Handler { New-SafeLinksPolicyAction } -ControlName "btnNewSafeLinks"
+        Register-EventHandler -Control $btnSetSafeLinks -Handler { Set-SafeLinksPolicyAction } -ControlName "btnSetSafeLinks"
+        Register-EventHandler -Control $btnExportSafeLinks -Handler { Export-SafeLinksPoliciesAction } -ControlName "btnExportSafeLinks"
+
+        # Quarantäne Handler
+        Register-EventHandler -Control $btnGetQuarantineMessages -Handler { Get-QuarantineMessagesAction } -ControlName "btnGetQuarantineMessages"
+        Register-EventHandler -Control $btnReleaseQuarantine -Handler { Release-QuarantineMessageAction } -ControlName "btnReleaseQuarantine"
+        Register-EventHandler -Control $btnDeleteQuarantine -Handler { Delete-QuarantineMessageAction } -ControlName "btnDeleteQuarantine"
+        Register-EventHandler -Control $btnExportQuarantine -Handler { Export-QuarantineMessagesAction } -ControlName "btnExportQuarantine"
+
+        Write-Log "ATP Tab erfolgreich initialisiert." -Type "Success"
+        return $true
+    }
+    catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler bei der Initialisierung des ATP Tabs."
+        Write-Log $errorMsg -Type "Error"
+        return $false
+    }
+}
+
+function Initialize-MDMTab {
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Log "Initialisiere Mobile Device Management (MDM) Tab..." -Type "Info"
+
+        # --- ActiveSync Policies ---
+        $btnGetMobileDevicePolicies = Get-XamlElement -ElementName "btnGetMobileDevicePolicies"
+        $btnNewMobileDevicePolicy = Get-XamlElement -ElementName "btnNewMobileDevicePolicy"
+        $btnRemoveMobileDevicePolicy = Get-XamlElement -ElementName "btnRemoveMobileDevicePolicy"
+        $dgMobileDevicePolicies = Get-XamlElement -ElementName "dgMobileDevicePolicies"
+        $txtMobilePolicyDetails = Get-XamlElement -ElementName "txtMobilePolicyDetails"
+        
+        # --- Quarantined Devices ---
+        $btnGetQuarantinedDevices = Get-XamlElement -ElementName "btnGetQuarantinedDevices"
+        $btnAllowDevice = Get-XamlElement -ElementName "btnAllowDevice"
+        $btnBlockDevice = Get-XamlElement -ElementName "btnBlockDevice"
+        $dgQuarantinedDevices = Get-XamlElement -ElementName "dgQuarantinedDevices"
+
+        # Store references in script scope
+        $script:dgMobileDevicePolicies = $dgMobileDevicePolicies
+        $script:txtMobilePolicyDetails = $txtMobilePolicyDetails
+        $script:dgQuarantinedDevices = $dgQuarantinedDevices
+
+        # --- Event Handlers ---
+
+        # ActiveSync Policies
+        Register-EventHandler -Control $btnGetMobileDevicePolicies -Handler { Get-MobileDevicePoliciesAction } -ControlName "btnGetMobileDevicePolicies"
+        Register-EventHandler -Control $btnNewMobileDevicePolicy -Handler { New-MobileDevicePolicyAction } -ControlName "btnNewMobileDevicePolicy"
+        Register-EventHandler -Control $btnRemoveMobileDevicePolicy -Handler { Remove-MobileDevicePolicyAction } -ControlName "btnRemoveMobileDevicePolicy"
+
+        # Quarantined Devices
+        Register-EventHandler -Control $btnGetQuarantinedDevices -Handler { Get-QuarantinedDevicesAction } -ControlName "btnGetQuarantinedDevices"
+        Register-EventHandler -Control $btnAllowDevice -Handler { Allow-QuarantinedDeviceAction } -ControlName "btnAllowDevice"
+        Register-EventHandler -Control $btnBlockDevice -Handler { Block-QuarantinedDeviceAction } -ControlName "btnBlockDevice"
+
+        # Handler for policy selection change
+        if ($null -ne $dgMobileDevicePolicies) {
+            $dgMobileDevicePolicies.Add_SelectionChanged({
+                param($sender, $e)
+                $selectedPolicy = $sender.SelectedItem
+                if ($null -ne $selectedPolicy -and $null -ne $script:txtMobilePolicyDetails) {
+                    # In a real implementation, you would get the full policy object and format it.
+                    $details = $selectedPolicy | Out-String
+                    $script:txtMobilePolicyDetails.Text = $details
+                }
+            })
+        }
+
+        Write-Log "MDM Tab erfolgreich initialisiert." -Type "Success"
+        return $true
+    }
+    catch {
+        $errorMsg = Get-FormattedError -ErrorRecord $_ -DefaultText "Fehler bei der Initialisierung des MDM Tabs."
+        Write-Log $errorMsg -Type "Error"
+        return $false
+    }
+}
+
 # Initialisiert die restlichen Tabs im Hintergrund über einen separaten Thread
 function Initialize-RemainingTabs {
     [CmdletBinding()]
@@ -19226,10 +21184,10 @@ function Initialize-RemainingTabs {
         AutoReply = Initialize-AutoReplyTab
         HealthCheck = Initialize-HealthCheckTab
         # Tabs welche keine Funktion haben, aber im UI bereits vorhanden sind
-        #ATP = Initialize-ATPTab
+        ATP = Initialize-ATPTab
         #DLP = Initialize-DLPTab
         #eDiscovery = Initialize-eDiscoveryTab
-        #MDM = Initialize-MDMTab
+        MDM = Initialize-MDMTab
         #HybridExchange = Initialize-HybridExchangeTab
         #MultiForest = Initialize-MultiForestTab
         CrossPremises = Initialize-CrossPremisesTab
@@ -19328,6 +21286,12 @@ function Start-AsyncTabInitialization {
                     AutoReply = Initialize-AutoReplyTab
                     HealthCheck = Initialize-HealthCheckTab
                     CrossPremises = Initialize-CrossPremisesTab
+                    ATP = Initialize-ATPTab
+                    #DLP = Initialize-DLPTab
+                    #eDiscovery = Initialize-eDiscoveryTab
+                    MDM = Initialize-MDMTab
+                    #HybridExchange = Initialize-HybridExchangeTab
+                    #MultiForest = Initialize-MultiForestTab
                 }
                 
                 $successCount = ($results.Values | Where-Object { $_ -eq $true }).Count
@@ -19449,11 +21413,14 @@ finally {
 
 
 
+
+
+
 # SIG # Begin signature block
-# MIIbywYJKoZIhvcNAQcCoIIbvDCCG7gCAQExDzANBglghkgBZQMEAgEFADB5Bgor
+# MIIcCAYJKoZIhvcNAQcCoIIb+TCCG/UCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCPD8v38OKoXzTE
-# /suWmTGRIIcOon+rqz1UjgenALvXRaCCFhcwggMQMIIB+KADAgECAhB3jzsyX9Cg
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDiwlIW+1WeQuSd
+# VxIus8qCd3CSSRnDbmf+67Nw7xdlXaCCFk4wggMQMIIB+KADAgECAhB3jzsyX9Cg
 # jEi+sBC2rBMTMA0GCSqGSIb3DQEBCwUAMCAxHjAcBgNVBAMMFVBoaW5JVC1QU3Nj
 # cmlwdHNfU2lnbjAeFw0yNTA3MDUwODI4MTZaFw0yNzA3MDUwODM4MTZaMCAxHjAc
 # BgNVBAMMFVBoaW5JVC1QU3NjcmlwdHNfU2lnbjCCASIwDQYJKoZIhvcNAQEBBQAD
@@ -19499,104 +21466,105 @@ finally {
 # 9PesMHqai7Je1M/RQ0SbQyHrlnKhSLSZy51PpwYDE3cnRNTnf+hZqPC/Lwum6fI0
 # POz3A8eHqNJMQBk1RmppVLC4oVaO7KTVPeix3P0c2PR3WlxUjG/voVA9/HYJaISf
 # b8rbII01YBwCA8sgsKxYoA5AY8WYIsGyWfVVa88nq2x2zm8jLfR+cWojayL/ErhU
-# LSd+2DrZ8LaHlv1b0VysGMNNn3O3AamfV6peKOK5lDCCBq4wggSWoAMCAQICEAc2
-# N7ckVHzYR6z9KGYqXlswDQYJKoZIhvcNAQELBQAwYjELMAkGA1UEBhMCVVMxFTAT
+# LSd+2DrZ8LaHlv1b0VysGMNNn3O3AamfV6peKOK5lDCCBrQwggScoAMCAQICEA3H
+# rFcF/yGZLkBDIgw6SYYwDQYJKoZIhvcNAQELBQAwYjELMAkGA1UEBhMCVVMxFTAT
 # BgNVBAoTDERpZ2lDZXJ0IEluYzEZMBcGA1UECxMQd3d3LmRpZ2ljZXJ0LmNvbTEh
-# MB8GA1UEAxMYRGlnaUNlcnQgVHJ1c3RlZCBSb290IEc0MB4XDTIyMDMyMzAwMDAw
-# MFoXDTM3MDMyMjIzNTk1OVowYzELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDkRpZ2lD
-# ZXJ0LCBJbmMuMTswOQYDVQQDEzJEaWdpQ2VydCBUcnVzdGVkIEc0IFJTQTQwOTYg
-# U0hBMjU2IFRpbWVTdGFtcGluZyBDQTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCC
-# AgoCggIBAMaGNQZJs8E9cklRVcclA8TykTepl1Gh1tKD0Z5Mom2gsMyD+Vr2EaFE
-# FUJfpIjzaPp985yJC3+dH54PMx9QEwsmc5Zt+FeoAn39Q7SE2hHxc7Gz7iuAhIoi
-# GN/r2j3EF3+rGSs+QtxnjupRPfDWVtTnKC3r07G1decfBmWNlCnT2exp39mQh0YA
-# e9tEQYncfGpXevA3eZ9drMvohGS0UvJ2R/dhgxndX7RUCyFobjchu0CsX7LeSn3O
-# 9TkSZ+8OpWNs5KbFHc02DVzV5huowWR0QKfAcsW6Th+xtVhNef7Xj3OTrCw54qVI
-# 1vCwMROpVymWJy71h6aPTnYVVSZwmCZ/oBpHIEPjQ2OAe3VuJyWQmDo4EbP29p7m
-# O1vsgd4iFNmCKseSv6De4z6ic/rnH1pslPJSlRErWHRAKKtzQ87fSqEcazjFKfPK
-# qpZzQmiftkaznTqj1QPgv/CiPMpC3BhIfxQ0z9JMq++bPf4OuGQq+nUoJEHtQr8F
-# nGZJUlD0UfM2SU2LINIsVzV5K6jzRWC8I41Y99xh3pP+OcD5sjClTNfpmEpYPtMD
-# iP6zj9NeS3YSUZPJjAw7W4oiqMEmCPkUEBIDfV8ju2TjY+Cm4T72wnSyPx4Jduyr
-# XUZ14mCjWAkBKAAOhFTuzuldyF4wEr1GnrXTdrnSDmuZDNIztM2xAgMBAAGjggFd
-# MIIBWTASBgNVHRMBAf8ECDAGAQH/AgEAMB0GA1UdDgQWBBS6FtltTYUvcyl2mi91
-# jGogj57IbzAfBgNVHSMEGDAWgBTs1+OC0nFdZEzfLmc/57qYrhwPTzAOBgNVHQ8B
-# Af8EBAMCAYYwEwYDVR0lBAwwCgYIKwYBBQUHAwgwdwYIKwYBBQUHAQEEazBpMCQG
-# CCsGAQUFBzABhhhodHRwOi8vb2NzcC5kaWdpY2VydC5jb20wQQYIKwYBBQUHMAKG
-# NWh0dHA6Ly9jYWNlcnRzLmRpZ2ljZXJ0LmNvbS9EaWdpQ2VydFRydXN0ZWRSb290
-# RzQuY3J0MEMGA1UdHwQ8MDowOKA2oDSGMmh0dHA6Ly9jcmwzLmRpZ2ljZXJ0LmNv
-# bS9EaWdpQ2VydFRydXN0ZWRSb290RzQuY3JsMCAGA1UdIAQZMBcwCAYGZ4EMAQQC
-# MAsGCWCGSAGG/WwHATANBgkqhkiG9w0BAQsFAAOCAgEAfVmOwJO2b5ipRCIBfmbW
-# 2CFC4bAYLhBNE88wU86/GPvHUF3iSyn7cIoNqilp/GnBzx0H6T5gyNgL5Vxb122H
-# +oQgJTQxZ822EpZvxFBMYh0MCIKoFr2pVs8Vc40BIiXOlWk/R3f7cnQU1/+rT4os
-# equFzUNf7WC2qk+RZp4snuCKrOX9jLxkJodskr2dfNBwCnzvqLx1T7pa96kQsl3p
-# /yhUifDVinF2ZdrM8HKjI/rAJ4JErpknG6skHibBt94q6/aesXmZgaNWhqsKRcnf
-# xI2g55j7+6adcq/Ex8HBanHZxhOACcS2n82HhyS7T6NJuXdmkfFynOlLAlKnN36T
-# U6w7HQhJD5TNOXrd/yVjmScsPT9rp/Fmw0HNT7ZAmyEhQNC3EyTN3B14OuSereU0
-# cZLXJmvkOHOrpgFPvT87eK1MrfvElXvtCl8zOYdBeHo46Zzh3SP9HSjTx/no8Zhf
-# +yvYfvJGnXUsHicsJttvFXseGYs2uJPU5vIXmVnKcPA3v5gA3yAWTyf7YGcWoWa6
-# 3VXAOimGsJigK+2VQbc61RWYMbRiCQ8KvYHZE/6/pNHzV9m8BPqC3jLfBInwAM1d
-# wvnQI38AC+R2AibZ8GV2QqYphwlHK+Z/GqSFD/yYlvZVVCsfgPrA8g4r5db7qS9E
-# FUrnEw4d2zc4GqEr9u3WfPwwgga8MIIEpKADAgECAhALrma8Wrp/lYfG+ekE4zME
-# MA0GCSqGSIb3DQEBCwUAMGMxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2Vy
-# dCwgSW5jLjE7MDkGA1UEAxMyRGlnaUNlcnQgVHJ1c3RlZCBHNCBSU0E0MDk2IFNI
-# QTI1NiBUaW1lU3RhbXBpbmcgQ0EwHhcNMjQwOTI2MDAwMDAwWhcNMzUxMTI1MjM1
-# OTU5WjBCMQswCQYDVQQGEwJVUzERMA8GA1UEChMIRGlnaUNlcnQxIDAeBgNVBAMT
-# F0RpZ2lDZXJ0IFRpbWVzdGFtcCAyMDI0MIICIjANBgkqhkiG9w0BAQEFAAOCAg8A
-# MIICCgKCAgEAvmpzn/aVIauWMLpbbeZZo7Xo/ZEfGMSIO2qZ46XB/QowIEMSvgjE
-# dEZ3v4vrrTHleW1JWGErrjOL0J4L0HqVR1czSzvUQ5xF7z4IQmn7dHY7yijvoQ7u
-# jm0u6yXF2v1CrzZopykD07/9fpAT4BxpT9vJoJqAsP8YuhRvflJ9YeHjes4fduks
-# THulntq9WelRWY++TFPxzZrbILRYynyEy7rS1lHQKFpXvo2GePfsMRhNf1F41nyE
-# g5h7iOXv+vjX0K8RhUisfqw3TTLHj1uhS66YX2LZPxS4oaf33rp9HlfqSBePejlY
-# eEdU740GKQM7SaVSH3TbBL8R6HwX9QVpGnXPlKdE4fBIn5BBFnV+KwPxRNUNK6lY
-# k2y1WSKour4hJN0SMkoaNV8hyyADiX1xuTxKaXN12HgR+8WulU2d6zhzXomJ2Ple
-# I9V2yfmfXSPGYanGgxzqI+ShoOGLomMd3mJt92nm7Mheng/TBeSA2z4I78JpwGpT
-# RHiT7yHqBiV2ngUIyCtd0pZ8zg3S7bk4QC4RrcnKJ3FbjyPAGogmoiZ33c1HG93V
-# p6lJ415ERcC7bFQMRbxqrMVANiav1k425zYyFMyLNyE1QulQSgDpW9rtvVcIH7Wv
-# G9sqYup9j8z9J1XqbBZPJ5XLln8mS8wWmdDLnBHXgYly/p1DhoQo5fkCAwEAAaOC
-# AYswggGHMA4GA1UdDwEB/wQEAwIHgDAMBgNVHRMBAf8EAjAAMBYGA1UdJQEB/wQM
-# MAoGCCsGAQUFBwMIMCAGA1UdIAQZMBcwCAYGZ4EMAQQCMAsGCWCGSAGG/WwHATAf
-# BgNVHSMEGDAWgBS6FtltTYUvcyl2mi91jGogj57IbzAdBgNVHQ4EFgQUn1csA3cO
-# KBWQZqVjXu5Pkh92oFswWgYDVR0fBFMwUTBPoE2gS4ZJaHR0cDovL2NybDMuZGln
-# aWNlcnQuY29tL0RpZ2lDZXJ0VHJ1c3RlZEc0UlNBNDA5NlNIQTI1NlRpbWVTdGFt
-# cGluZ0NBLmNybDCBkAYIKwYBBQUHAQEEgYMwgYAwJAYIKwYBBQUHMAGGGGh0dHA6
-# Ly9vY3NwLmRpZ2ljZXJ0LmNvbTBYBggrBgEFBQcwAoZMaHR0cDovL2NhY2VydHMu
-# ZGlnaWNlcnQuY29tL0RpZ2lDZXJ0VHJ1c3RlZEc0UlNBNDA5NlNIQTI1NlRpbWVT
-# dGFtcGluZ0NBLmNydDANBgkqhkiG9w0BAQsFAAOCAgEAPa0eH3aZW+M4hBJH2UOR
-# 9hHbm04IHdEoT8/T3HuBSyZeq3jSi5GXeWP7xCKhVireKCnCs+8GZl2uVYFvQe+p
-# PTScVJeCZSsMo1JCoZN2mMew/L4tpqVNbSpWO9QGFwfMEy60HofN6V51sMLMXNTL
-# fhVqs+e8haupWiArSozyAmGH/6oMQAh078qRh6wvJNU6gnh5OruCP1QUAvVSu4kq
-# VOcJVozZR5RRb/zPd++PGE3qF1P3xWvYViUJLsxtvge/mzA75oBfFZSbdakHJe2B
-# VDGIGVNVjOp8sNt70+kEoMF+T6tptMUNlehSR7vM+C13v9+9ZOUKzfRUAYSyyEmY
-# tsnpltD/GWX8eM70ls1V6QG/ZOB6b6Yum1HvIiulqJ1Elesj5TMHq8CWT/xrW7tw
-# ipXTJ5/i5pkU5E16RSBAdOp12aw8IQhhA/vEbFkEiF2abhuFixUDobZaA0VhqAsM
-# HOmaT3XThZDNi5U2zHKhUs5uHHdG6BoQau75KiNbh0c+hatSF+02kULkftARjsyE
-# pHKsF7u5zKRbt5oK5YGwFvgc4pEVUNytmB3BpIiowOIIuDgP5M9WArHYSAR16gc0
-# dP2XdkMEP5eBsX7bf/MGN4K3HP50v/01ZHo/Z5lGLvNwQ7XHBx1yomzLP8lx4Q1z
-# ZKDyHcp4VQJLu2kWTsKsOqQxggUKMIIFBgIBATA0MCAxHjAcBgNVBAMMFVBoaW5J
-# VC1QU3NjcmlwdHNfU2lnbgIQd487Ml/QoIxIvrAQtqwTEzANBglghkgBZQMEAgEF
-# AKCBhDAYBgorBgEEAYI3AgEMMQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgor
-# BgEEAYI3AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMC8GCSqGSIb3
-# DQEJBDEiBCBk4/CujhAFKh78Xj9Ju86LsIH6rPKBK7ggTreD0nwP/DANBgkqhkiG
-# 9w0BAQEFAASCAQCgruHqzZA4G86djwWiU6Cj5nB0YoM/SY9VraXoBWHWvs4U8Edb
-# dD4XRCAvOtka8rMdo9o5xuTj+EyZ787KwuacOav1IjMUhUnKePV5zAE5PzNqzWYf
-# kvheu8F++pkOyWoQ+D851r8s7UUpC3hmEbaRQ1D9zrnkGI0BwgQUkpSnshtGE3aC
-# efxE06b+zgArEJrkp1dOoF4rDUezNAWdwsI+FfRgwoCyA6RhyUTYd69Ks+jxehhm
-# b/MmZsthm3tpkHf3EIaYeL4lwIkNYowL53v/nAMtjHWWd9p6qBdKHNTCQcTOsxtn
-# o9wQPSeUFPwjkgfX2GJ8XwwtDDxkfykb03WvoYIDIDCCAxwGCSqGSIb3DQEJBjGC
-# Aw0wggMJAgEBMHcwYzELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDkRpZ2lDZXJ0LCBJ
-# bmMuMTswOQYDVQQDEzJEaWdpQ2VydCBUcnVzdGVkIEc0IFJTQTQwOTYgU0hBMjU2
-# IFRpbWVTdGFtcGluZyBDQQIQC65mvFq6f5WHxvnpBOMzBDANBglghkgBZQMEAgEF
-# AKBpMBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTI1
-# MDcwNjE1NDY1OFowLwYJKoZIhvcNAQkEMSIEIPb9jMXu0tNGvSroo/M4UUJKwcAd
-# Ca4pvvBlo+Rj4IQBMA0GCSqGSIb3DQEBAQUABIICAJpZKmSGb1AC1S/BYKI/Y+HC
-# bQxZHLCELymmbea5tTBr+LhHaPPt+92LroLh4spodfeO/urojku1+OHAkjEwoEWj
-# dA4YC+ijyvHrJWzz1chbZI8hdhMyg8wbUI61nqsykaV64UnP9+PqmVw8vbN7wqQf
-# Hx+kwzFRLFXUnAowEQfrfBqmqqh8lwOdk7682P/x4qhHA/o/U91zhrrWle5B6QWS
-# W9s5DlBNPyhky8SwxLgvbchjSRcVswKlrzFNdD5nOIf7Q048QpGWnr1xDJBXT0f0
-# XUT+UJQZnsYmUrvS/nOE+NV/R6IHxbZrc179pbIWMfQPmdtrrgcjts+jUESyrCiO
-# lKw0uM6EigwsBCRg9/BeTYtwBcjDWVNh3frh1a3vLPiAr28XyaHJsDGJxrw8LNUD
-# eTe8wsjxRSby3MZDDgzT0ApK5h2QeJDb21ecmSVDX5jm6a2uUy8dqsscBmU18V5b
-# U6oStbWNNZscukMcxcHKuhBmbwgmJShQVsFqmWFu03pzEyPslVEs+ybVJr55rskj
-# OQYnK//RW+BOrv8IXtshR195JUmCEZGqeWWBrEKUCsql6z1glGEgUSvotl6uBdD7
-# JdhBs8Rnnso8Y08u27aq2sWin9bXtetdmOF5GWJZgq4AbIvmLQAfJiHwyIE2Iifk
-# vddqo1P2eNMlDueFfRjO
+# MB8GA1UEAxMYRGlnaUNlcnQgVHJ1c3RlZCBSb290IEc0MB4XDTI1MDUwNzAwMDAw
+# MFoXDTM4MDExNDIzNTk1OVowaTELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDkRpZ2lD
+# ZXJ0LCBJbmMuMUEwPwYDVQQDEzhEaWdpQ2VydCBUcnVzdGVkIEc0IFRpbWVTdGFt
+# cGluZyBSU0E0MDk2IFNIQTI1NiAyMDI1IENBMTCCAiIwDQYJKoZIhvcNAQEBBQAD
+# ggIPADCCAgoCggIBALR4MdMKmEFyvjxGwBysddujRmh0tFEXnU2tjQ2UtZmWgyxU
+# 7UNqEY81FzJsQqr5G7A6c+Gh/qm8Xi4aPCOo2N8S9SLrC6Kbltqn7SWCWgzbNfiR
+# +2fkHUiljNOqnIVD/gG3SYDEAd4dg2dDGpeZGKe+42DFUF0mR/vtLa4+gKPsYfwE
+# u7EEbkC9+0F2w4QJLVSTEG8yAR2CQWIM1iI5PHg62IVwxKSpO0XaF9DPfNBKS7Za
+# zch8NF5vp7eaZ2CVNxpqumzTCNSOxm+SAWSuIr21Qomb+zzQWKhxKTVVgtmUPAW3
+# 5xUUFREmDrMxSNlr/NsJyUXzdtFUUt4aS4CEeIY8y9IaaGBpPNXKFifinT7zL2gd
+# FpBP9qh8SdLnEut/GcalNeJQ55IuwnKCgs+nrpuQNfVmUB5KlCX3ZA4x5HHKS+rq
+# BvKWxdCyQEEGcbLe1b8Aw4wJkhU1JrPsFfxW1gaou30yZ46t4Y9F20HHfIY4/6vH
+# espYMQmUiote8ladjS/nJ0+k6MvqzfpzPDOy5y6gqztiT96Fv/9bH7mQyogxG9QE
+# PHrPV6/7umw052AkyiLA6tQbZl1KhBtTasySkuJDpsZGKdlsjg4u70EwgWbVRSX1
+# Wd4+zoFpp4Ra+MlKM2baoD6x0VR4RjSpWM8o5a6D8bpfm4CLKczsG7ZrIGNTAgMB
+# AAGjggFdMIIBWTASBgNVHRMBAf8ECDAGAQH/AgEAMB0GA1UdDgQWBBTvb1NK6eQG
+# fHrK4pBW9i/USezLTjAfBgNVHSMEGDAWgBTs1+OC0nFdZEzfLmc/57qYrhwPTzAO
+# BgNVHQ8BAf8EBAMCAYYwEwYDVR0lBAwwCgYIKwYBBQUHAwgwdwYIKwYBBQUHAQEE
+# azBpMCQGCCsGAQUFBzABhhhodHRwOi8vb2NzcC5kaWdpY2VydC5jb20wQQYIKwYB
+# BQUHMAKGNWh0dHA6Ly9jYWNlcnRzLmRpZ2ljZXJ0LmNvbS9EaWdpQ2VydFRydXN0
+# ZWRSb290RzQuY3J0MEMGA1UdHwQ8MDowOKA2oDSGMmh0dHA6Ly9jcmwzLmRpZ2lj
+# ZXJ0LmNvbS9EaWdpQ2VydFRydXN0ZWRSb290RzQuY3JsMCAGA1UdIAQZMBcwCAYG
+# Z4EMAQQCMAsGCWCGSAGG/WwHATANBgkqhkiG9w0BAQsFAAOCAgEAF877FoAc/gc9
+# EXZxML2+C8i1NKZ/zdCHxYgaMH9Pw5tcBnPw6O6FTGNpoV2V4wzSUGvI9NAzaoQk
+# 97frPBtIj+ZLzdp+yXdhOP4hCFATuNT+ReOPK0mCefSG+tXqGpYZ3essBS3q8nL2
+# UwM+NMvEuBd/2vmdYxDCvwzJv2sRUoKEfJ+nN57mQfQXwcAEGCvRR2qKtntujB71
+# WPYAgwPyWLKu6RnaID/B0ba2H3LUiwDRAXx1Neq9ydOal95CHfmTnM4I+ZI2rVQf
+# jXQA1WSjjf4J2a7jLzWGNqNX+DF0SQzHU0pTi4dBwp9nEC8EAqoxW6q17r0z0noD
+# js6+BFo+z7bKSBwZXTRNivYuve3L2oiKNqetRHdqfMTCW/NmKLJ9M+MtucVGyOxi
+# Df06VXxyKkOirv6o02OoXN4bFzK0vlNMsvhlqgF2puE6FndlENSmE+9JGYxOGLS/
+# D284NHNboDGcmWXfwXRy4kbu4QFhOm0xJuF2EZAOk5eCkhSxZON3rGlHqhpB/8Ml
+# uDezooIs8CVnrpHMiD2wL40mm53+/j7tFaxYKIqL0Q4ssd8xHZnIn/7GELH3IdvG
+# 2XlM9q7WP/UwgOkw/HQtyRN62JK4S1C8uw3PdBunvAZapsiI5YKdvlarEvf8EA+8
+# hcpSM9LHJmyrxaFtoza2zNaQ9k+5t1wwggbtMIIE1aADAgECAhAKgO8YS43xBYLR
+# xHanlXRoMA0GCSqGSIb3DQEBCwUAMGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5E
+# aWdpQ2VydCwgSW5jLjFBMD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1l
+# U3RhbXBpbmcgUlNBNDA5NiBTSEEyNTYgMjAyNSBDQTEwHhcNMjUwNjA0MDAwMDAw
+# WhcNMzYwOTAzMjM1OTU5WjBjMQswCQYDVQQGEwJVUzEXMBUGA1UEChMORGlnaUNl
+# cnQsIEluYy4xOzA5BgNVBAMTMkRpZ2lDZXJ0IFNIQTI1NiBSU0E0MDk2IFRpbWVz
+# dGFtcCBSZXNwb25kZXIgMjAyNSAxMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIIC
+# CgKCAgEA0EasLRLGntDqrmBWsytXum9R/4ZwCgHfyjfMGUIwYzKomd8U1nH7C8Dr
+# 0cVMF3BsfAFI54um8+dnxk36+jx0Tb+k+87H9WPxNyFPJIDZHhAqlUPt281mHrBb
+# ZHqRK71Em3/hCGC5KyyneqiZ7syvFXJ9A72wzHpkBaMUNg7MOLxI6E9RaUueHTQK
+# WXymOtRwJXcrcTTPPT2V1D/+cFllESviH8YjoPFvZSjKs3SKO1QNUdFd2adw44wD
+# cKgH+JRJE5Qg0NP3yiSyi5MxgU6cehGHr7zou1znOM8odbkqoK+lJ25LCHBSai25
+# CFyD23DZgPfDrJJJK77epTwMP6eKA0kWa3osAe8fcpK40uhktzUd/Yk0xUvhDU6l
+# vJukx7jphx40DQt82yepyekl4i0r8OEps/FNO4ahfvAk12hE5FVs9HVVWcO5J4dV
+# mVzix4A77p3awLbr89A90/nWGjXMGn7FQhmSlIUDy9Z2hSgctaepZTd0ILIUbWuh
+# KuAeNIeWrzHKYueMJtItnj2Q+aTyLLKLM0MheP/9w6CtjuuVHJOVoIJ/DtpJRE7C
+# e7vMRHoRon4CWIvuiNN1Lk9Y+xZ66lazs2kKFSTnnkrT3pXWETTJkhd76CIDBbTR
+# ofOsNyEhzZtCGmnQigpFHti58CSmvEyJcAlDVcKacJ+A9/z7eacCAwEAAaOCAZUw
+# ggGRMAwGA1UdEwEB/wQCMAAwHQYDVR0OBBYEFOQ7/PIx7f391/ORcWMZUEPPYYzo
+# MB8GA1UdIwQYMBaAFO9vU0rp5AZ8esrikFb2L9RJ7MtOMA4GA1UdDwEB/wQEAwIH
+# gDAWBgNVHSUBAf8EDDAKBggrBgEFBQcDCDCBlQYIKwYBBQUHAQEEgYgwgYUwJAYI
+# KwYBBQUHMAGGGGh0dHA6Ly9vY3NwLmRpZ2ljZXJ0LmNvbTBdBggrBgEFBQcwAoZR
+# aHR0cDovL2NhY2VydHMuZGlnaWNlcnQuY29tL0RpZ2lDZXJ0VHJ1c3RlZEc0VGlt
+# ZVN0YW1waW5nUlNBNDA5NlNIQTI1NjIwMjVDQTEuY3J0MF8GA1UdHwRYMFYwVKBS
+# oFCGTmh0dHA6Ly9jcmwzLmRpZ2ljZXJ0LmNvbS9EaWdpQ2VydFRydXN0ZWRHNFRp
+# bWVTdGFtcGluZ1JTQTQwOTZTSEEyNTYyMDI1Q0ExLmNybDAgBgNVHSAEGTAXMAgG
+# BmeBDAEEAjALBglghkgBhv1sBwEwDQYJKoZIhvcNAQELBQADggIBAGUqrfEcJwS5
+# rmBB7NEIRJ5jQHIh+OT2Ik/bNYulCrVvhREafBYF0RkP2AGr181o2YWPoSHz9iZE
+# N/FPsLSTwVQWo2H62yGBvg7ouCODwrx6ULj6hYKqdT8wv2UV+Kbz/3ImZlJ7YXwB
+# D9R0oU62PtgxOao872bOySCILdBghQ/ZLcdC8cbUUO75ZSpbh1oipOhcUT8lD8QA
+# GB9lctZTTOJM3pHfKBAEcxQFoHlt2s9sXoxFizTeHihsQyfFg5fxUFEp7W42fNBV
+# N4ueLaceRf9Cq9ec1v5iQMWTFQa0xNqItH3CPFTG7aEQJmmrJTV3Qhtfparz+BW6
+# 0OiMEgV5GWoBy4RVPRwqxv7Mk0Sy4QHs7v9y69NBqycz0BZwhB9WOfOu/CIJnzkQ
+# TwtSSpGGhLdjnQ4eBpjtP+XB3pQCtv4E5UCSDag6+iX8MmB10nfldPF9SVD7weCC
+# 3yXZi/uuhqdwkgVxuiMFzGVFwYbQsiGnoa9F5AaAyBjFBtXVLcKtapnMG3VH3EmA
+# p/jsJ3FVF3+d1SVDTmjFjLbNFZUWMXuZyvgLfgyPehwJVxwC+UpX2MSey2ueIu9T
+# HFVkT+um1vshETaWyQo8gmBto/m3acaP9QsuLj3FNwFlTxq25+T4QwX9xa6ILs84
+# ZPvmpovq90K8eWyG2N01c4IhSOxqt81nMYIFEDCCBQwCAQEwNDAgMR4wHAYDVQQD
+# DBVQaGluSVQtUFNzY3JpcHRzX1NpZ24CEHePOzJf0KCMSL6wELasExMwDQYJYIZI
+# AWUDBAIBBQCggYQwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0B
+# CQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAv
+# BgkqhkiG9w0BCQQxIgQgnya1nqUVyHCk6ffsC67jSTYPAbsQzX2TOh0GROZdilsw
+# DQYJKoZIhvcNAQEBBQAEggEAIMzNKvC6TTK0g9GCuezfGflo+S/W4rtU8IScrr3x
+# +daBDcHrHmD1Sa2aClZjzbYS6N0SZRTDLyGYJdLfRqHpko4Vos9APXXQAeoX212e
+# Un0HRDU3xy4KLmGt9gOEvD1BZXA+1PfM9FLI+NQ2IoOds4KwPbit4Rg42RvAXCZH
+# OI3TH2VDm23YT66CFhiOzMHy0q/oVUSdlXuOG5MB+va/daHP4gLPmRaw+bclYu4I
+# 2ew1BMYKYFBeO/vhF+5sDel5hqzGpnopX4k9dBX1C1PtpdpiKUwZ3lSBhEMEI6mM
+# V1L+ZV7kT7ys+FcWEmcssAkak3+DmQDvBjoYeRvEZLoqwaGCAyYwggMiBgkqhkiG
+# 9w0BCQYxggMTMIIDDwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdp
+# Q2VydCwgSW5jLjFBMD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3Rh
+# bXBpbmcgUlNBNDA5NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgw
+# DQYJYIZIAWUDBAIBBQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqG
+# SIb3DQEJBTEPFw0yNTA3MTIxMTExMzRaMC8GCSqGSIb3DQEJBDEiBCAZLbV6c9Fp
+# 0JfXzvJ/vv9R19rzPUrBrnjRqB2EbeC3XzANBgkqhkiG9w0BAQEFAASCAgAu1V/+
+# 2NN5ASkkLRSDmZTWOQOuKG8UOhLnrxUjWGBPqhQ2sOLWSoKZichqEclFK4RTDDlW
+# TiqwDXXHPyNJT565tr1w69wVP+a2421cLuebpejAKSXfzxOhxForugML9QycMSKs
+# q8vWJerBTZVgpCM6fU3vZngz141fhrgln1MxGOlqTCLzQf7arKZWC7G2CjBMqMUH
+# TjQ6+0vYl3UZBpK3DHTRYWdYSGjmkNtuDLzhffdBgIrxQ5ljpGwxoG+WoxUP6pAF
+# ZEnCSRTlfR+ziT4E+mshJpk2yx78nph3fUiQRyuYL47C8hHvL2CT2ZGInaDCoeQd
+# PAlEOqICHCKsvmwPinFjnE+kAjNgl8YZi6516VE4s9VoVQSB14NLkU6DqybZvwEE
+# JKR5FrlJh6jIm3+D95+beFYo1bpue2ZkV2wWF6p7ysZYXXF4Xq3/emlgf2kPAQTM
+# Itke0oftHPDjA4IEnyQrAjJ8HNMdvqMrPuaOHp4Z4UFTonarJpsU5DYPNH6CNbyo
+# gTSpHcCkL2nUAeer9Tll2821cL3x/9f7KqjS2NsmQGu5CwE1OKduLcTXucUj6m34
+# LYEc52Brrnn1bFtkWq5MAkcvQUozgk3IWAwHbB4zluerbhl8YLyYpKYmFcWfEw7K
+# ocwalKVj9+dssPtC4SFzO5texadL97KOGIERRg==
 # SIG # End signature block

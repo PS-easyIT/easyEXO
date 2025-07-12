@@ -1,0 +1,552 @@
+2025-07-12 13:12:53 - Prüfe und initialisiere Registry-Konfiguration unter 'HKCU:\Software\easyIT\easyEXO'.
+2025-07-12 13:12:53 - Registry-Version ('0.0.12') ist aktuell mit Skript-Version ('0.0.12'). Keine Aktualisierung der Standardwerte erforderlich.
+[2025-07-12 13:12:53] [Info] Lade XAML von: \\192.168.100.15\Daten1\06-Scripts\!PS-easyIT\#GitHub-Repos\easyEXO\# Versions\assets\EXOGUI.xaml
+[2025-07-12 13:12:54] [Info] TabControl hat 24 Items
+[2025-07-12 13:12:54] [Info] Tab gefunden: Name=tabCalendar, Header=Kalenderberechtigungen, Visibility=Collapsed
+[2025-07-12 13:12:54] [Info] Tab gefunden: Name=tabMailbox, Header=Postfachberechtigungen, Visibility=Collapsed
+[2025-07-12 13:12:54] [Info] Tab gefunden: Name=tabMailboxAudit, Header=Audit & Information, Visibility=Collapsed
+[2025-07-12 13:12:54] [Info] Tab gefunden: Name=tabTroubleshooting, Header=Troubleshooting, Visibility=Collapsed
+[2025-07-12 13:12:54] [Info] Tab gefunden: Name=tabEXOSettings, Header=Allg. EXO Settings, Visibility=Collapsed
+[2025-07-12 13:12:54] [Info] Tab gefunden: Name=tabGroups, Header=Gruppen / Verteiler, Visibility=Collapsed
+[2025-07-12 13:12:54] [Info] Tab gefunden: Name=tab_HybridExchange, Header=Hybrid Exchange-Konfiguration, Visibility=Collapsed
+[2025-07-12 13:12:54] [Info] Tab gefunden: Name=tab_MultiForest, Header=Multi-Forest-Verwaltung, Visibility=Collapsed
+[2025-07-12 13:12:54] [Info] Tab gefunden: Name=tab_ATP, Header=Advanced Threat Protection, Visibility=Collapsed
+[2025-07-12 13:12:54] [Info] Tab gefunden: Name=tab_DLP, Header=Data Loss Prevention (DLP), Visibility=Collapsed
+[2025-07-12 13:12:54] [Info] Tab gefunden: Name=tab_eDiscovery, Header=eDiscovery & Legal Hold, Visibility=Collapsed
+[2025-07-12 13:12:54] [Info] Tab gefunden: Name=tab_MDM, Header=Mobile Device Management, Visibility=Collapsed
+[2025-07-12 13:12:54] [Info] Tab gefunden: Name=tab_MailRouting, Header=Cross-Premises Mail Routing, Visibility=Collapsed
+[2025-07-12 13:12:54] [Info] Tab gefunden: Name=tab_HealthCheck, Header=Exchange Health Check, Visibility=Collapsed
+[2025-07-12 13:12:54] [Info] Tab gefunden: Name=tabSharedMailbox, Header=Shared Mailboxes, Visibility=Collapsed
+[2025-07-12 13:12:54] [Info] Tab gefunden: Name=tabResources, Header=Ressourcen, Visibility=Collapsed
+[2025-07-12 13:12:54] [Info] Tab gefunden: Name=tabContacts, Header=Kontakte, Visibility=Collapsed
+[2025-07-12 13:12:54] [Info] Tab gefunden: Name=tabReports, Header=Berichte & Export, Visibility=Collapsed
+[2025-07-12 13:12:54] [Info] Tab gefunden: Name=tabRegion, Header=Regionaleinstellungen, Visibility=Collapsed
+[2025-07-12 13:12:54] [Info] Tab gefunden: Name=tabMailFlowRules, Header=Transport Rules, Visibility=Collapsed
+[2025-07-12 13:12:54] [Info] Tab gefunden: Name=tabInboxRules, Header=Inbox Rules, Visibility=Collapsed
+[2025-07-12 13:12:54] [Info] Tab gefunden: Name=tabMessageTrace, Header=Message Trace, Visibility=Collapsed
+[2025-07-12 13:12:55] [Info] Tab gefunden: Name=tabDashboard, Header=Dashboard, Visibility=Visible
+[2025-07-12 13:12:55] [Info] Tab gefunden: Name=tabAutoReply, Header=Auto Reply Management, Visibility=Collapsed
+[2025-07-12 13:12:55] [Info] Event-Handler f?r btnSettings hinzugef?gt.
+[2025-07-12 13:12:55] [Info] Event-Handler f?r btnInfo hinzugef?gt.
+[2025-07-12 13:12:55] [Info] Event-Handler f?r btnClose hinzugef?gt.
+[2025-07-12 13:12:55] [Info] Event-Handler f?r Header-Buttons erfolgreich registriert.
+[2025-07-12 13:12:55] ?ffne GUI-Fenster
+[2025-07-12 13:12:55] TabControl Status vor ShowDialog: Items=24
+[2025-07-12 13:12:55] Tab vorhanden: tabCalendar
+[2025-07-12 13:12:55] Tab vorhanden: tabMailbox
+[2025-07-12 13:12:55] Tab vorhanden: tabMailboxAudit
+[2025-07-12 13:12:55] Tab vorhanden: tabTroubleshooting
+[2025-07-12 13:12:55] Tab vorhanden: tabEXOSettings
+[2025-07-12 13:12:55] Tab vorhanden: tabGroups
+[2025-07-12 13:12:55] Tab vorhanden: tab_HybridExchange
+[2025-07-12 13:12:55] Tab vorhanden: tab_MultiForest
+[2025-07-12 13:12:55] Tab vorhanden: tab_ATP
+[2025-07-12 13:12:55] Tab vorhanden: tab_DLP
+[2025-07-12 13:12:55] Tab vorhanden: tab_eDiscovery
+[2025-07-12 13:12:55] Tab vorhanden: tab_MDM
+[2025-07-12 13:12:55] Tab vorhanden: tab_MailRouting
+[2025-07-12 13:12:55] Tab vorhanden: tab_HealthCheck
+[2025-07-12 13:12:55] Tab vorhanden: tabSharedMailbox
+[2025-07-12 13:12:55] Tab vorhanden: tabResources
+[2025-07-12 13:12:55] Tab vorhanden: tabContacts
+[2025-07-12 13:12:55] Tab vorhanden: tabReports
+[2025-07-12 13:12:55] Tab vorhanden: tabRegion
+[2025-07-12 13:12:55] Tab vorhanden: tabMailFlowRules
+[2025-07-12 13:12:55] Tab vorhanden: tabInboxRules
+[2025-07-12 13:12:55] Tab vorhanden: tabMessageTrace
+[2025-07-12 13:12:55] Tab vorhanden: tabDashboard
+[2025-07-12 13:12:56] Tab vorhanden: tabAutoReply
+[2025-07-12 13:12:56] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-07-12 13:12:56] GUI-Loaded-Event ausgel?st, initialisiere Komponenten
+[2025-07-12 13:12:56] [Info] Initialisiere wesentliche UI-Komponenten...
+[2025-07-12 13:12:56] [Info] Initialisiere Tab-Navigation...
+[2025-07-12 13:12:56] [Success] Tab-Navigation erfolgreich initialisiert
+[2025-07-12 13:12:56] [Success] Tab-Navigation erfolgreich initialisiert.
+[2025-07-12 13:12:56] [Info] Tab gewechselt zu: 
+[2025-07-12 13:12:56] [Debug] Setze aktiven Navigation-Button: btnDashboard
+[2025-07-12 13:12:56] [Debug] Navigation-Button 'btnDashboard' als aktiv markiert
+[2025-07-12 13:12:56] [Info] Dashboard-Tab als Startansicht festgelegt.
+[2025-07-12 13:12:56] [Info] Starte asynchrone Tab-Initialisierung...
+[2025-07-12 13:12:56] [Success] Asynchrone Tab-Initialisierung gestartet
+[2025-07-12 13:12:56] Initialize-ApplicationUI Ergebnis: True True True
+[2025-07-12 13:12:56] Initialize-HelpLinks Ergebnis: True
+[2025-07-12 13:12:56] [Debug] Beginne synchrone Tab-Initialisierung im Hintergrund...
+[2025-07-12 13:12:56] [Info] Beginne Initialisierung: EXO Settings Tab
+[2025-07-12 13:12:56] [Debug] EXOSettingsTab: HelpLink Handler registriert.
+[2025-07-12 13:12:56] [Debug] EXOSettingsTab: btnGetOrganizationConfig Handler registriert.
+[2025-07-12 13:12:56] [Debug] EXOSettingsTab: Sichtbarkeit f?r Elemente in knownUIElements ?berpr?ft.
+[2025-07-12 13:12:56] [Debug] EXOSettingsTab: Tab auf sichtbar gesetzt.
+[2025-07-12 13:12:56] [Success] Abschluss Initialisierung: EXO Settings Tab (Erfolg: True)
+[2025-07-12 13:12:56] [Info] Tab gewechselt zu: 
+[2025-07-12 13:12:56] [Info] Tab gewechselt zu: 
+[2025-07-12 13:12:57] [Info] Event-Handler f?r btnAddCalendarPermission.Click registriert
+[2025-07-12 13:12:57] [Info] Event-Handler f?r btnRemoveCalendarPermission.Click registriert
+[2025-07-12 13:12:57] [Info] Event-Handler f?r btnShowCalendarPermissions.Click registriert
+[2025-07-12 13:12:57] [Info] Event-Handler f?r btnSetDefaultPermission.Click registriert
+[2025-07-12 13:12:57] [Info] Event-Handler f?r btnSetAnonymousPermission.Click registriert
+[2025-07-12 13:12:57] [Info] Event-Handler f?r btnSetAllCalPermission.Click registriert
+[2025-07-12 13:12:57] [Info] Event-Handler f?r btnExportCalendarPermissions.Click registriert
+[2025-07-12 13:12:57] [Info] Event-Handler f?r btnAddMailboxPermission.Click registriert
+[2025-07-12 13:12:57] [Info] Event-Handler f?r btnRemoveMailboxPermission.Click registriert
+[2025-07-12 13:12:57] [Info] Event-Handler f?r btnShowMailboxPermissions.Click registriert
+[2025-07-12 13:12:57] [Info] Event-Handler f?r btnAddSendAs.Click registriert
+[2025-07-12 13:12:57] [Info] Event-Handler f?r btnRemoveSendAs.Click registriert
+[2025-07-12 13:12:57] [Info] Event-Handler f?r btnShowSendAs.Click registriert
+[2025-07-12 13:12:57] [Info] Event-Handler f?r btnAddSendOnBehalf.Click registriert
+[2025-07-12 13:12:57] [Info] Event-Handler f?r btnRemoveSendOnBehalf.Click registriert
+[2025-07-12 13:12:57] [Info] Event-Handler f?r btnShowSendOnBehalf.Click registriert
+[2025-07-12 13:12:57] [Info] Event-Handler f?r btnRunAudit.Click registriert
+[2025-07-12 13:12:57] [Info] Tab gewechselt zu: 
+[2025-07-12 13:12:57] [Info] Tab gewechselt zu: 
+[2025-07-12 13:12:57] [Success] Audit-Tab erfolgreich initialisiert
+[2025-07-12 13:12:57] [Info] Initialisiere Troubleshooting-Tab
+[2025-07-12 13:12:57] [Info] Event-Handler f?r btnRunDiagnostic.Click registriert
+[2025-07-12 13:12:57] [Info] Event-Handler f?r btnAdminCenter.Click registriert
+[2025-07-12 13:12:57] [Success] Troubleshooting-Tab erfolgreich initialisiert
+[2025-07-12 13:12:57] [Info] Initialisiere Gruppen-Tab...
+[2025-07-12 13:12:57] [Info] Tab gewechselt zu: 
+[2025-07-12 13:12:57] [Info] Event-Handler f?r btnRefreshExistingGroups.Click registriert
+[2025-07-12 13:12:57] [Info] Event-Handler f?r btnCreateGroup.Click registriert
+[2025-07-12 13:12:57] [Info] Event-Handler f?r btnDeleteGroup.Click registriert
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnAddUserToGroup.Click registriert
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnRemoveUserFromGroup.Click registriert
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnUpdateGroupSettings.Click registriert
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnExportGroupMembers.Click registriert
+[2025-07-12 13:12:58] [Info] Initialize-GroupsTab erfolgreich abgeschlossen.
+[2025-07-12 13:12:58] [Info] Tab gewechselt zu: 
+[2025-07-12 13:12:58] [Info] Tab gewechselt zu: 
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnCreateSharedMailbox.Click registriert
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnConvertToShared.Click registriert
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnAddSharedMailboxPermission.Click registriert
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnRemoveSharedMailboxPermission.Click registriert
+[2025-07-12 13:12:58] [Info] Event-Handler f?r UnknownControl.Click registriert
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnShowSharedMailboxPerms.Click registriert
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnGetForwardingMailboxes.Click registriert
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnUpdateAutoMapping.Click registriert
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnSetForwarding.Click registriert
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnRemoveForwarding.Click registriert
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnShowInGAL.Click registriert
+[2025-07-12 13:12:58] [Warning] Control nicht gefunden: btnRemoveSharedMailbox
+[2025-07-12 13:12:58] [Info] Initialisiere Kontakte-Tab
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnCreateContact.Click registriert
+[2025-07-12 13:12:58] [Info] Event-Handler f?r lstContacts.SelectionChanged registriert
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnUpdateContact.Click registriert
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnShowMailContacts.Click registriert
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnShowMailUsers registrieren
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnShowMailUsers.Click registriert
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnRemoveContact.Click registriert
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnExportContacts.Click registriert
+[2025-07-12 13:12:58] [Info] Initialisiere Ressourcen-Tab...
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnRefreshResources.Click registriert
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnShowRoomResources.Click registriert
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnShowEquipmentResources.Click registriert
+[2025-07-12 13:12:58] [Info] Event-Handler f?r btnSearchResources.Click registriert
+[2025-07-12 13:12:59] [Info] Event-Handler f?r btnRefreshResourceList.Click registriert
+[2025-07-12 13:12:59] [Info] Event-Handler f?r btnCreateResource.Click registriert
+[2025-07-12 13:12:59] [Info] Event-Handler f?r btnEditResourceSettings.Click registriert
+[2025-07-12 13:12:59] [Info] Event-Handler f?r btnRemoveResource.Click registriert
+[2025-07-12 13:12:59] [Info] Event-Handler f?r btnExportResources.Click registriert
+[2025-07-12 13:12:59] [Success] Ressourcen-Tab erfolgreich initialisiert.
+[2025-07-12 13:12:59] [Info] Initialisiere Berichte-Tab
+[2025-07-12 13:12:59] [Info] Event-Handler f?r btnGenerateReport.Click registriert
+[2025-07-12 13:12:59] [Info] Event-Handler f?r btnExportReport.Click registriert
+[2025-07-12 13:12:59] [Success] Berichte-Tab erfolgreich initialisiert
+[2025-07-12 13:12:59] [Info] Initialisiere Regionaleinstellungen-Tab...
+[2025-07-12 13:12:59] [Debug] Bef?lle Sprachen-ComboBox mit gefilterter Sprachliste...
+[2025-07-12 13:12:59] [Info] Tab gewechselt zu: 
+[2025-07-12 13:12:59] [Info] Tab gewechselt zu: 
+[2025-07-12 13:12:59] [Debug] Sprachen-ComboBox erfolgreich mit gefilterter Liste bef?llt.
+[2025-07-12 13:12:59] [Debug] Bef?lle Zeitzonen-ComboBox f?r Kultur 'DEFAULT_ALL'...
+[2025-07-12 13:12:59] [Info] Tab gewechselt zu: 
+[2025-07-12 13:12:59] [Debug] Kultur 'DEFAULT_ALL' ist DEFAULT_ALL. Lade alle Systemzeitzonen.
+[2025-07-12 13:12:59] [Info] Tab gewechselt zu: 
+[2025-07-12 13:12:59] [Debug] Zeitzonen-ComboBox erfolgreich bef?llt f?r Kultur 'DEFAULT_ALL'. Ausgew?hlt: '(Keine ?nderung)' (Tag: '')
+[2025-07-12 13:12:59] [Debug] Bef?lle Datumsformat-ComboBox f?r Kultur ''...
+[2025-07-12 13:12:59] [Info] Tab gewechselt zu: 
+[2025-07-12 13:12:59] [Debug] Kultur '' nicht in ExchangeValidDateFormats gefunden oder leer, verwende DEFAULT Datumsformate.
+[2025-07-12 13:12:59] [Info] Tab gewechselt zu: 
+[2025-07-12 13:12:59] [Debug] Datumsformat-ComboBox erfolgreich bef?llt. Ausgew?hlt: '(Keine ?nderung)' (Tag: '')
+[2025-07-12 13:12:59] [Debug] Bef?lle Zeitformat-ComboBox f?r Kultur ''...
+[2025-07-12 13:12:59] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:00] [Debug] Kultur '' nicht in RelevantTimeFormatsPerCulture gefunden oder leer, verwende DEFAULT Zeitformate.
+[2025-07-12 13:13:00] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:00] [Debug] Zeitformat-ComboBox erfolgreich bef?llt. Ausgew?hlt: '(Keine ?nderung)' (Tag: '')
+[2025-07-12 13:13:00] [Debug] chkRegionDefaultFolderNameMatchingUserLanguage.IsChecked auf \ (unbestimmt) gesetzt.
+[2025-07-12 13:13:00] [Debug] Event-Handler f?r cmbRegionLanguage.SelectionChanged registriert (inkl. Datums-, Zeitformat- und Zeitzonen-Update).
+[2025-07-12 13:13:00] [Debug] Event-Handler f?r 'btnGetRegionSettings' registriert.
+[2025-07-12 13:13:00] [Debug] Event-Handler f?r 'btnSetRegionSettings' registriert.
+[2025-07-12 13:13:00] [Debug] Event-Handler f?r 'btnExportRegionSettings' registriert.
+[2025-07-12 13:13:00] [Debug] Event-Handler f?r 'helpLinkRegionSettings' registriert.
+[2025-07-12 13:13:00] [Success] Regionaleinstellungen-Tab erfolgreich initialisiert.
+[2025-07-12 13:13:00] Regionaleinstellungen-Tab initialisiert.
+[2025-07-12 13:13:00] [Info] Initialisiere Mail Flow Rules-Tab...
+[2025-07-12 13:13:00] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:00] [Debug] Mail Flow Bedingungen ComboBox initialisiert
+[2025-07-12 13:13:00] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:00] [Debug] Mail Flow Aktionen ComboBox initialisiert
+[2025-07-12 13:13:00] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:00] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:00] [Debug] Mail Flow Modi ComboBox initialisiert
+[2025-07-12 13:13:00] [Info] Event-Handler f?r btnCreateRule.Click registriert
+[2025-07-12 13:13:00] [Info] Event-Handler f?r btnTestRule.Click registriert
+[2025-07-12 13:13:00] [Info] Event-Handler f?r btnRefreshRules.Click registriert
+[2025-07-12 13:13:00] [Info] Event-Handler f?r btnEnableRule.Click registriert
+[2025-07-12 13:13:00] [Info] Event-Handler f?r btnDisableRule.Click registriert
+[2025-07-12 13:13:00] [Info] Event-Handler f?r btnDeleteRule.Click registriert
+[2025-07-12 13:13:00] [Info] Event-Handler f?r btnExportRules.Click registriert
+[2025-07-12 13:13:00] [Info] Event-Handler f?r btnImportRules.Click registriert
+[2025-07-12 13:13:00] [Success] Mail Flow Rules-Tab erfolgreich initialisiert
+[2025-07-12 13:13:00] [Info] Initialisiere Inbox Rules-Tab...
+[2025-07-12 13:13:00] [Info] Event-Handler f?r btnLoadInboxRules.Click registriert
+[2025-07-12 13:13:00] [Info] Event-Handler f?r btnCreateInboxRule.Click registriert
+[2025-07-12 13:13:00] [Info] Event-Handler f?r btnRefreshInboxRules.Click registriert
+[2025-07-12 13:13:01] [Info] Event-Handler f?r btnEnableInboxRule.Click registriert
+[2025-07-12 13:13:01] [Info] Event-Handler f?r btnDisableInboxRule.Click registriert
+[2025-07-12 13:13:01] [Info] Event-Handler f?r btnDeleteInboxRule.Click registriert
+[2025-07-12 13:13:01] [Info] Event-Handler f?r btnMoveRuleUp.Click registriert
+[2025-07-12 13:13:01] [Info] Event-Handler f?r btnMoveRuleDown.Click registriert
+[2025-07-12 13:13:01] [Warning] Control nicht gefunden: btnExportInboxRules
+[2025-07-12 13:13:01] [Success] Inbox Rules-Tab erfolgreich initialisiert
+[2025-07-12 13:13:01] [Info] Initialisiere Message Trace-Tab...
+[2025-07-12 13:13:01] [Info] Event-Handler f?r btnStartTrace.Click registriert
+[2025-07-12 13:13:01] [Info] Event-Handler f?r btnExportTrace.Click registriert
+[2025-07-12 13:13:01] [Info] Event-Handler f?r btnDetailedTrace.Click registriert
+[2025-07-12 13:13:01] [Info] Event-Handler f?r btnClearTrace.Click registriert
+[2025-07-12 13:13:01] [Success] Message Trace-Tab erfolgreich initialisiert.
+[2025-07-12 13:13:01] [Info] Initialisiere Auto Reply-Tab...
+[2025-07-12 13:13:01] [Info] Event-Handler f?r btnSetAutoReply.Click registriert
+[2025-07-12 13:13:01] [Info] Event-Handler f?r btnDisableAutoReply.Click registriert
+[2025-07-12 13:13:01] [Info] Event-Handler f?r btnRefreshAutoReply.Click registriert
+[2025-07-12 13:13:01] [Info] Event-Handler f?r btnExportAutoReply.Click registriert
+[2025-07-12 13:13:01] [Info] Event-Handler f?r btnBulkAutoReply.Click registriert
+[2025-07-12 13:13:01] [Success] Auto Reply-Tab erfolgreich initialisiert.
+[2025-07-12 13:13:01] [Info] Initialisiere Health Check-Tab...
+[2025-07-12 13:13:01] [Info] Event-Handler f?r btnRunHealthCheck.Click registriert
+[2025-07-12 13:13:01] [Success] Health Check-Tab erfolgreich initialisiert
+[2025-07-12 13:13:01] [Info] Initialisiere Cross-Premises Tab...
+[2025-07-12 13:13:01] [Success] Cross-Premises Tab erfolgreich initialisiert
+[2025-07-12 13:13:01] [Info] Initialisiere Advanced Threat Protection (ATP) Tab...
+[2025-07-12 13:13:01] [Info] Event-Handler f?r btnGetAntiPhishing.Click registriert
+[2025-07-12 13:13:01] [Info] Event-Handler f?r btnNewAntiPhishing.Click registriert
+[2025-07-12 13:13:01] [Info] Event-Handler f?r btnSetAntiPhishing.Click registriert
+[2025-07-12 13:13:01] [Info] Event-Handler f?r btnExportAntiPhishing.Click registriert
+[2025-07-12 13:13:01] [Info] Event-Handler f?r btnGetSafeAttachment.Click registriert
+[2025-07-12 13:13:02] [Info] Event-Handler f?r btnNewSafeAttachment.Click registriert
+[2025-07-12 13:13:02] [Info] Event-Handler f?r btnSetSafeAttachment.Click registriert
+[2025-07-12 13:13:02] [Info] Event-Handler f?r btnExportSafeAttachment.Click registriert
+[2025-07-12 13:13:02] [Info] Event-Handler f?r btnGetSafeLinks.Click registriert
+[2025-07-12 13:13:02] [Info] Event-Handler f?r btnNewSafeLinks.Click registriert
+[2025-07-12 13:13:02] [Info] Event-Handler f?r btnSetSafeLinks.Click registriert
+[2025-07-12 13:13:02] [Info] Event-Handler f?r btnExportSafeLinks.Click registriert
+[2025-07-12 13:13:02] [Info] Event-Handler f?r btnGetQuarantineMessages.Click registriert
+[2025-07-12 13:13:02] [Info] Event-Handler f?r btnReleaseQuarantine.Click registriert
+[2025-07-12 13:13:02] [Info] Event-Handler f?r btnDeleteQuarantine.Click registriert
+[2025-07-12 13:13:02] [Info] Event-Handler f?r btnExportQuarantine.Click registriert
+[2025-07-12 13:13:02] [Success] ATP Tab erfolgreich initialisiert.
+[2025-07-12 13:13:02] [Info] Initialisiere Mobile Device Management (MDM) Tab...
+[2025-07-12 13:13:02] [Info] Event-Handler f?r btnGetMobileDevicePolicies.Click registriert
+[2025-07-12 13:13:02] [Info] Event-Handler f?r btnNewMobileDevicePolicy.Click registriert
+[2025-07-12 13:13:02] [Info] Event-Handler f?r btnRemoveMobileDevicePolicy.Click registriert
+[2025-07-12 13:13:02] [Info] Event-Handler f?r btnGetQuarantinedDevices.Click registriert
+[2025-07-12 13:13:02] [Info] Event-Handler f?r btnAllowDevice.Click registriert
+[2025-07-12 13:13:02] [Info] Event-Handler f?r btnBlockDevice.Click registriert
+[2025-07-12 13:13:02] [Success] MDM Tab erfolgreich initialisiert.
+[2025-07-12 13:13:02] [Info] Tab-Initialisierung abgeschlossen: 19/19 erfolgreich
+[2025-07-12 13:13:02] [Debug] StatusBar aktualisiert: [Success] Alle Module erfolgreich geladen - Bereit - Bitte mit Exchange Online verbinden.
+[2025-07-12 13:13:02] [Success] Alle Tabs wurden erfolgreich initialisiert.
+[2025-07-12 13:13:02] [Debug] - ATP: Erfolgreich
+[2025-07-12 13:13:02] [Debug] - Audit: Erfolgreich
+[2025-07-12 13:13:02] [Debug] - AutoReply: Erfolgreich
+[2025-07-12 13:13:02] [Debug] - Calendar: Erfolgreich
+[2025-07-12 13:13:02] [Debug] - Contacts: Erfolgreich
+[2025-07-12 13:13:02] [Debug] - CrossPremises: Erfolgreich
+[2025-07-12 13:13:02] [Debug] - EXOSettings: Erfolgreich
+[2025-07-12 13:13:02] [Debug] - Groups: Erfolgreich
+[2025-07-12 13:13:02] [Debug] - HealthCheck: Erfolgreich
+[2025-07-12 13:13:03] [Debug] - InboxRules: Erfolgreich
+[2025-07-12 13:13:03] [Debug] - Mailbox: Erfolgreich
+[2025-07-12 13:13:03] [Debug] - MailFlowRules: Erfolgreich
+[2025-07-12 13:13:03] [Debug] - MDM: Erfolgreich
+[2025-07-12 13:13:03] [Debug] - MessageTrace: Erfolgreich
+[2025-07-12 13:13:03] [Debug] - RegionSettings: Erfolgreich
+[2025-07-12 13:13:03] [Debug] - Reports: Erfolgreich
+[2025-07-12 13:13:03] [Debug] - Resources: Erfolgreich
+[2025-07-12 13:13:03] [Debug] - SharedMailbox: Erfolgreich
+[2025-07-12 13:13:03] [Debug] - Troubleshooting: Erfolgreich
+2025-07-12 13:13:31 - Prüfe und initialisiere Registry-Konfiguration unter 'HKCU:\Software\easyIT\easyEXO'.
+2025-07-12 13:13:31 - Registry-Version ('0.0.12') ist aktuell mit Skript-Version ('0.0.12'). Keine Aktualisierung der Standardwerte erforderlich.
+[2025-07-12 13:13:31] [Info] Lade XAML von: \\192.168.100.15\Daten1\06-Scripts\!PS-easyIT\#GitHub-Repos\easyEXO\# Versions\assets\EXOGUI.xaml
+[2025-07-12 13:13:32] [Info] TabControl hat 24 Items
+[2025-07-12 13:13:32] [Info] Tab gefunden: Name=tabCalendar, Header=Kalenderberechtigungen, Visibility=Collapsed
+[2025-07-12 13:13:32] [Info] Tab gefunden: Name=tabMailbox, Header=Postfachberechtigungen, Visibility=Collapsed
+[2025-07-12 13:13:32] [Info] Tab gefunden: Name=tabMailboxAudit, Header=Audit & Information, Visibility=Collapsed
+[2025-07-12 13:13:32] [Info] Tab gefunden: Name=tabTroubleshooting, Header=Troubleshooting, Visibility=Collapsed
+[2025-07-12 13:13:32] [Info] Tab gefunden: Name=tabEXOSettings, Header=Allg. EXO Settings, Visibility=Collapsed
+[2025-07-12 13:13:32] [Info] Tab gefunden: Name=tabGroups, Header=Gruppen / Verteiler, Visibility=Collapsed
+[2025-07-12 13:13:32] [Info] Tab gefunden: Name=tab_HybridExchange, Header=Hybrid Exchange-Konfiguration, Visibility=Collapsed
+[2025-07-12 13:13:32] [Info] Tab gefunden: Name=tab_MultiForest, Header=Multi-Forest-Verwaltung, Visibility=Collapsed
+[2025-07-12 13:13:32] [Info] Tab gefunden: Name=tab_ATP, Header=Advanced Threat Protection, Visibility=Collapsed
+[2025-07-12 13:13:32] [Info] Tab gefunden: Name=tab_DLP, Header=Data Loss Prevention (DLP), Visibility=Collapsed
+[2025-07-12 13:13:32] [Info] Tab gefunden: Name=tab_eDiscovery, Header=eDiscovery & Legal Hold, Visibility=Collapsed
+[2025-07-12 13:13:32] [Info] Tab gefunden: Name=tab_MDM, Header=Mobile Device Management, Visibility=Collapsed
+[2025-07-12 13:13:32] [Info] Tab gefunden: Name=tab_MailRouting, Header=Cross-Premises Mail Routing, Visibility=Collapsed
+[2025-07-12 13:13:32] [Info] Tab gefunden: Name=tab_HealthCheck, Header=Exchange Health Check, Visibility=Collapsed
+[2025-07-12 13:13:32] [Info] Tab gefunden: Name=tabSharedMailbox, Header=Shared Mailboxes, Visibility=Collapsed
+[2025-07-12 13:13:32] [Info] Tab gefunden: Name=tabResources, Header=Ressourcen, Visibility=Collapsed
+[2025-07-12 13:13:32] [Info] Tab gefunden: Name=tabContacts, Header=Kontakte, Visibility=Collapsed
+[2025-07-12 13:13:32] [Info] Tab gefunden: Name=tabReports, Header=Berichte & Export, Visibility=Collapsed
+[2025-07-12 13:13:32] [Info] Tab gefunden: Name=tabRegion, Header=Regionaleinstellungen, Visibility=Collapsed
+[2025-07-12 13:13:32] [Info] Tab gefunden: Name=tabMailFlowRules, Header=Transport Rules, Visibility=Collapsed
+[2025-07-12 13:13:32] [Info] Tab gefunden: Name=tabInboxRules, Header=Inbox Rules, Visibility=Collapsed
+[2025-07-12 13:13:32] [Info] Tab gefunden: Name=tabMessageTrace, Header=Message Trace, Visibility=Collapsed
+[2025-07-12 13:13:32] [Info] Tab gefunden: Name=tabDashboard, Header=Dashboard, Visibility=Visible
+[2025-07-12 13:13:32] [Info] Tab gefunden: Name=tabAutoReply, Header=Auto Reply Management, Visibility=Collapsed
+[2025-07-12 13:13:32] [Info] Event-Handler f?r btnSettings hinzugef?gt.
+[2025-07-12 13:13:32] [Info] Event-Handler f?r btnInfo hinzugef?gt.
+[2025-07-12 13:13:32] [Info] Event-Handler f?r btnClose hinzugef?gt.
+[2025-07-12 13:13:32] [Info] Event-Handler f?r Header-Buttons erfolgreich registriert.
+[2025-07-12 13:13:32] ?ffne GUI-Fenster
+[2025-07-12 13:13:32] TabControl Status vor ShowDialog: Items=24
+[2025-07-12 13:13:32] Tab vorhanden: tabCalendar
+[2025-07-12 13:13:33] Tab vorhanden: tabMailbox
+[2025-07-12 13:13:33] Tab vorhanden: tabMailboxAudit
+[2025-07-12 13:13:33] Tab vorhanden: tabTroubleshooting
+[2025-07-12 13:13:33] Tab vorhanden: tabEXOSettings
+[2025-07-12 13:13:33] Tab vorhanden: tabGroups
+[2025-07-12 13:13:33] Tab vorhanden: tab_HybridExchange
+[2025-07-12 13:13:33] Tab vorhanden: tab_MultiForest
+[2025-07-12 13:13:33] Tab vorhanden: tab_ATP
+[2025-07-12 13:13:33] Tab vorhanden: tab_DLP
+[2025-07-12 13:13:33] Tab vorhanden: tab_eDiscovery
+[2025-07-12 13:13:33] Tab vorhanden: tab_MDM
+[2025-07-12 13:13:33] Tab vorhanden: tab_MailRouting
+[2025-07-12 13:13:33] Tab vorhanden: tab_HealthCheck
+[2025-07-12 13:13:33] Tab vorhanden: tabSharedMailbox
+[2025-07-12 13:13:33] Tab vorhanden: tabResources
+[2025-07-12 13:13:33] Tab vorhanden: tabContacts
+[2025-07-12 13:13:33] Tab vorhanden: tabReports
+[2025-07-12 13:13:33] Tab vorhanden: tabRegion
+[2025-07-12 13:13:33] Tab vorhanden: tabMailFlowRules
+[2025-07-12 13:13:33] Tab vorhanden: tabInboxRules
+[2025-07-12 13:13:33] Tab vorhanden: tabMessageTrace
+[2025-07-12 13:13:33] Tab vorhanden: tabDashboard
+[2025-07-12 13:13:33] Tab vorhanden: tabAutoReply
+[2025-07-12 13:13:33] [Info] Tab gewechselt zu: Kalenderberechtigungen
+[2025-07-12 13:13:33] GUI-Loaded-Event ausgel?st, initialisiere Komponenten
+[2025-07-12 13:13:33] [Info] Initialisiere wesentliche UI-Komponenten...
+[2025-07-12 13:13:33] [Info] Initialisiere Tab-Navigation...
+[2025-07-12 13:13:34] [Success] Tab-Navigation erfolgreich initialisiert
+[2025-07-12 13:13:34] [Success] Tab-Navigation erfolgreich initialisiert.
+[2025-07-12 13:13:34] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:34] [Debug] Setze aktiven Navigation-Button: btnDashboard
+[2025-07-12 13:13:34] [Debug] Navigation-Button 'btnDashboard' als aktiv markiert
+[2025-07-12 13:13:34] [Info] Dashboard-Tab als Startansicht festgelegt.
+[2025-07-12 13:13:34] [Info] Starte asynchrone Tab-Initialisierung...
+[2025-07-12 13:13:34] [Success] Asynchrone Tab-Initialisierung gestartet
+[2025-07-12 13:13:34] Initialize-ApplicationUI Ergebnis: True True True
+[2025-07-12 13:13:34] Initialize-HelpLinks Ergebnis: True
+[2025-07-12 13:13:34] [Debug] Beginne synchrone Tab-Initialisierung im Hintergrund...
+[2025-07-12 13:13:34] [Info] Beginne Initialisierung: EXO Settings Tab
+[2025-07-12 13:13:34] [Debug] EXOSettingsTab: HelpLink Handler registriert.
+[2025-07-12 13:13:34] [Debug] EXOSettingsTab: btnGetOrganizationConfig Handler registriert.
+[2025-07-12 13:13:34] [Debug] EXOSettingsTab: Sichtbarkeit f?r Elemente in knownUIElements ?berpr?ft.
+[2025-07-12 13:13:34] [Debug] EXOSettingsTab: Tab auf sichtbar gesetzt.
+[2025-07-12 13:13:34] [Success] Abschluss Initialisierung: EXO Settings Tab (Erfolg: True)
+[2025-07-12 13:13:34] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:34] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:34] [Info] Event-Handler f?r btnAddCalendarPermission.Click registriert
+[2025-07-12 13:13:34] [Info] Event-Handler f?r btnRemoveCalendarPermission.Click registriert
+[2025-07-12 13:13:34] [Info] Event-Handler f?r btnShowCalendarPermissions.Click registriert
+[2025-07-12 13:13:34] [Info] Event-Handler f?r btnSetDefaultPermission.Click registriert
+[2025-07-12 13:13:34] [Info] Event-Handler f?r btnSetAnonymousPermission.Click registriert
+[2025-07-12 13:13:34] [Info] Event-Handler f?r btnSetAllCalPermission.Click registriert
+[2025-07-12 13:13:34] [Info] Event-Handler f?r btnExportCalendarPermissions.Click registriert
+[2025-07-12 13:13:34] [Info] Event-Handler f?r btnAddMailboxPermission.Click registriert
+[2025-07-12 13:13:35] [Info] Event-Handler f?r btnRemoveMailboxPermission.Click registriert
+[2025-07-12 13:13:35] [Info] Event-Handler f?r btnShowMailboxPermissions.Click registriert
+[2025-07-12 13:13:35] [Info] Event-Handler f?r btnAddSendAs.Click registriert
+[2025-07-12 13:13:35] [Info] Event-Handler f?r btnRemoveSendAs.Click registriert
+[2025-07-12 13:13:35] [Info] Event-Handler f?r btnShowSendAs.Click registriert
+[2025-07-12 13:13:35] [Info] Event-Handler f?r btnAddSendOnBehalf.Click registriert
+[2025-07-12 13:13:35] [Info] Event-Handler f?r btnRemoveSendOnBehalf.Click registriert
+[2025-07-12 13:13:35] [Info] Event-Handler f?r btnShowSendOnBehalf.Click registriert
+[2025-07-12 13:13:35] [Info] Event-Handler f?r btnRunAudit.Click registriert
+[2025-07-12 13:13:35] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:35] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:35] [Success] Audit-Tab erfolgreich initialisiert
+[2025-07-12 13:13:35] [Info] Initialisiere Troubleshooting-Tab
+[2025-07-12 13:13:35] [Info] Event-Handler f?r btnRunDiagnostic.Click registriert
+[2025-07-12 13:13:35] [Info] Event-Handler f?r btnAdminCenter.Click registriert
+[2025-07-12 13:13:35] [Success] Troubleshooting-Tab erfolgreich initialisiert
+[2025-07-12 13:13:35] [Info] Initialisiere Gruppen-Tab...
+[2025-07-12 13:13:35] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:35] [Info] Event-Handler f?r btnRefreshExistingGroups.Click registriert
+[2025-07-12 13:13:35] [Info] Event-Handler f?r btnCreateGroup.Click registriert
+[2025-07-12 13:13:35] [Info] Event-Handler f?r btnDeleteGroup.Click registriert
+[2025-07-12 13:13:35] [Info] Event-Handler f?r btnAddUserToGroup.Click registriert
+[2025-07-12 13:13:35] [Info] Event-Handler f?r btnRemoveUserFromGroup.Click registriert
+[2025-07-12 13:13:35] [Info] Event-Handler f?r btnUpdateGroupSettings.Click registriert
+[2025-07-12 13:13:35] [Info] Event-Handler f?r btnExportGroupMembers.Click registriert
+[2025-07-12 13:13:35] [Info] Initialize-GroupsTab erfolgreich abgeschlossen.
+[2025-07-12 13:13:36] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:36] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnCreateSharedMailbox.Click registriert
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnConvertToShared.Click registriert
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnAddSharedMailboxPermission.Click registriert
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnRemoveSharedMailboxPermission.Click registriert
+[2025-07-12 13:13:36] [Info] Event-Handler f?r UnknownControl.Click registriert
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnShowSharedMailboxPerms.Click registriert
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnGetForwardingMailboxes.Click registriert
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnUpdateAutoMapping.Click registriert
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnSetForwarding.Click registriert
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnRemoveForwarding.Click registriert
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnShowInGAL.Click registriert
+[2025-07-12 13:13:36] [Warning] Control nicht gefunden: btnRemoveSharedMailbox
+[2025-07-12 13:13:36] [Info] Initialisiere Kontakte-Tab
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnCreateContact.Click registriert
+[2025-07-12 13:13:36] [Info] Event-Handler f?r lstContacts.SelectionChanged registriert
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnUpdateContact.Click registriert
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnShowMailContacts.Click registriert
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnShowMailUsers registrieren
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnShowMailUsers.Click registriert
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnRemoveContact.Click registriert
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnExportContacts.Click registriert
+[2025-07-12 13:13:36] [Info] Initialisiere Ressourcen-Tab...
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnRefreshResources.Click registriert
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnShowRoomResources.Click registriert
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnShowEquipmentResources.Click registriert
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnSearchResources.Click registriert
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnRefreshResourceList.Click registriert
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnCreateResource.Click registriert
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnEditResourceSettings.Click registriert
+[2025-07-12 13:13:36] [Info] Event-Handler f?r btnRemoveResource.Click registriert
+[2025-07-12 13:13:37] [Info] Event-Handler f?r btnExportResources.Click registriert
+[2025-07-12 13:13:37] [Success] Ressourcen-Tab erfolgreich initialisiert.
+[2025-07-12 13:13:37] [Info] Initialisiere Berichte-Tab
+[2025-07-12 13:13:37] [Info] Event-Handler f?r btnGenerateReport.Click registriert
+[2025-07-12 13:13:37] [Info] Event-Handler f?r btnExportReport.Click registriert
+[2025-07-12 13:13:37] [Success] Berichte-Tab erfolgreich initialisiert
+[2025-07-12 13:13:37] [Info] Initialisiere Regionaleinstellungen-Tab...
+[2025-07-12 13:13:37] [Debug] Bef?lle Sprachen-ComboBox mit gefilterter Sprachliste...
+[2025-07-12 13:13:37] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:37] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:37] [Debug] Sprachen-ComboBox erfolgreich mit gefilterter Liste bef?llt.
+[2025-07-12 13:13:37] [Debug] Bef?lle Zeitzonen-ComboBox f?r Kultur 'DEFAULT_ALL'...
+[2025-07-12 13:13:37] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:37] [Debug] Kultur 'DEFAULT_ALL' ist DEFAULT_ALL. Lade alle Systemzeitzonen.
+[2025-07-12 13:13:37] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:37] [Debug] Zeitzonen-ComboBox erfolgreich bef?llt f?r Kultur 'DEFAULT_ALL'. Ausgew?hlt: '(Keine ?nderung)' (Tag: '')
+[2025-07-12 13:13:37] [Debug] Bef?lle Datumsformat-ComboBox f?r Kultur ''...
+[2025-07-12 13:13:37] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:37] [Debug] Kultur '' nicht in ExchangeValidDateFormats gefunden oder leer, verwende DEFAULT Datumsformate.
+[2025-07-12 13:13:37] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:37] [Debug] Datumsformat-ComboBox erfolgreich bef?llt. Ausgew?hlt: '(Keine ?nderung)' (Tag: '')
+[2025-07-12 13:13:37] [Debug] Bef?lle Zeitformat-ComboBox f?r Kultur ''...
+[2025-07-12 13:13:37] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:37] [Debug] Kultur '' nicht in RelevantTimeFormatsPerCulture gefunden oder leer, verwende DEFAULT Zeitformate.
+[2025-07-12 13:13:37] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:37] [Debug] Zeitformat-ComboBox erfolgreich bef?llt. Ausgew?hlt: '(Keine ?nderung)' (Tag: '')
+[2025-07-12 13:13:38] [Debug] chkRegionDefaultFolderNameMatchingUserLanguage.IsChecked auf \ (unbestimmt) gesetzt.
+[2025-07-12 13:13:38] [Debug] Event-Handler f?r cmbRegionLanguage.SelectionChanged registriert (inkl. Datums-, Zeitformat- und Zeitzonen-Update).
+[2025-07-12 13:13:38] [Debug] Event-Handler f?r 'btnGetRegionSettings' registriert.
+[2025-07-12 13:13:38] [Debug] Event-Handler f?r 'btnSetRegionSettings' registriert.
+[2025-07-12 13:13:38] [Debug] Event-Handler f?r 'btnExportRegionSettings' registriert.
+[2025-07-12 13:13:38] [Debug] Event-Handler f?r 'helpLinkRegionSettings' registriert.
+[2025-07-12 13:13:38] [Success] Regionaleinstellungen-Tab erfolgreich initialisiert.
+[2025-07-12 13:13:38] Regionaleinstellungen-Tab initialisiert.
+[2025-07-12 13:13:38] [Info] Initialisiere Mail Flow Rules-Tab...
+[2025-07-12 13:13:38] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:38] [Debug] Mail Flow Bedingungen ComboBox initialisiert
+[2025-07-12 13:13:38] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:38] [Debug] Mail Flow Aktionen ComboBox initialisiert
+[2025-07-12 13:13:38] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:38] [Info] Tab gewechselt zu: 
+[2025-07-12 13:13:38] [Debug] Mail Flow Modi ComboBox initialisiert
+[2025-07-12 13:13:38] [Info] Event-Handler f?r btnCreateRule.Click registriert
+[2025-07-12 13:13:38] [Info] Event-Handler f?r btnTestRule.Click registriert
+[2025-07-12 13:13:38] [Info] Event-Handler f?r btnRefreshRules.Click registriert
+[2025-07-12 13:13:38] [Info] Event-Handler f?r btnEnableRule.Click registriert
+[2025-07-12 13:13:38] [Info] Event-Handler f?r btnDisableRule.Click registriert
+[2025-07-12 13:13:38] [Info] Event-Handler f?r btnDeleteRule.Click registriert
+[2025-07-12 13:13:38] [Info] Event-Handler f?r btnExportRules.Click registriert
+[2025-07-12 13:13:38] [Info] Event-Handler f?r btnImportRules.Click registriert
+[2025-07-12 13:13:38] [Success] Mail Flow Rules-Tab erfolgreich initialisiert
+[2025-07-12 13:13:38] [Info] Initialisiere Inbox Rules-Tab...
+[2025-07-12 13:13:38] [Info] Event-Handler f?r btnLoadInboxRules.Click registriert
+[2025-07-12 13:13:38] [Info] Event-Handler f?r btnCreateInboxRule.Click registriert
+[2025-07-12 13:13:38] [Info] Event-Handler f?r btnRefreshInboxRules.Click registriert
+[2025-07-12 13:13:38] [Info] Event-Handler f?r btnEnableInboxRule.Click registriert
+[2025-07-12 13:13:38] [Info] Event-Handler f?r btnDisableInboxRule.Click registriert
+[2025-07-12 13:13:38] [Info] Event-Handler f?r btnDeleteInboxRule.Click registriert
+[2025-07-12 13:13:39] [Info] Event-Handler f?r btnMoveRuleUp.Click registriert
+[2025-07-12 13:13:39] [Info] Event-Handler f?r btnMoveRuleDown.Click registriert
+[2025-07-12 13:13:39] [Warning] Control nicht gefunden: btnExportInboxRules
+[2025-07-12 13:13:39] [Success] Inbox Rules-Tab erfolgreich initialisiert
+[2025-07-12 13:13:39] [Info] Initialisiere Message Trace-Tab...
+[2025-07-12 13:13:39] [Info] Event-Handler f?r btnStartTrace.Click registriert
+[2025-07-12 13:13:39] [Info] Event-Handler f?r btnExportTrace.Click registriert
+[2025-07-12 13:13:39] [Info] Event-Handler f?r btnDetailedTrace.Click registriert
+[2025-07-12 13:13:39] [Info] Event-Handler f?r btnClearTrace.Click registriert
+[2025-07-12 13:13:39] [Success] Message Trace-Tab erfolgreich initialisiert.
+[2025-07-12 13:13:39] [Info] Initialisiere Auto Reply-Tab...
+[2025-07-12 13:13:39] [Info] Event-Handler f?r btnSetAutoReply.Click registriert
+[2025-07-12 13:13:39] [Info] Event-Handler f?r btnDisableAutoReply.Click registriert
+[2025-07-12 13:13:39] [Info] Event-Handler f?r btnRefreshAutoReply.Click registriert
+[2025-07-12 13:13:39] [Info] Event-Handler f?r btnExportAutoReply.Click registriert
+[2025-07-12 13:13:39] [Info] Event-Handler f?r btnBulkAutoReply.Click registriert
+[2025-07-12 13:13:39] [Success] Auto Reply-Tab erfolgreich initialisiert.
+[2025-07-12 13:13:39] [Info] Initialisiere Health Check-Tab...
+[2025-07-12 13:13:39] [Info] Event-Handler f?r btnRunHealthCheck.Click registriert
+[2025-07-12 13:13:39] [Success] Health Check-Tab erfolgreich initialisiert
+[2025-07-12 13:13:39] [Info] Initialisiere Cross-Premises Tab...
+[2025-07-12 13:13:39] [Success] Cross-Premises Tab erfolgreich initialisiert
+[2025-07-12 13:13:39] [Info] Initialisiere Advanced Threat Protection (ATP) Tab...
+[2025-07-12 13:13:39] [Info] Event-Handler f?r btnGetAntiPhishing.Click registriert
+[2025-07-12 13:13:39] [Info] Event-Handler f?r btnNewAntiPhishing.Click registriert
+[2025-07-12 13:13:39] [Info] Event-Handler f?r btnSetAntiPhishing.Click registriert
+[2025-07-12 13:13:39] [Info] Event-Handler f?r btnExportAntiPhishing.Click registriert
+[2025-07-12 13:13:39] [Info] Event-Handler f?r btnGetSafeAttachment.Click registriert
+[2025-07-12 13:13:39] [Info] Event-Handler f?r btnNewSafeAttachment.Click registriert
+[2025-07-12 13:13:39] [Info] Event-Handler f?r btnSetSafeAttachment.Click registriert
+[2025-07-12 13:13:39] [Info] Event-Handler f?r btnExportSafeAttachment.Click registriert
+[2025-07-12 13:13:40] [Info] Event-Handler f?r btnGetSafeLinks.Click registriert
+[2025-07-12 13:13:40] [Info] Event-Handler f?r btnNewSafeLinks.Click registriert
+[2025-07-12 13:13:40] [Info] Event-Handler f?r btnSetSafeLinks.Click registriert
+[2025-07-12 13:13:40] [Info] Event-Handler f?r btnExportSafeLinks.Click registriert
+[2025-07-12 13:13:40] [Info] Event-Handler f?r btnGetQuarantineMessages.Click registriert
+[2025-07-12 13:13:40] [Info] Event-Handler f?r btnReleaseQuarantine.Click registriert
+[2025-07-12 13:13:40] [Info] Event-Handler f?r btnDeleteQuarantine.Click registriert
+[2025-07-12 13:13:40] [Info] Event-Handler f?r btnExportQuarantine.Click registriert
+[2025-07-12 13:13:40] [Success] ATP Tab erfolgreich initialisiert.
+[2025-07-12 13:13:40] [Info] Initialisiere Mobile Device Management (MDM) Tab...
+[2025-07-12 13:13:40] [Info] Event-Handler f?r btnGetMobileDevicePolicies.Click registriert
+[2025-07-12 13:13:40] [Info] Event-Handler f?r btnNewMobileDevicePolicy.Click registriert
+[2025-07-12 13:13:40] [Info] Event-Handler f?r btnRemoveMobileDevicePolicy.Click registriert
+[2025-07-12 13:13:40] [Info] Event-Handler f?r btnGetQuarantinedDevices.Click registriert
+[2025-07-12 13:13:40] [Info] Event-Handler f?r btnAllowDevice.Click registriert
+[2025-07-12 13:13:40] [Info] Event-Handler f?r btnBlockDevice.Click registriert
+[2025-07-12 13:13:40] [Success] MDM Tab erfolgreich initialisiert.
+[2025-07-12 13:13:40] [Info] Tab-Initialisierung abgeschlossen: 19/19 erfolgreich
+[2025-07-12 13:13:40] [Debug] StatusBar aktualisiert: [Success] Alle Module erfolgreich geladen - Bereit - Bitte mit Exchange Online verbinden.
+[2025-07-12 13:13:40] [Success] Alle Tabs wurden erfolgreich initialisiert.
+[2025-07-12 13:13:40] [Debug] - ATP: Erfolgreich
+[2025-07-12 13:13:40] [Debug] - Audit: Erfolgreich
+[2025-07-12 13:13:40] [Debug] - AutoReply: Erfolgreich
+[2025-07-12 13:13:40] [Debug] - Calendar: Erfolgreich
+[2025-07-12 13:13:40] [Debug] - Contacts: Erfolgreich
+[2025-07-12 13:13:40] [Debug] - CrossPremises: Erfolgreich
+[2025-07-12 13:13:40] [Debug] - EXOSettings: Erfolgreich
+[2025-07-12 13:13:40] [Debug] - Groups: Erfolgreich
+[2025-07-12 13:13:40] [Debug] - HealthCheck: Erfolgreich
+[2025-07-12 13:13:40] [Debug] - InboxRules: Erfolgreich
+[2025-07-12 13:13:40] [Debug] - Mailbox: Erfolgreich
+[2025-07-12 13:13:40] [Debug] - MailFlowRules: Erfolgreich
+[2025-07-12 13:13:41] [Debug] - MDM: Erfolgreich
+[2025-07-12 13:13:41] [Debug] - MessageTrace: Erfolgreich
+[2025-07-12 13:13:41] [Debug] - RegionSettings: Erfolgreich
+[2025-07-12 13:13:41] [Debug] - Reports: Erfolgreich
+[2025-07-12 13:13:41] [Debug] - Resources: Erfolgreich
+[2025-07-12 13:13:41] [Debug] - SharedMailbox: Erfolgreich
+[2025-07-12 13:13:41] [Debug] - Troubleshooting: Erfolgreich
+[2025-07-12 13:14:28] GUI-Fenster wurde geschlossen
+[2025-07-12 13:14:28] Aufr?umarbeiten abgeschlossen
